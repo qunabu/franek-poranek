@@ -75,7 +75,9 @@
    ====================================================================== */
 
 /* --- USTAWIENIA, KTÓRE ŁATWO ZMIENIĆ ------------------------------- */
-const CZAS_MYCIA_ZEBOW = 35;        // ile SEKUND naprawdę trwa szczotkowanie
+const CZAS_MYCIA_ZEBOW = 35;        // bazowe SEKUNDY szczotkowania; ruch skraca je
+                                    // 2x (trzymanie strzałki) lub 3x (szorowanie
+                                    // lewo-prawo na zmianę)
 const DROGA_DO_PRZEDSZKOLA = 7000;  // długość trasy samochodem
 const GLOSNOSC_MUZYKI = 0.30;
 const GLOSNOSC_NARRATORA = 1.0;
@@ -259,19 +261,20 @@ document.getElementById('glosnik').addEventListener('click', e => {
   else if(muzykaTeraz) muzykaTeraz.play().catch(()=>{});
 });
 
-/* ==================== ZDJĘCIA-GŁOWY ==================== */
-const glowaFranka = new Image(), glowaTaty = new Image();
-const portretFranka = new Image(), portretTaty = new Image();
-let obrazkiOK = {};
-function podepnij(img, klucz, src){
-  img.onload = () => obrazkiOK[klucz] = true;
-  img.onerror = () => obrazkiOK[klucz] = false;
-  img.src = src;
-}
-podepnij(glowaFranka,'fg', typeof GLOWA_FRANKA !== 'undefined' ? GLOWA_FRANKA : 'glowa_franek.png');
-podepnij(glowaTaty,'tg', typeof GLOWA_TATY   !== 'undefined' ? GLOWA_TATY   : 'glowa_tata.png');
-podepnij(portretFranka,'fp', typeof PORTRET_FRANKA !== 'undefined' ? PORTRET_FRANKA : 'portret_franek.png');
-podepnij(portretTaty,'tp', typeof PORTRET_TATY !== 'undefined' ? PORTRET_TATY : 'portret_tata.png');
+/* ==================== ZDJĘCIA-GŁOWY ====================
+   Głowy i portrety to prawdziwe zdjęcia przerobione na piksele. */
+const OBRAZY = {}, obrazkiOK = {};
+const NAZWY_OBRAZOW = ['glowa_franek','portret_franek','glowa_tata','portret_tata',
+                       'glowa_pola','portret_pola','glowa_ola','portret_ola'];
+NAZWY_OBRAZOW.forEach(n => {
+  const img = new Image();
+  img.onload  = () => obrazkiOK[n] = true;
+  img.onerror = () => obrazkiOK[n] = false;
+  const wbudowane = (typeof OBRAZY_WBUDOWANE !== 'undefined') ? OBRAZY_WBUDOWANE[n] : null;
+  img.src = wbudowane || (n + '.png');
+  OBRAZY[n] = img;
+});
+function obraz(n){ return obrazkiOK[n] ? OBRAZY[n] : null; }
 
 /* ==================== PALETA I SILNIK SPRITE'ÓW ==================== */
 const PAL = {
@@ -397,6 +400,41 @@ buty:[
 "..krrk....krrk..","..krrrk...krrrk.","..krrrrk..krrrrk",".kwwwwwk.kwwwwwk",
 ".kkkkkkk.kkkkkkk","................","................","................",
 "................","................","................","................"],
+kapcie:[
+"................","................","................",".kkkk.....kkkk..",
+".kqqqk...kqqqk..","kqwwqkk.kqwwqkk.","kqqqqqk.kqqqqqk.","kkkkkkk.kkkkkkk.",
+"................","................","................","................",
+"................","................","................","................"],
+mis:[
+"................",".kk........kk...","knnk......knnk..","knnnkkkkkknnnk..",
+".knnnnnnnnnnnk..","..knwnnnnwnk....","..knnnnnnnnk....","..knnkkkknnk....",
+".knnnnnnnnnnnk..","knnnknnnnknnnk..","knnnknnnnknnnk..","knnnnnnnnnnnnk..",
+".kknnnnnnnnnkk..","...kkkkkkkkk....","................","................"],
+grzebien:[
+"................","................","................","..kkkkkkkkkkkk..",
+"..kvvvvvvvvvvk..","..kvvvvvvvvvvk..","..kkkkkkkkkkkk..","..k.k.k.k.k.k.k.",
+"..k.k.k.k.k.k.k.","..k.k.k.k.k.k.k.","..k.k.k.k.k.k.k.","................",
+"................","................","................","................"],
+karma:[
+"................","................","....kkkkkkk.....","...kyyyyyyyk....",
+"...kykkkkkyk....","...kykrrrkyk....","...kykrrrkyk....","...kykkkkkyk....",
+"...kyyyyyyyk....","...kyoooooyk....","...kyyyyyyyk....","....kkkkkkk.....",
+"................","................","................","................"],
+rybka:[
+"................","................","................",".......kk.......",
+"....kkkkkkk...k.","..kkoooooookkkk.",".kooowoooooookk.","kooooooooooookk.",
+".kooooooooookkk.","..kkoooooookk...","....kkkkkkk..k..",".......kk.......",
+"................","................","................","................"],
+legginsy:[
+"................","..kkkkkkkkkkkk..","..kddddddddddk..","..kdwdddwdddwk..",
+"..kddddddddddk..","..kdddwddddwddk.","..kddddkkddddk..","..kdwddkkddwddk.",
+"..kddddkkddddk..","..kddwdkkdwdddk.","..kddddkkddddk..","..kddddkkddddk..",
+"..kkkkkkkkkkkk..","................","................","................"],
+bluza:[
+"................","................","...kk....kk.....","..kppkkkkppk....",
+".kpppppppppppk..",".kpppppppppppk..",".kkkppppppokkk..","...kpppppppk....",
+"...kppoppoppk...","...kpppppppk....","...kppoppoppk...","...kpppppppk....",
+"...kkkkkkkkk....","................","................","................"],
 zeby:[
 "................","..kkkkkkkkkkkk..","..kwwwwwwwwwwk..","..kwkwkwkwkwwk..",
 "..kwwwwwwwwwwk..","..kkkkkkkkkkkk..","..kwwwwwwwwwwk..","..kwkwkwkwkwwk..",
@@ -407,6 +445,8 @@ const NAZWY = {
   majtki:'majtki', spodnie:'spodnie', skarpetki:'skarpetki', koszulka:'koszulkę',
   miska:'miskę', platki:'łódeczki', mleko:'mleko', lyzka:'łyżkę', sniadanie:'śniadanie',
   szczoteczka:'szczoteczkę', pasta:'pastę', zeby:'umywalkę',
+  kapcie:'kapcie', mis:'misia', grzebien:'grzebień', karma:'karmę dla rybki',
+  rybka:'rybkę', legginsy:'legginsy', bluza:'bluzę',
   czapka:'czapkę', kurtka:'kurtkę', buty:'buty'
 };
 function rysujIkone(typ, x, y, odbij){
@@ -428,74 +468,70 @@ const SKORA = '#fecCc5', SKORA_C = '#e09a8a';
 
 function rysujFranka(px, py, kier, faza, wPowietrzu, opada){
   const x = Math.round(px), y = Math.round(py);
-  const u = G.stroj;
+  const b = bohater(), u = b.ubior, st = G.stroj;
   ctx.save();
   if(kier < 0){ ctx.translate(2*x + 22, 0); ctx.scale(-1, 1); }
   const kl = ((Math.floor(faza) % 4) + 4) % 4;
   const k = CHOD[kl];
   const bob = wPowietrzu ? 0 : k.bob;
-  const gy = y + bob;                       // głowa 24x22 (wystaje 1 px w lewo)
+  const gy = y + bob;                       // głowa 24x22
   const ty = gy + 21;                       // tułów 14, nogi 10, but 4  => razem 50
 
   ctx.globalAlpha = 0.25; pr(x+3, y+49, 16, 2, '#000000'); ctx.globalAlpha = 1;
 
-  // --- nogi i buty ---
-  const barwaNogi = u.spodnie ? '#a80020' : '#dfe6ff';      // czerwone szorty albo piżama
-  const barwaNogiC = u.spodnie ? '#6e0040' : '#b7c4e8';
-  const barwaStopy = u.buty ? '#2b2b33' : (u.skarpetki ? '#fffeff' : SKORA);
-  const barwaStopyC = u.buty ? '#000000' : (u.skarpetki ? '#bcbcbc' : SKORA_C);
+  const barwaNogi  = st.spodnie ? u.spodnie  : u.pizama;
+  const barwaNogiC = st.spodnie ? u.spodnieC : u.pizamaPas;
+  const barwaStopy  = st.buty ? '#2b2b33' : (st.skarpetki ? '#fffeff' : SKORA);
+  const barwaStopyC = st.buty ? '#000000' : (st.skarpetki ? '#bcbcbc' : SKORA_C);
   function noga(dx, dl, tyl){
     const kol = tyl ? barwaNogiC : barwaNogi;
-    const kolS = tyl ? barwaStopyC : barwaStopy;
-    if(u.spodnie){                                   // szorty + goła łydka
+    if(st.spodnie){
       pr(x+7+dx, ty+14, 5, 4, kol);
       pr(x+8+dx, ty+18, 3, dl-4, tyl ? SKORA_C : SKORA);
     } else {
       pr(x+7+dx, ty+14, 5, dl, kol);
     }
-    pr(x+6+dx, ty+14+dl, 7, 4, kolS);
+    pr(x+6+dx, ty+14+dl, 7, 4, tyl ? barwaStopyC : barwaStopy);
   }
-  if(wPowietrzu){
-    noga(-5, 6, true); noga(4, 6, false);
-  } else {
-    noga(k.b, k.dl, true); noga(k.a, k.dl, false);
-  }
+  if(wPowietrzu){ noga(-5, 6, true); noga(4, 6, false); }
+  else { noga(k.b, k.dl, true); noga(k.a, k.dl, false); }
 
-  // --- ręce ---
-  const rekaw = u.kurtka ? '#007800' : (u.koszulka ? '#3cbcfc' : '#dfe6ff');
+  const rekaw = st.kurtka ? u.kurtkaJasna : (st.koszulka ? u.rekawGora : u.pizama);
   const hus = wPowietrzu ? 0 : -k.a;
   const dy = wPowietrzu ? -7 : Math.round(hus/2);
   pr(x+1,  ty+2+dy, 3, 8, rekaw);   pr(x+1,  ty+10+dy, 3, 3, SKORA);
   pr(x+18, ty+2-dy, 3, 8, rekaw);   pr(x+18, ty+10-dy, 3, 3, SKORA);
 
-  // --- tułów ---
-  if(u.kurtka){
-    pr(x+4, ty, 14, 14, '#00a800');
-    pr(x+4, ty, 14, 1, '#58d854');
-    pr(x+10, ty, 2, 14, '#b8f818');                 // zamek
-  } else if(u.koszulka){
-    pr(x+4, ty, 14, 14, '#64b0ff');                 // bluzka jak jego prawdziwa
-    pr(x+4, ty, 14, 1, '#c0dfff');
-    for(const [ox,oy] of [[2,3],[8,2],[5,8],[10,9]]) pr(x+4+ox, ty+oy, 3, 3, '#fc9838');
+  if(st.kurtka){
+    pr(x+4, ty, 14, 14, u.kurtka);
+    pr(x+4, ty, 14, 1, u.kurtkaJasna);
+    pr(x+10, ty, 2, 14, u.kurtkaZamek);
+  } else if(st.koszulka){
+    pr(x+4, ty, 14, 14, u.gora);
+    pr(x+4, ty, 14, 1, u.goraJasna);
+    for(const [ox,oy] of [[2,3],[8,2],[5,8],[10,9]]) pr(x+4+ox, ty+oy, 3, 3, u.wzor);
   } else {
-    pr(x+4, ty, 14, 14, '#dfe6ff');                 // piżama w paski
-    for(let j=1;j<14;j+=3) pr(x+4, ty+j, 14, 1, '#9fb4e8');
+    pr(x+4, ty, 14, 14, u.pizama);
+    for(let j=1;j<14;j+=3) pr(x+4, ty+j, 14, 1, u.pizamaPas);
   }
 
-  // --- głowa (zdjęcie) + czapka ---
-  if(obrazkiOK.fg) ctx.drawImage(glowaFranka, x-1, gy, 24, 22);
+  const gl = obraz(b.glowa);
+  const gw = b.glowaW, gh = b.glowaH, gdy = b.glowaDy;
+  if(gl) ctx.drawImage(gl, x + 11 - Math.round(gw/2), gy + gdy, gw, gh);
   else { pr(x, gy, 22, 22, SKORA); pr(x, gy, 22, 6, '#e4e594'); }
-  if(u.czapka){
-    pr(x, gy-2, 22, 6, '#2b2b33');
-    pr(x+14, gy-2, 8, 6, '#f8d878');
-    pr(x-2, gy+3, 20, 3, '#2b2b33');
-    pr(x+4, gy+1, 4, 3, '#fffeff');
+  if(st.czapka){
+    const cy = gy + gdy;
+    pr(x, cy-2, 22, 6, u.czapka);
+    pr(x+14, cy-2, 8, 6, u.czapkaDodatek);
+    pr(x-2, cy+3, 20, 3, u.czapka);
+    pr(x+4, cy+1, 4, 3, '#fffeff');
   }
   ctx.restore();
 }
 
 function rysujTate(px, py, kier, faza){
   const x = Math.round(px), y = Math.round(py);
+  const b = bohater(), u = b.opiekunUbior;
   ctx.save();
   if(kier < 0){ ctx.translate(2*x + 24, 0); ctx.scale(-1, 1); }
   const kl = ((Math.floor(faza) % 4) + 4) % 4;
@@ -504,18 +540,19 @@ function rysujTate(px, py, kier, faza){
 
   ctx.globalAlpha = 0.25; pr(x+4, y+57, 18, 2, '#000000'); ctx.globalAlpha = 1;
 
-  pr(x+9+k.b, ty+18, 6, 13, '#22357a'); pr(x+8+k.b, ty+31, 8, 4, '#2b1a08');
-  pr(x+9+k.a, ty+18, 6, 13, '#3a4a8b'); pr(x+8+k.a, ty+31, 8, 4, '#503000');
+  pr(x+9+k.b, ty+18, 6, 13, u.nogiC); pr(x+8+k.b, ty+31, 8, 4, u.butC);
+  pr(x+9+k.a, ty+18, 6, 13, u.nogi);  pr(x+8+k.a, ty+31, 8, 4, u.but);
 
   const hus = -k.a;
-  pr(x+1,  ty+4+Math.round(hus/2), 3, 12, '#0058f8'); pr(x+1,  ty+16+Math.round(hus/2), 3, 3, SKORA);
-  pr(x+20, ty+4-Math.round(hus/2), 3, 12, '#0058f8'); pr(x+20, ty+16-Math.round(hus/2), 3, 3, SKORA);
+  pr(x+1,  ty+4+Math.round(hus/2), 3, 12, u.gora); pr(x+1,  ty+16+Math.round(hus/2), 3, 3, SKORA);
+  pr(x+20, ty+4-Math.round(hus/2), 3, 12, u.gora); pr(x+20, ty+16-Math.round(hus/2), 3, 3, SKORA);
 
-  pr(x+4, ty, 16, 18, '#0058f8');
-  pr(x+4, ty, 16, 1, '#3cbcfc');
-  pr(x+4, ty+16, 16, 2, '#0000bc');
+  pr(x+4, ty, 16, 18, u.gora);
+  pr(x+4, ty, 16, 1, u.goraJasna);
+  pr(x+4, ty+16, 16, 2, u.goraCien);
 
-  if(obrazkiOK.tg) ctx.drawImage(glowaTaty, x+2, gy, 20, 24);
+  const gl = obraz(b.glowaOp);
+  if(gl) ctx.drawImage(gl, x+2, gy, 20, 24);
   else { pr(x+2, gy, 20, 24, SKORA); pr(x+2, gy+14, 20, 10, '#4f4f4f'); }
   ctx.restore();
 }
@@ -626,6 +663,14 @@ function rysujPlatforme(p){
       pr(x,y,w,3,'#ac7c00'); obrys(x,y,w,3);
       pr(x,y+9,w,3,'#ac7c00'); obrys(x,y+9,w,3);
       pr(x+1,y,3,h,'#503000'); pr(x+w-4,y,3,h,'#503000');
+      break;
+    case 'akwarium':
+      blok(x, y+h-14, w, 14, '#e45c10', '#ac7c00', '#503000'); obrys(x, y+h-14, w, 14);
+      pr(x+4, y-26, w-8, h-12, '#000000');
+      pr(x+6, y-24, w-12, h-16, '#3cbcfc');
+      pr(x+6, y-24, w-12, 3, '#c0dfff');
+      for(let i=0;i<w-16;i+=14) pr(x+10+i, y-6, 4, 6, '#00a800');
+      for(const [dx,dy] of [[18,-18],[46,-12],[70,-20]]) pr(x+dx, y+dy, 3, 3, '#fffeff');
       break;
     case 'schodki':
       blok(x,y,w,h,'#fffeff','#bcbcbc','#4f4f4f'); obrys(x,y,w,h);
@@ -745,6 +790,49 @@ const TLA = {
     pr(700,60,42,80,'#000000'); pr(702,62,38,76,'#c0dfff');
     ctx.restore();
   },
+  sypialniaP(cam,t){
+    paski(cam*0.5, 16, '#fec4ea', '#ffe4dc', H);
+    ctx.save(); ctx.translate(-Math.round(cam),0);
+    pr(190,30,120,95,'#000000'); pr(192,32,116,91,'#64b0ff');
+    pr(192,95,116,28,'#58d854'); slonce(228,66,44);
+    pr(192,32,116,4,'#fffeff'); pr(248,32,4,91,'#fffeff'); pr(192,76,116,4,'#fffeff');
+    // obrazek z serduszkiem
+    pr(470,55,58,48,'#000000'); pr(472,57,54,44,'#ffe4dc');
+    rysujSpr('serce',[
+      "..kk...kk..",".kqqk.kqqk.","kqqqqkqqqqk","kqqqqqqqqqk",".kqqqqqqqk.",
+      "..kqqqqqk..","...kqqqk...","....kqk....","............"], 490, 66, false);
+    ctx.restore();
+  },
+  salon(cam,t){
+    pr(0,0,W,H,'#e4e594');
+    ctx.save(); ctx.translate(-Math.round(cam),0);
+    for(let i=0;i<60;i++) pr(i*24,0,12,204,'#f7d8a5');
+    pr(0,202,900,4,'#503000');
+    blok(0,206,900,29,'#ac7c00','#883800','#503000');
+    // okno
+    pr(230,40,110,80,'#000000'); pr(232,42,106,76,'#64b0ff');
+    pr(232,96,106,22,'#58d854'); pr(283,42,4,76,'#fffeff'); pr(232,76,106,4,'#fffeff');
+    // roślina w doniczce
+    pr(562,150,8,52,'#503000'); pr(562,150,3,52,'#883800');
+    pr(552,118,28,8,'#00a800'); pr(546,126,40,14,'#00a800'); pr(552,140,28,8,'#00a800');
+    pr(552,118,28,2,'#58d854');
+    blok(550,198,32,22,'#e45c10','#ac7c00','#503000');
+    ctx.restore();
+  },
+  szatnia(cam,t){
+    pr(0,0,W,H,'#c0dfff');
+    ctx.save(); ctx.translate(-Math.round(cam),0);
+    for(let j=0;j<14;j++) for(let i=0;i<60;i++){
+      const x=i*22, y=j*20;
+      pr(x,y,21,19,'#d3d2ff'); pr(x,y,21,1,'#fffeff'); pr(x,y+18,21,1,'#9290ff');
+    }
+    // wieszaki na kurtki
+    pr(120,120,180,5,'#503000');
+    for(let i=0;i<5;i++){ pr(132+i*36,125,4,9,'#503000'); pr(129+i*36,133,10,3,'#503000'); }
+    // znaczki dzieci nad wieszakami
+    for(let i=0;i<5;i++) pr(130+i*36,104,12,12,['#d82800','#f8d878','#58d854','#3cbcfc','#fe6ecc'][i]);
+    ctx.restore();
+  },
   podworko(cam,t){
     pr(0,0,W,H,'#5c94fc');
     slonce(398,18,38);
@@ -767,7 +855,7 @@ const TLA = {
 };
 
 /* ==================== POZIOMY (współrzędne w pikselach 480x270) ==================== */
-const poziomy = [
+const POZIOMY_FRANEK = [
   { nazwa:'Wstawaj, Franek!', podtytul:'Ubierz się po kolei', tlo:'sypialnia', szer:950, glos:'poziom1',
     start:{x:60,y:140},
     platformy:[
@@ -846,27 +934,178 @@ const poziomy = [
     zadania:[],
     drzwi:{x:650,y:170,w:115,h:65,tekst:'Wsiadaj!',auto:true}
   },
-  { typ:'jazda', nazwa:'Jedziemy do przedszkola!', podtytul:'▲▼ pas, ▶ szybciej', glos:'poziom6' }
+  { typ:'jazda', nazwa:'Jedziemy do przedszkola!', podtytul:'▲▼ pas, ▶ szybciej', glos:'poziom6' },
+  { typ:'wyscig', nazwa:'Wyścig do furtki!', podtytul:'Naciskaj ◀ ▶ na zmianę', glos:'poziom7' },
+  { nazwa:'Szatnia', podtytul:'Rozbierz się i biegnij do okna', tlo:'szatnia', szer:760,
+    tata:true, glos:'poziom8', start:{x:30,y:170},
+    platformy:[
+      {x:0,y:235,w:760,h:35,styl:'kafle'},
+      {x:110,y:205,w:110,h:30,styl:'lawka'},
+      {x:300,y:210,w:90,h:25,styl:'polkaButy'},
+      {x:470,y:190,w:80,h:45,styl:'komoda'}
+    ],
+    zadania:[
+      {typ:'buty',   zdejmij:'buty',   x:345,y:196, zadanie:'Zdejmij buty!',  glos:'zad_zdejmij_buty'},
+      {typ:'kurtka', zdejmij:'kurtka', x:165,y:190, zadanie:'Powieś kurtkę!', glos:'zad_zdejmij_kurtke'},
+      {typ:'czapka', zdejmij:'czapka', x:510,y:175, zadanie:'Zdejmij czapkę!',glos:'zad_zdejmij_czapke'}
+    ],
+    drzwi:{x:660,y:145,w:70,h:90,tekst:'Do okna!',okno:true,glos:'zad_okno'}
+  }
 ];
+
+/* ---------- poziomy Poli ---------- */
+const POZIOMY_POLA = [
+  { nazwa:'Wstawaj, Pola!', podtytul:'Pora wstać z łóżka', tlo:'sypialniaP', szer:700, glos:'p_poziom1',
+    start:{x:60,y:140},
+    platformy:[
+      {x:0,y:235,w:700,h:35,styl:'podloga'},
+      {x:30,y:190,w:120,h:45,styl:'lozko'},
+      {x:190,y:200,w:60,h:35,styl:'szafkaN'},
+      {x:330,y:170,w:90,h:9,styl:'polka',przenikalna:true},
+      {x:470,y:190,w:80,h:45,styl:'komoda'}
+    ],
+    zadania:[ {typ:'kapcie',x:285,y:222}, {typ:'mis',x:375,y:158} ],
+    drzwi:{x:610,y:165,w:50,h:70,tekst:'Do łazienki!'}
+  },
+  { nazwa:'Łazienka', podtytul:'Umyj ząbki i uczesz się', tlo:'lazienka', szer:800, glos:'p_poziom2',
+    start:{x:30,y:170},
+    platformy:[
+      {x:0,y:235,w:800,h:35,styl:'kafle'},
+      {x:60,y:190,w:145,h:45,styl:'wanna'},
+      {x:250,y:200,w:90,h:35,styl:'szafka'},
+      {x:360,y:170,w:90,h:9,styl:'polka',przenikalna:true},
+      {x:475,y:185,w:95,h:50,styl:'umywalka'},
+      {x:620,y:200,w:80,h:35,styl:'szafka'}
+    ],
+    zadania:[
+      {typ:'pasta',x:295,y:188},
+      {typ:'szczoteczka',x:405,y:158},
+      {typ:'zeby',x:522,y:171, zadanie:'Idź do umywalki!', glos:'zad_zeby'},
+      {typ:'grzebien',x:660,y:188}
+    ],
+    drzwi:{x:720,y:165,w:50,h:70,tekst:'Dalej!'}
+  },
+  { nazwa:'Rybka', podtytul:'Nakarm rybkę', tlo:'salon', szer:700, glos:'p_poziom3',
+    start:{x:30,y:170},
+    platformy:[
+      {x:0,y:235,w:700,h:35,styl:'podloga'},
+      {x:120,y:200,w:90,h:35,styl:'szafka'},
+      {x:280,y:170,w:90,h:9,styl:'polka',przenikalna:true},
+      {x:440,y:185,w:110,h:50,styl:'akwarium'}
+    ],
+    zadania:[
+      {typ:'karma',x:325,y:158},
+      {typ:'rybka',x:495,y:170, zadanie:'Nakarm rybkę!', glos:'zad_rybka'}
+    ],
+    drzwi:{x:615,y:165,w:50,h:70,tekst:'Dalej!'}
+  },
+  { nazwa:'Ubieramy się', podtytul:'Po kolei!', tlo:'sypialniaP', szer:950, glos:'p_poziom4',
+    start:{x:30,y:170},
+    platformy:[
+      {x:0,y:235,w:950,h:35,styl:'podloga'},
+      {x:60,y:200,w:80,h:35,styl:'pufa'},
+      {x:250,y:200,w:80,h:35,styl:'pufa'},
+      {x:360,y:170,w:90,h:9,styl:'polka',przenikalna:true},
+      {x:475,y:185,w:80,h:50,styl:'komoda'},
+      {x:590,y:195,w:80,h:40,styl:'krzeslo'},
+      {x:690,y:145,w:90,h:90,styl:'szafa'}
+    ],
+    zadania:[
+      {typ:'majtki',x:200,y:222},
+      {typ:'legginsy',stroj:'spodnie',x:290,y:188},
+      {typ:'skarpetki',x:405,y:158},
+      {typ:'bluza',stroj:'koszulka',x:735,y:133}
+    ],
+    drzwi:{x:870,y:165,w:50,h:70,tekst:'Śniadanko!'}
+  },
+  { nazwa:'Śniadanko', podtytul:'Miska, płatki, mleko', tlo:'kuchnia', szer:1150, glos:'p_poziom5',
+    start:{x:40,y:40},
+    platformy:[
+      {x:0,y:235,w:1150,h:35,styl:'podloga'},
+      {x:0,y:85,w:140,h:15,styl:'podest'},
+      {x:135,y:120,w:55,h:13,styl:'stopien'},
+      {x:190,y:150,w:55,h:13,styl:'stopien'},
+      {x:245,y:180,w:55,h:13,styl:'stopien'},
+      {x:300,y:210,w:55,h:13,styl:'stopien'},
+      {x:440,y:190,w:140,h:11,styl:'stol',przenikalna:true},
+      {x:625,y:195,w:90,h:40,styl:'szafka'},
+      {x:710,y:200,w:70,h:35,styl:'pufa'},
+      {x:800,y:150,w:70,h:85,styl:'lodowka'},
+      {x:880,y:180,w:170,h:12,styl:'blat',przenikalna:true}
+    ],
+    zadania:[
+      {typ:'miska',x:670,y:182},{typ:'platki',x:920,y:167},{typ:'mleko',x:835,y:137},
+      {typ:'lyzka',x:500,y:177},{typ:'sniadanie',x:545,y:176, zadanie:'Zjedz śniadanko!', glos:'zad_sniadanie'}
+    ],
+    drzwi:{x:1075,y:165,w:50,h:70,tekst:'Wychodzimy!'}
+  },
+  { nazwa:'Wychodzimy!', podtytul:'Mama już czeka', tlo:'przedpokoj', szer:875, tata:true, glos:'p_poziom6',
+    start:{x:30,y:170},
+    platformy:[
+      {x:0,y:235,w:875,h:35,styl:'podloga'},
+      {x:100,y:205,w:105,h:30,styl:'lawka'},
+      {x:450,y:210,w:100,h:25,styl:'polkaButy'},
+      {x:590,y:190,w:85,h:45,styl:'komoda'}
+    ],
+    zadania:[
+      {typ:'czapka',x:632,y:175},{typ:'kurtka',x:316,y:163},{typ:'buty',x:495,y:195}
+    ],
+    drzwi:{x:780,y:160,w:55,h:75,tekst:'Do przedszkola!'}
+  }
+];
+
+/* ---------- kim można grać ---------- */
+const BOHATEROWIE = {
+  franek: {
+    imie:'FRANEK', opiekun:'TATĄ',
+    glowa:'glowa_franek', portret:'portret_franek', glowaW:24, glowaH:22, glowaDy:0,
+    glowaOp:'glowa_tata', portretOp:'portret_tata',
+    glosStart:'start', glosKoniec:'koniec',
+    ubior:{ pizama:'#dfe6ff', pizamaPas:'#9fb4e8', spodnie:'#a80020', spodnieC:'#6e0040',
+            gora:'#64b0ff', goraJasna:'#c0dfff', wzor:'#fc9838',
+            kurtka:'#00a800', kurtkaJasna:'#58d854', kurtkaZamek:'#b8f818',
+            rekawGora:'#3cbcfc', czapka:'#2b2b33', czapkaDodatek:'#f8d878' },
+    opiekunUbior:{ gora:'#0058f8', goraJasna:'#3cbcfc', goraCien:'#0000bc',
+                   nogi:'#3a4a8b', nogiC:'#22357a', but:'#503000', butC:'#2b1a08' },
+    poziomy: POZIOMY_FRANEK
+  },
+  pola: {
+    imie:'POLA', opiekun:'MAMĄ',
+    glowa:'glowa_pola', portret:'portret_pola', glowaW:24, glowaH:24, glowaDy:-2,
+    glowaOp:'glowa_ola', portretOp:'portret_ola',
+    glosStart:'p_start', glosKoniec:'p_koniec',
+    ubior:{ pizama:'#fec4ea', pizamaPas:'#e8a0c8', spodnie:'#4f4f4f', spodnieC:'#2b2b33',
+            gora:'#fecCc5', goraJasna:'#ffe4dc', wzor:'#fc9838',
+            kurtka:'#7527fe', kurtkaJasna:'#c676ff', kurtkaZamek:'#fec4ea',
+            rekawGora:'#ffe4dc', czapka:'#fe6ecc', czapkaDodatek:'#fffeff' },
+    opiekunUbior:{ gora:'#22357a', goraJasna:'#3a4a8b', goraCien:'#0000bc',
+                   nogi:'#2b2b33', nogiC:'#000000', but:'#4f4f4f', butC:'#000000' },
+    poziomy: POZIOMY_POLA
+  }
+};
+function bohater(){ return BOHATEROWIE[G.kto]; }
+function POZ(){ return BOHATEROWIE[G.kto].poziomy; }
 
 /* ==================== STAN GRY ==================== */
 const G = {
-  ekran:'intro', poziom:0, t:0, kartaT:0,
+  ekran:'wybor', kto:'franek', poziom:0, t:0, kartaT:0,
   gracz:null, kamera:0, zrobione:0, ekwipunek:[],
   czastki:[], overlay:null, info:null, infoT:0,
-  tata:{x:0,y:0}, mycie:null, jazda:null, ostatnieZadanie:-1,
+  tata:{x:0,y:0}, mycie:null, jazda:null, wyscig:null, ostatnieZadanie:-1,
   stroj:{spodnie:false, skarpetki:false, koszulka:false, czapka:false, kurtka:false, buty:false}
 };
 function nowaGra(){
   for(const c in G.stroj) G.stroj[c] = false;
+  POZ().forEach(p => (p.zadania||[]).forEach(z => z.wziete = false));
 }
 function nowyGracz(x,y){
   return { x, y, w:22, h:50, vx:0, vy:0, ziemia:false, kier:1, chodT:0, coyote:0, bufor:0, bezpiecz:{x,y} };
 }
 function startPoziomu(i){
   G.poziom = i;
-  const p = poziomy[i];
+  const p = POZ()[i];
   if(p.typ === 'jazda'){ startJazdy(); return; }
+  if(p.typ === 'wyscig'){ startWyscigu(); return; }
   G.gracz = nowyGracz(p.start.x, p.start.y);
   G.kamera = 0; G.zrobione = 0; G.ekwipunek = [];
   G.czastki = []; G.overlay = null; G.ostatnieZadanie = -1;
@@ -879,16 +1118,16 @@ function startPoziomu(i){
 function kartaPoziomu(i){
   G.poziom = i; G.kartaT = 0; G.ekran = 'karta';
   graj('muz_menu');
-  mow(poziomy[i].glos);
+  mow(POZ()[i].glos);
 }
 function glosZadania(p, idx){
-  if(idx >= p.zadania.length) return p.drzwi.auto ? 'zad_samochod' : 'zad_drzwi';
+  if(idx >= p.zadania.length) return p.drzwi.glos || (p.drzwi.auto ? 'zad_samochod' : 'zad_drzwi');
   const z = p.zadania[idx];
   return z.glos || ('zad_' + z.typ);
 }
 function ogloszZadanie(odRazu){
-  const p = poziomy[G.poziom];
-  if(!p || p.typ === 'jazda') return;
+  const p = POZ()[G.poziom];
+  if(!p || p.typ) return;
   if(G.zrobione === G.ostatnieZadanie) return;
   G.ostatnieZadanie = G.zrobione;
   const k = glosZadania(p, G.zrobione);
@@ -1033,7 +1272,7 @@ const GRAW = 0.31, SKOK = 6.9, PREDKOSC = 1.95;
 function zachodzi(a,b){ return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y; }
 
 function aktualizujGre(){
-  const p = poziomy[G.poziom], g = G.gracz;
+  const p = POZ()[G.poziom], g = G.gracz;
   if(G.overlay){ G.overlay.t--; if(G.overlay.t<=0) G.overlay=null; }
   const blok = !!G.overlay;
   const lewo = !blok && klaw.ArrowLeft, prawo = !blok && klaw.ArrowRight;
@@ -1093,7 +1332,9 @@ function aktualizujGre(){
       if(z.typ === 'zeby'){ startMycia(); return; }
       z.wziete = true; G.zrobione++;
       G.ekwipunek.push(z.typ);
-      if(z.typ in G.stroj) G.stroj[z.typ] = true;   // Franek zakłada rzecz na siebie
+      const slot = z.stroj || z.typ;                 // legginsy -> spodnie, bluza -> koszulka
+      if(z.zdejmij) G.stroj[z.zdejmij] = false;      // w szatni rzeczy się zdejmuje
+      else if(slot in G.stroj) G.stroj[slot] = true;
       sfx('sfx_zbierz');
       iskry(z.x, z.y, ['#f8d878','#fffeff','#58d854','#3cbcfc']);
       const brawo = 'brawo' + (1 + ((Math.random()*4)|0));
@@ -1109,8 +1350,8 @@ function aktualizujGre(){
     if(zachodzi(g,{x:d.x,y:d.y,w:d.w,h:d.h})){
       sfx('sfx_sukces'); cisza();
       iskry(d.x+d.w/2, d.y+d.h/2, ['#f8d878','#fffeff','#58d854'], 26);
-      if(G.poziom+1 < poziomy.length) kartaPoziomu(G.poziom+1);
-      else { G.ekran = 'koniec'; graj('muz_koniec'); mow('koniec'); }
+      if(G.poziom+1 < POZ().length) kartaPoziomu(G.poziom+1);
+      else { G.ekran = 'koniec'; graj('muz_koniec'); mow(bohater().glosKoniec); }
     }
   }
   aktualizujEfekty();
@@ -1125,6 +1366,7 @@ function tekstZadania(p, idx){
 /* --- drzwi i samochód --- */
 function rysujDrzwi(d, otwarte, t){
   if(d.auto){ rysujSamochod(d.x, d.y, otwarte, t); return; }
+  if(d.okno){ rysujOkno(d, otwarte, t); return; }
   const x=Math.round(d.x), y=Math.round(d.y), w=Math.round(d.w), h=Math.round(d.h);
   if(otwarte && Math.floor(t/8)%2===0) pr(x-2,y-2,w+4,h+4,'#f8d878');
   blok(x,y,w,h,otwarte?'#f8d878':'#ac7c00', otwarte?'#e45c10':'#883800','#503000');
@@ -1132,6 +1374,16 @@ function rysujDrzwi(d, otwarte, t){
   obrys(x+4,y+5,w-8,h-10);
   pr(x+w-10,y+Math.round(h/2),3,3,'#f8d878');
   if(otwarte) strzalka(x+Math.round(w/2), y-14, t);
+}
+function rysujOkno(d, swieci, t){
+  const x=Math.round(d.x), y=Math.round(d.y), w=Math.round(d.w), h=Math.round(d.h);
+  if(swieci && Math.floor(t/8)%2===0) pr(x-3,y-3,w+6,h+6,'#f8d878');
+  pr(x,y,w,h,'#000000'); pr(x+3,y+3,w-6,h-6,'#64b0ff');
+  pr(x+3,y+h-24,w-6,21,'#58d854');
+  pr(x+Math.round(w/2)-2,y+3,4,h-6,'#fffeff');
+  pr(x+3,y+Math.round(h/2)-2,w-6,4,'#fffeff');
+  slonce(x+w-22, y+8, 14);
+  if(swieci) strzalka(x+Math.round(w/2), y-14, t);
 }
 function rysujSamochod(x,y,swieci,t){
   x=Math.round(x); y=Math.round(y);
@@ -1161,7 +1413,7 @@ function strzalka(x,y,t){
 }
 
 function rysujGre(){
-  const p = poziomy[G.poziom], g = G.gracz;
+  const p = POZ()[G.poziom], g = G.gracz;
   TLA[p.tlo](G.kamera, G.t);
   ctx.save();
   ctx.translate(-Math.round(G.kamera), 0);
@@ -1244,7 +1496,8 @@ function rysujHUD(p){
 /* ==================== MINIGRA: MYCIE ZĘBÓW ==================== */
 function startMycia(){
   G.mycie = { poz:0.5, ostatnia:0.5, seg:new Array(10).fill(0),
-    czas:CZAS_MYCIA_ZEBOW*60, max:CZAS_MYCIA_ZEBOW*60, koniecT:0, dzwiekT:0 };
+    czas:CZAS_MYCIA_ZEBOW*60, max:CZAS_MYCIA_ZEBOW*60, koniecT:0, dzwiekT:0,
+    kier:0, bonus:0 };
   G.ekran = 'mycie';
   cisza(); mow('mycie');
 }
@@ -1253,7 +1506,7 @@ function aktualizujMycie(){
   if(m.koniecT > 0){
     m.koniecT--;
     if(m.koniecT === 0){
-      const p = poziomy[G.poziom];
+      const p = POZ()[G.poziom];
       p.zadania[G.zrobione].wziete = true;
       G.zrobione++; G.ostatnieZadanie = -1;
       G.ekran = 'gra'; graj('muz_gra'); ogloszZadanie(false);
@@ -1265,10 +1518,14 @@ function aktualizujMycie(){
   if(klaw.ArrowLeft) ruch -= 1;
   if(klaw.ArrowRight) ruch += 1;
   m.poz = Math.max(0, Math.min(1, m.poz + ruch*0.022));
+  // zmiana kierunku = prawdziwe szorowanie, dokłada premię do tempa
+  if(ruch !== 0 && ruch !== m.kier){ m.kier = ruch; m.bonus = 45; }
+  if(m.bonus > 0) m.bonus--;
   if(Math.abs(m.poz - m.ostatnia) > 0.004){
-    m.czas--;
+    const tempo = m.bonus > 0 ? 3 : 2;      // ruch przyspiesza zegar co najmniej 2x
+    m.czas -= tempo;
     const i = Math.min(9, Math.max(0, Math.floor(m.poz*10)));
-    m.seg[i] = Math.min(1, m.seg[i] + 0.0072);
+    m.seg[i] = Math.min(1, m.seg[i] + 0.0072*tempo);
     if(m.dzwiekT-- <= 0){ ton(300+Math.random()*300, 0.04, 'sawtooth', 0.02); m.dzwiekT = 5; }
     if(Math.random()<0.3) G.czastki.push({x:60+m.poz*350, y:135+(Math.random()-0.5)*40,
       vx:(Math.random()-0.5)*1.2, vy:-0.6-Math.random(), zyc:25+Math.random()*15, kol:'#fffeff', r:1+Math.random()*2});
@@ -1335,7 +1592,7 @@ function startJazdy(){
 const TYPY_PRZESZKOD = ['kaluza','stozek','dziura','auto'];
 function aktualizujJazde(){
   const j = G.jazda;
-  if(j.koniecT>0){ j.koniecT--; if(j.koniecT===0){ G.ekran='koniec'; graj('muz_koniec'); mow('koniec'); }
+  if(j.koniecT>0){ j.koniecT--; if(j.koniecT===0){ kartaPoziomu(G.poziom+1); }
     aktualizujEfekty(); return; }
   if(nowy('ArrowUp') && j.pas>0){ j.pas--; ton(700,0.06,'square',0.03); }
   if(nowy('ArrowDown') && j.pas<2){ j.pas++; ton(500,0.06,'square',0.03); }
@@ -1476,7 +1733,153 @@ function rysujJazde(){
   }
 }
 
+/* ==================== MINIGRA: WYŚCIG DO FURTKI ====================
+   Naciskanie ◀ i ▶ na zmianę rozpędza bohatera. Opiekun biegnie tuż obok,
+   ale zawsze przegrywa o włos – dziecko ma wygrać. */
+const META_WYSCIGU = 1400;
+function startWyscigu(){
+  G.wyscig = {
+    x:0, v:0, opiekun:-30, ostatni:0, odliczanie:180,
+    faza:0, koniecT:0, machanie:0
+  };
+  G.czastki = []; G.ekran = 'wyscig';
+  graj('muz_jazda'); mow('wyscig_start', 'wyscig');
+}
+function aktualizujWyscig(){
+  const w = G.wyscig;
+  if(w.odliczanie > 0){ w.odliczanie--; aktualizujEfekty(); czyscNowe(); return; }
+  if(w.koniecT > 0){
+    w.koniecT--;
+    if(w.koniecT === 0) kartaPoziomu(G.poziom + 1);
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  // naprzemienne stukanie w strzałki dodaje prędkości
+  if(nowy('ArrowLeft')  && w.ostatni !== -1){ w.v += 0.55; w.ostatni = -1; sfx('sfx_skok'); }
+  if(nowy('ArrowRight') && w.ostatni !==  1){ w.v += 0.55; w.ostatni =  1; sfx('sfx_skok'); }
+  if(klaw.ArrowRight || klaw.ArrowLeft) w.v += 0.012;      // samo trzymanie też działa
+  w.v = Math.max(0, Math.min(3.4, w.v - 0.028));
+  w.x += w.v;
+  w.faza += w.v * 0.22;
+
+  // opiekun goni, ale nie wyprzedza – trzyma się tuż za bohaterem
+  const celOp = Math.min(w.x - 12, META_WYSCIGU - 90);
+  w.opiekun += (celOp - w.opiekun) * 0.05;
+
+  if(w.x >= META_WYSCIGU && w.koniecT === 0){
+    w.koniecT = 190; sfx('sfx_sukces'); mow('wygrana');
+    for(let i=0;i<60;i++) G.czastki.push({x:Math.random()*W, y:-8-Math.random()*80,
+      vx:(Math.random()-0.5)*1, vy:0.6+Math.random()*1.6, zyc:200,
+      kol:['#d82800','#f8d878','#58d854','#3cbcfc','#fe6ecc'][(Math.random()*5)|0], r:2+Math.random()*2});
+  }
+  aktualizujEfekty(); czyscNowe();
+}
+function rysujWyscig(){
+  const w = G.wyscig;
+  const kam = Math.max(0, Math.min(META_WYSCIGU - W + 140, w.x - 120));
+  pr(0,0,W,150,'#5c94fc');
+  slonce(392,16,32);
+  const c1 = -Math.round(kam*0.15)%620;
+  for(let k=0;k<2;k++) for(const [x,y] of [[70,26],[300,44],[500,20]])
+    rysujSpr('ch',CHMURA, x+c1+k*620, y, false);
+  // płot i domki
+  const c2 = -Math.round(kam*0.55)%420;
+  for(let k=-1;k<4;k++){ const px=c2+k*420;
+    for(let i=0;i<2;i++){
+      const x = px+i*210, kol = ['#f7d8a5','#b3f3cc','#fec4ea','#d3d2ff'][((k+4)*2+i)%4];
+      pr(x,74,96,76,kol); obrys(x,74,96,76);
+      ctx.fillStyle='#a80020';
+      ctx.beginPath(); ctx.moveTo(x-9,76); ctx.lineTo(x+48,44); ctx.lineTo(x+105,76); ctx.closePath(); ctx.fill();
+      pr(x+14,92,24,20,'#64b0ff'); obrys(x+14,92,24,20);
+      pr(x+58,92,24,20,'#64b0ff'); obrys(x+58,92,24,20);
+    }
+  }
+  const c3 = -Math.round(kam*0.8)%150;
+  for(let k=-1;k<5;k++){ const x=c3+k*150+20;
+    pr(x,118,8,32,'#503000'); pr(x,118,3,32,'#883800');
+    pr(x-10,80,28,8,'#00a800'); pr(x-16,88,40,14,'#00a800'); pr(x-10,102,28,8,'#00a800');
+    pr(x-10,80,28,2,'#58d854'); pr(x+4,94,10,4,'#007800'); }
+
+  // trawnik, chodnik, jezdnia
+  pr(0,150,W,12,'#58d854'); pr(0,158,W,4,'#00a800');
+  pr(0,162,W,54,'#bcbcbc'); pr(0,162,W,3,'#fffeff');
+  for(let i=-(Math.round(kam)%40); i<W; i+=40) pr(i,165,2,51,'#9290ff');
+  pr(0,216,W,H-216,'#4f4f4f'); pr(0,216,W,2,'#adadad');
+  for(let i=-(Math.round(kam*1.1)%56); i<W; i+=56) pr(i,242,30,3,'#f8d878');
+
+  // meta – furtka przedszkola
+  const fx = Math.round(META_WYSCIGU - kam) + 40;
+  if(fx < W + 80){
+    pr(fx-6,104,8,112,'#503000'); pr(fx+58,104,8,112,'#503000');
+    pr(fx-10,96,80,10,'#d82800'); obrys(fx-10,96,80,10);
+    for(let i=0;i<5;i++) pr(fx+2+i*12,114,6,102,'#f8d878');
+    pr(fx-2,136,68,5,'#f8d878'); pr(fx-2,178,68,5,'#f8d878');
+    napis('PRZEDSZKOLE', fx+30, 86, '#fffeff', '#000000', 1.3);
+  }
+
+  const bx = Math.round(w.x - kam) + 60;
+  const ox = Math.round(w.opiekun - kam) + 60;
+  rysujTate(ox, 158, 1, w.faza);
+  rysujFranka(bx, 166, 1, w.faza, false, false);
+  rysujEfekty();
+
+  // pasek postępu
+  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+  napisL('WYŚCIG DO FURTKI', 4, 10, '#fffeff', null, 1);
+  const post = Math.min(1, w.x/META_WYSCIGU);
+  pr(W/2-80,26,160,12,'#000000'); pr(W/2-78,28,156,8,'#4f4f4f');
+  pr(W/2-78,28,Math.round(156*post),8,'#58d854');
+
+  if(w.odliczanie > 0){
+    const sek = Math.ceil(w.odliczanie/60);
+    napis(sek > 0 ? String(sek) : 'START!', W/2, 100, '#f8d878', '#000000', 6);
+  } else if(w.koniecT > 0){
+    ctx.globalAlpha=0.6; pr(0,0,W,H,'#000000'); ctx.globalAlpha=1;
+    napis(bohater().imie + ' WYGRYWA!', W/2, 110, '#f8d878', '#000000', 3);
+    napis('BRAWO!', W/2, 145, '#fffeff', '#000000', 2);
+  } else {
+    napis('NACISKAJ  <  >  NA ZMIANĘ', W/2, 258, '#fffeff', '#000000', 1.6);
+  }
+}
+
 /* ==================== EKRANY ==================== */
+function rysujPortret(nazwa, cx, dolY, maxW, maxH){
+  const im = obraz(nazwa);
+  if(!im || !im.naturalWidth) return false;
+  let s = 3;
+  while(s > 1 && (im.naturalWidth*s > maxW || im.naturalHeight*s > maxH)) s--;
+  const w = im.naturalWidth*s, h = im.naturalHeight*s;
+  ctx.drawImage(im, Math.round(cx - w/2), Math.round(dolY - h), w, h);
+  return true;
+}
+function rysujWybor(){
+  pr(0,0,W,H,'#0000bc');
+  for(let i=0;i<50;i++){
+    const x=(i*97)%W, y=(i*53)%120;
+    if(Math.floor(G.t/12+i)%3===0) pr(x,y,1,1,'#fffeff');
+  }
+  pr(0,210,W,H-210,'#007800'); pr(0,210,W,3,'#58d854');
+  for(let i=0;i<W;i+=6) pr(i,207,3,4,'#b8f818');
+  napis('KIM CHCESZ GRAĆ?', 240, 26, '#f8d878', '#000000', 3);
+
+  const opcje = ['franek','pola'];
+  opcje.forEach((klucz, i) => {
+    const b = BOHATEROWIE[klucz];
+    const cx = i === 0 ? 132 : 348;
+    const wybrany = G.kto === klucz;
+    const mruga = wybrany && Math.floor(G.t/8)%2===0;
+    ramka(cx-46, 62, 92, 92, wybrany ? '#a80020' : '#0000bc');
+    if(mruga) pr(cx-42, 66, 84, 84, '#f8d878');
+    if(!rysujPortret(b.portret, cx, 150, 84, 84)) pr(cx-40, 76, 80, 74, '#fe8170');
+    napis(b.imie, cx, 172, wybrany ? '#f8d878' : '#bcbcbc', '#000000', 2);
+    napis('Z ' + b.opiekun, cx, 194, '#c0dfff', '#000000', 1);
+  });
+  if(Math.floor(G.t/12)%2===0){
+    napis('<', 26, 108, '#fffeff', '#000000', 3);
+    napis('>', 454, 108, '#fffeff', '#000000', 3);
+  }
+  if(Math.floor(G.t/20)%2===0) napis('NACIŚNIJ  ^  ŻEBY ZACZĄĆ', 240, 236, '#f8d878', '#000000', 2);
+}
+
 function rysujIntro(){
   pr(0,0,W,H,'#0000bc');
   for(let i=0;i<50;i++){
@@ -1488,16 +1891,16 @@ function rysujIntro(){
   slonce(398,22,30);
   rysujSpr('ch',CHMURA, 60, 30, false); rysujSpr('ch',CHMURA, 150, 96, false);
 
+  const boh = bohater();
+  const dopelniacz = G.kto === 'franek' ? 'FRANKA' : 'POLI';
   napis('PORANEK', 296, 46, '#f8d878', '#000000', 4);
-  napis('FRANKA',  296, 84, '#d82800', '#000000', 4);
+  napis(dopelniacz, 296, 84, '#d82800', '#000000', 4);
 
   const b = Math.floor(Math.sin(G.t*0.05)*2);
-  if(obrazkiOK.fp){
-    ctx.drawImage(portretFranka, 30, 130+b, 80, 74);
-  } else rysujFranka(44, 150+b, 1, 0, false, false);
+  if(!rysujPortret(boh.portret, 70, 204+b, 88, 86)) rysujFranka(44, 150+b, 1, 0, false, false);
 
   ramka(120, 118, 348, 56, '#0000bc');
-  napis('POMÓŻ FRANKOWI SIĘ UBRAĆ,', 294, 132, '#fffeff', null, 1);
+  napis(G.kto==='franek' ? 'POMÓŻ FRANKOWI SIĘ UBRAĆ,' : 'POMÓŻ POLI SIĘ UBRAĆ,', 294, 132, '#fffeff', null, 1);
   napis('ZJEŚĆ ŚNIADANKO, UMYĆ ZĄBKI', 294, 146, '#fffeff', null, 1);
   napis('I DOJECHAĆ DO PRZEDSZKOLA', 294, 160, '#fffeff', null, 1);
 
@@ -1506,7 +1909,7 @@ function rysujIntro(){
 }
 function rysujKarte(){
   pr(0,0,W,H,'#0000bc');
-  const p = poziomy[G.poziom];
+  const p = POZ()[G.poziom];
   ramka(60, 80, 360, 110, '#000000');
   napis('POZIOM '+(G.poziom+1), W/2, 104, '#bcbcbc', null, 1.4);
   napis(p.nazwa.toUpperCase(), W/2, 132, '#f8d878', '#000000', 2.4);
@@ -1525,13 +1928,12 @@ function rysujKoniec(){
   napis('PRZEDSZKOLE', 350, 24, '#fffeff', '#000000', 1.3);
 
   const b = Math.floor(Math.sin(G.t*0.08)*2);
-  if(obrazkiOK.fp) ctx.drawImage(portretFranka, 34, 116+b, 80, 74);
-  else rysujFranka(50, 134+b, 1, 0, false, false);
-  if(obrazkiOK.tp) ctx.drawImage(portretTaty, 140, 108+b, 68, 82);
-  else rysujTate(140, 120+b, 1, 0);
+  const boh = bohater();
+  if(!rysujPortret(boh.portret, 74, 190+b, 88, 86)) rysujFranka(50, 134+b, 1, 0, false, false);
+  if(!rysujPortret(boh.portretOp, 174, 190+b, 76, 92)) rysujTate(140, 120+b, 1, 0);
 
-  napis('BRAWO FRANEK!', W/2, 200, '#f8d878', '#000000', 3);
-  napis('UBRANY, NAJEDZONY, Z CZYSTYMI ZĄBKAMI!', W/2, 226, '#fffeff', '#000000', 1);
+  napis('BRAWO ' + bohater().imie + '!', W/2, 200, '#f8d878', '#000000', 3);
+  napis(G.kto==='franek' ? 'UBRANY, NAJEDZONY, Z CZYSTYMI ZĄBKAMI!' : 'UBRANA, NAJEDZONA, Z CZYSTYMI ZĄBKAMI!', W/2, 226, '#fffeff', '#000000', 1);
   if(Math.floor(G.t/20)%2===0) napis('NACIŚNIJ  ^  ŻEBY ZAGRAĆ JESZCZE RAZ', W/2, 250, '#fffeff', '#000000', 1);
   rysujEfekty();
 }
@@ -1551,6 +1953,11 @@ function petla(ts){
 function krok(){
   G.t++;
   switch(G.ekran){
+    case 'wybor':
+      if(nowy('ArrowLeft') && G.kto !== 'franek'){ G.kto='franek'; sfx('sfx_zbierz'); }
+      if(nowy('ArrowRight') && G.kto !== 'pola'){ G.kto='pola'; sfx('sfx_zbierz'); }
+      if(nowy('ArrowUp')){ sfx('sfx_sukces'); G.ekran='intro'; mow(bohater().glosStart); }
+      czyscNowe(); break;
     case 'intro':
       if(nowy('ArrowUp')){ sfx('sfx_sukces'); nowaGra(); kartaPoziomu(0); }
       czyscNowe(); break;
@@ -1562,12 +1969,13 @@ function krok(){
     case 'gra': aktualizujGre(); break;
     case 'mycie': aktualizujMycie(); break;
     case 'jazda': aktualizujJazde(); break;
+    case 'wyscig': aktualizujWyscig(); break;
     case 'koniec':
       if(G.t % 5 === 0 && G.czastki.length < 120)
         G.czastki.push({x:Math.random()*W, y:-6, vx:(Math.random()-0.5)*1, vy:0.6+Math.random()*1.4,
           zyc:240, kol:['#d82800','#f8d878','#58d854','#3cbcfc','#fe6ecc'][(Math.random()*5)|0], r:2+Math.random()*2});
       aktualizujEfekty();
-      if(nowy('ArrowUp')){ G.czastki=[]; G.ekran='intro'; graj('muz_menu'); mow('start'); }
+      if(nowy('ArrowUp')){ G.czastki=[]; G.ekran='wybor'; graj('muz_menu'); mow('wybor'); }
       czyscNowe(); break;
   }
 }
@@ -1575,17 +1983,19 @@ function rysuj(){
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0,0,W,H);
   switch(G.ekran){
+    case 'wybor': rysujWybor(); break;
     case 'intro': rysujIntro(); break;
     case 'karta': rysujKarte(); break;
     case 'gra': rysujGre(); break;
     case 'mycie': rysujMycie(); break;
     case 'jazda': rysujJazde(); break;
+    case 'wyscig': rysujWyscig(); break;
     case 'koniec': rysujKoniec(); break;
   }
 }
 // muzyka menu + powitanie startują po pierwszym geście gracza
 let powitano = false;
-function powitaj(){ if(powitano) return; powitano = true; graj('muz_menu'); mow('start'); }
+function powitaj(){ if(powitano) return; powitano = true; graj('muz_menu'); mow('wybor'); }
 ['keydown','pointerdown','touchstart'].forEach(z => addEventListener(z, powitaj, {once:false}));
 requestAnimationFrame(petla);
 </script>
