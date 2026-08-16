@@ -15,7 +15,7 @@ jest wypowiadane na głos po polsku.
 |---|---|
 | ◀ ▶ | chodzenie (w aucie: wolniej / szybciej) |
 | ▲ | skok (w aucie: pas wyżej), a także „zacznij / dalej" |
-| ▼ | w aucie: pas niżej |
+| ▼ | w aucie: pas niżej (przycisk dotykowy pokazuje się tylko w aucie) |
 
 Na telefonie i tablecie pojawiają się przyciski dotykowe. Telefon trzymany
 pionowo prosi o obrócenie na poziomo. Na ekranie wyboru wystarczy **dotknąć

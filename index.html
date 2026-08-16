@@ -19,6 +19,9 @@
     background:rgba(0,0,0,.45);font-family:monospace;}
   #dotyk button:active{background:rgba(248,216,120,.6);}
   body.dotyk #dotyk{display:flex;}
+  /* ▼ zmienia pas tylko w samochodzie – na platformówce nic nie robi */
+  #dotyk button[data-k="ArrowDown"]{display:none;}
+  body.wAucie #dotyk button[data-k="ArrowDown"]{display:block;}
   #glosnik{position:fixed;top:10px;right:12px;width:44px;height:44px;border:3px solid #fffeff;
     border-radius:8px;background:rgba(0,0,0,.5);color:#fffeff;font-size:20px;cursor:pointer;}
 
@@ -1974,8 +1977,15 @@ function petla(ts){
   while(akum >= 1/60 && kroki < 5){ akum -= 1/60; krok(); kroki++; }
   rysuj();
 }
+let ostatniEkranPrzyciskow = null;
+function odswiezPrzyciski(){
+  if(G.ekran === ostatniEkranPrzyciskow) return;
+  ostatniEkranPrzyciskow = G.ekran;
+  document.body.classList.toggle('wAucie', G.ekran === 'jazda');
+}
 function krok(){
   G.t++;
+  odswiezPrzyciski();
   switch(G.ekran){
     case 'wybor':
       if(nowy('ArrowLeft') && G.kto !== 'franek'){ G.kto='franek'; sfx('sfx_zbierz'); }
