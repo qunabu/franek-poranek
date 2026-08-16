@@ -243,11 +243,15 @@ function graj(klucz){
   if(a && dzwiekWlaczony){ a.currentTime = 0; a.volume = GLOSNOSC_MUZYKI; a.play().catch(()=>{}); }
 }
 const KLUCZE_MUZ = ['muz_menu','muz_gra','muz_jazda','muz_koniec'];
-const KLUCZE_MOWA = ['start','koniec','zle','mycie','mycie_koniec','jazda','jedzenie','ups',
-  'poziom1','poziom2','poziom3','poziom4','poziom5','poziom6',
-  'zad_majtki','zad_spodnie','zad_skarpetki','zad_koszulka','zad_miska','zad_platki','zad_mleko',
-  'zad_lyzka','zad_sniadanie','zad_pasta','zad_szczoteczka','zad_zeby','zad_czapka','zad_kurtka',
-  'zad_buty','zad_drzwi','zad_samochod','brawo1','brawo2','brawo3','brawo4'];
+const KLUCZE_MOWA = ['brawo1','brawo2','brawo3','brawo4','jazda','jedzenie','koniec',
+  'mama_czeka','mycie','mycie_koniec','p_koniec','p_poziom1','p_poziom2','p_poziom3',
+  'p_poziom4','p_poziom5','p_poziom6','p_start','pomachaj','poziom1','poziom2','poziom3',
+  'poziom4','poziom5','poziom6','poziom7','poziom8','start','ups','wybor','wygrana','wyscig',
+  'wyscig_start','zad_bluza','zad_buty','zad_czapka','zad_drzwi','zad_furtka','zad_grzebien',
+  'zad_kapcie','zad_karma','zad_koszulka','zad_kurtka','zad_legginsy','zad_lyzka','zad_majtki',
+  'zad_mis','zad_miska','zad_mleko','zad_okno','zad_pasta','zad_platki','zad_rybka',
+  'zad_samochod','zad_skarpetki','zad_sniadanie','zad_spodnie','zad_szczoteczka',
+  'zad_zdejmij_buty','zad_zdejmij_czapke','zad_zdejmij_kurtke','zad_zeby','zle'];
 
 KLUCZE_MUZ.forEach(k => wczytajAudio(k, GLOSNOSC_MUZYKI, true));
 KLUCZE_SFX.forEach(k => wczytajAudio(k, GLOSNOSC_EFEKTOW, false));
