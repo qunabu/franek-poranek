@@ -41,6 +41,11 @@
     #obroc{display:flex;}
     #wrap,#dotyk,#glosnik{display:none !important;}
   }
+  /* zapas dla urządzeń, które raportują rysik jako „pointer: fine" */
+  @media (orientation: portrait) and (hover: none){
+    #obroc{display:flex;}
+    #wrap,#dotyk,#glosnik{display:none !important;}
+  }
   /* niskie ekrany (telefon poziomo) – mniejsze przyciski, żeby nie zasłaniały gry */
   @media (pointer: coarse) and (max-height: 460px){
     #dotyk{padding:8px 10px;}
