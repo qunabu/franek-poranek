@@ -95,6 +95,7 @@ const KLAWISZE = ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'];
 addEventListener('keydown', e => {
   if (KLAWISZE.includes(e.key)) { e.preventDefault(); if(!klaw[e.key]) klaw[e.key+'_nowy']=true; klaw[e.key]=true; }
   odblokujDzwiek();
+  if (e.key === 'ArrowUp') pelnyEkranPrzyWyborze();
 });
 addEventListener('keyup', e => { if (KLAWISZE.includes(e.key)) { e.preventDefault(); klaw[e.key]=false; } });
 addEventListener('blur', () => KLAWISZE.forEach(k => klaw[k]=false));
@@ -105,20 +106,39 @@ if ('ontouchstart' in window) {
   document.body.classList.add('dotyk');
   document.querySelectorAll('#dotyk button').forEach(b => {
     const k = b.dataset.k;
-    const on = e => { e.preventDefault(); if(!klaw[k]) klaw[k+'_nowy']=true; klaw[k]=true; odblokujDzwiek(); };
+    const on = e => { e.preventDefault(); if(!klaw[k]) klaw[k+'_nowy']=true; klaw[k]=true; odblokujDzwiek();
+                      if(k === 'ArrowUp') pelnyEkranPrzyWyborze(); };
     const off = e => { e.preventDefault(); klaw[k]=false; };
     b.addEventListener('touchstart', on, {passive:false}); b.addEventListener('touchend', off);
     b.addEventListener('touchcancel', off); b.addEventListener('mousedown', on);
     b.addEventListener('mouseup', off); b.addEventListener('mouseleave', off);
   });
 }
-function klikniecieWPlansze(){
+function klikniecieWPlansze(e){
   odblokujDzwiek(); cv.focus();
+  if (G.ekran === 'wybor'){
+    // dotknięcie portretu od razu wybiera postać i zaczyna grę
+    const r = cv.getBoundingClientRect();
+    const punkt = (e && e.touches && e.touches[0]) ? e.touches[0] : e;
+    if (punkt && typeof punkt.clientX === 'number' && r.width)
+      G.kto = ((punkt.clientX - r.left) / r.width < 0.5) ? 'franek' : 'pola';
+    pelnyEkranPrzyWyborze();
+    klaw['ArrowUp_nowy'] = true;
+    return;
+  }
   if (G.ekran==='intro' || G.ekran==='karta' || G.ekran==='koniec') klaw['ArrowUp_nowy'] = true;
 }
 
 /* Telefon: pełny ekran + blokada w poziomie. Da się wywołać tylko z gestu
    użytkownika, więc siedzi na dotknięciu ekranu proszącego o obrót. */
+/* Wywoływane wprost z obsługi klawisza/dotknięcia – przeglądarka pozwala
+   wejść w pełny ekran tylko w trakcie gestu użytkownika, więc nie da się
+   tego zrobić z pętli gry. */
+function pelnyEkranPrzyWyborze(){
+  if(typeof G === 'undefined' || G.ekran !== 'wybor') return;
+  if(document.fullscreenElement || document.webkitFullscreenElement) return;
+  naPelnyEkran();
+}
 function naPelnyEkran(){
   const el = document.documentElement;
   const zadaj = el.requestFullscreen || el.webkitRequestFullscreen;

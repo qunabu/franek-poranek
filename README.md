@@ -18,8 +18,9 @@ jest wypowiadane na głos po polsku.
 | ▼ | w aucie: pas niżej |
 
 Na telefonie i tablecie pojawiają się przyciski dotykowe. Telefon trzymany
-pionowo prosi o obrócenie na poziomo (dotknięcie ekranu włącza pełny ekran).
-Na ekranach menu wystarczy dotknąć/kliknąć.
+pionowo prosi o obrócenie na poziomo. Na ekranie wyboru wystarczy **dotknąć
+portretu** — to od razu wybiera postać, zaczyna grę i **włącza pełny ekran**.
+Na pozostałych ekranach menu też wystarczy dotknąć/kliknąć.
 
 Przedmioty zbiera się samym dotknięciem. Świecąca rzecz ze strzałką to ta,
 po którą trzeba iść teraz. **Nie da się przegrać** — po spadnięciu Franek
