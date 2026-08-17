@@ -212,13 +212,12 @@ const KLUCZE_SFX = ['sfx_skok','sfx_zbierz','sfx_sukces','sfx_zle','sfx_bum','sf
 function sfx(klucz){
   if(!dzwiekWlaczony) return;
   const wzor = bufory[klucz];
-  if(wzor && gotowe[klucz]){
-    const k = wzor.cloneNode();
-    k.volume = GLOSNOSC_EFEKTOW;
-    k.play().catch(()=>{});
-    return;
-  }
-  if(ZAPAS[klucz]) ZAPAS[klucz]();
+  const zapas = () => { if(ZAPAS[klucz]) ZAPAS[klucz](); };
+  if(!wzor || gotowe[klucz] === false){ zapas(); return; }
+  const k = wzor.cloneNode();
+  k.volume = GLOSNOSC_EFEKTOW;
+  const p = k.play();
+  if(p && p.catch) p.catch(zapas);       // plik jeszcze się ładuje -> piszczyk z WebAudio
 }
 
 /* --- narrator (Franek nie umie czytać, więc wszystko jest mówione) --- */
@@ -239,7 +238,7 @@ function nastepnaMowa(przerwij){
   const k = kolejkaMowy.shift();
   if(!k) return;
   const wzor = bufory[k];
-  if(!wzor || !gotowe[k]){ nastepnaMowa(false); return; }
+  if(!wzor || gotowe[k] === false){ nastepnaMowa(false); return; }
   const a = wzor.cloneNode();
   a.volume = GLOSNOSC_NARRATORA;
   a.addEventListener('ended', () => { mowaTeraz = null; nastepnaMowa(false); });
@@ -263,18 +262,29 @@ function graj(klucz){
   muzykaKlucz = klucz;
   const a = bufory[klucz];
   muzykaTeraz = a || null;
-  if(a && dzwiekWlaczony){ a.currentTime = 0; a.volume = GLOSNOSC_MUZYKI; a.play().catch(()=>{}); }
+  if(a && dzwiekWlaczony){
+    a.volume = GLOSNOSC_MUZYKI;
+    try{ a.currentTime = 0; }catch(e){}
+    const p = a.play();
+    // gdy plik nie zdążył się wczytać, spróbuj ponownie, kiedy będzie gotowy
+    if(p && p.catch) p.catch(() => {
+      a.addEventListener('canplay', () => {
+        if(dzwiekWlaczony && muzykaKlucz === klucz) a.play().catch(()=>{});
+      }, {once:true});
+    });
+  }
 }
 const KLUCZE_MUZ = ['muz_menu','muz_gra','muz_jazda','muz_koniec'];
-const KLUCZE_MOWA = ['brawo1','brawo2','brawo3','brawo4','jazda','jedzenie','koniec',
-  'mama_czeka','mycie','mycie_koniec','p_koniec','p_poziom1','p_poziom2','p_poziom3',
-  'p_poziom4','p_poziom5','p_poziom6','p_start','pomachaj','poziom1','poziom2','poziom3',
-  'poziom4','poziom5','poziom6','poziom7','poziom8','start','ups','wybor','wygrana','wyscig',
-  'wyscig_start','zad_bluza','zad_buty','zad_czapka','zad_drzwi','zad_furtka','zad_grzebien',
-  'zad_kapcie','zad_karma','zad_koszulka','zad_kurtka','zad_legginsy','zad_lyzka','zad_majtki',
-  'zad_mis','zad_miska','zad_mleko','zad_okno','zad_pasta','zad_platki','zad_rybka',
-  'zad_samochod','zad_skarpetki','zad_sniadanie','zad_spodnie','zad_szczoteczka',
-  'zad_zdejmij_buty','zad_zdejmij_czapke','zad_zdejmij_kurtke','zad_zeby','zle'];
+const KLUCZE_MOWA = ['brawo1','brawo2','brawo3','brawo4','jazda','jedzenie','koniec','licz1',
+  'licz2','licz3','licz4','licz5','mama_czeka','mycie','mycie_koniec','p_koniec','p_poziom1',
+  'p_poziom2','p_poziom3','p_poziom4','p_poziom5','p_poziom6','p_start','pomachaj','poziom1',
+  'poziom2','poziom3','poziom4','poziom5','poziom6','poziom7','poziom8','start','szybciej',
+  'szybciej2','ups','wybor','wygrana','wyscig','wyscig_start','zad_bluza','zad_buty',
+  'zad_czapka','zad_drzwi','zad_furtka','zad_grzebien','zad_kapcie','zad_karma','zad_koszulka',
+  'zad_kurtka','zad_legginsy','zad_lyzka','zad_majtki','zad_mis','zad_miska','zad_mleko',
+  'zad_okno','zad_pasta','zad_platki','zad_rybka','zad_samochod','zad_skarpetki',
+  'zad_sniadanie','zad_spodnie','zad_szczoteczka','zad_zdejmij_buty','zad_zdejmij_czapke',
+  'zad_zdejmij_kurtke','zad_zeby','zeby_20','zeby_minuta','zeby_pol','zle'];
 
 KLUCZE_MUZ.forEach(k => wczytajAudio(k, GLOSNOSC_MUZYKI, true));
 KLUCZE_SFX.forEach(k => wczytajAudio(k, GLOSNOSC_EFEKTOW, false));
@@ -1524,7 +1534,7 @@ function rysujHUD(p){
 function startMycia(){
   G.mycie = { poz:0.5, ostatnia:0.5, seg:new Array(10).fill(0),
     czas:CZAS_MYCIA_ZEBOW*60, max:CZAS_MYCIA_ZEBOW*60, koniecT:0, dzwiekT:0,
-    kier:0, bonus:0 };
+    kier:0, bonus:0, powiedziano:{}, ostatniaLiczba:0 };
   G.ekran = 'mycie';
   cisza(); mow('mycie');
 }
@@ -1556,6 +1566,20 @@ function aktualizujMycie(){
     if(m.dzwiekT-- <= 0){ ton(300+Math.random()*300, 0.04, 'sawtooth', 0.02); m.dzwiekT = 5; }
     if(Math.random()<0.3) G.czastki.push({x:60+m.poz*350, y:135+(Math.random()-0.5)*40,
       vx:(Math.random()-0.5)*1.2, vy:-0.6-Math.random(), zyc:25+Math.random()*15, kol:'#fffeff', r:1+Math.random()*2});
+  }
+  // Ile realnie zostało sekund (zegar leci 2–3x szybciej niż pokazuje).
+  const sekRealne = Math.ceil(m.czas / (60 * 2.5));
+  const odliczamy = sekRealne <= 5;
+  // Na finiszu tylko odliczanie – żeby komunikaty nie wchodziły sobie w słowo.
+  const pokazSek = Math.max(0, Math.ceil(120 * m.czas / m.max));
+  for(const [prog, klucz] of [[60,'zeby_minuta'], [30,'zeby_pol'], [20,'zeby_20']]){
+    if(pokazSek > prog || m.powiedziano[klucz]) continue;
+    m.powiedziano[klucz] = true;
+    if(!odliczamy) dopowiedz(klucz);
+  }
+  if(odliczamy && sekRealne >= 1 && sekRealne !== m.ostatniaLiczba){
+    m.ostatniaLiczba = sekRealne;
+    dopowiedz('licz' + sekRealne);
   }
   if(m.czas <= 0 && m.koniecT === 0){
     m.koniecT = 140; sfx('sfx_sukces'); mow('mycie_koniec');
@@ -1600,7 +1624,11 @@ function rysujMycie(){
   pr(88,225,304,16,'#000000'); pr(90,227,300,12,'#4f4f4f');
   pr(90,227,Math.round(300*czyste),12,'#58d854');
   napis('CZYSTE ZĄBKI '+Math.round(czyste*100)+'%', W/2, 233, '#fffeff', '#000000', 1);
-  napis('NACISKAJ  <  I  >', W/2, 62, '#fffeff', '#000000', 2);
+  // na finiszu podpowiedź ustępuje miejsca dużej cyfrze odliczania
+  const odliczanie = m.koniecT === 0 && m.czas > 0 &&
+                     m.ostatniaLiczba >= 1 && m.ostatniaLiczba <= 5;
+  if(odliczanie) napis(String(m.ostatniaLiczba), W/2, 60, '#f8d878', '#000000', 5);
+  else napis('NACISKAJ  <  I  >', W/2, 62, '#fffeff', '#000000', 2);
   if(m.koniecT > 0){
     ctx.globalAlpha = 0.8; pr(0,0,W,H,'#fffeff'); ctx.globalAlpha = 1;
     napis('ZĄBKI CZYŚCIUTKIE!', W/2, 120, '#0058f8', '#000000', 2);
@@ -1612,7 +1640,7 @@ function rysujMycie(){
 const PASY = [143, 178, 213];
 function startJazdy(){
   G.jazda = { pas:1, y:PASY[1], predkosc:2.5, dystans:0, przeszkody:[], nastepna:200,
-    stlucz:0, trzes:0, ups:0, koniecT:0 };
+    stlucz:0, trzes:0, ups:0, koniecT:0, wolnoT:0, krzykT:0, dymek:0 };
   G.czastki = []; G.ekran = 'jazda';
   graj('muz_jazda'); mow('jazda');
 }
@@ -1631,6 +1659,14 @@ function aktualizujJazde(){
   if(j.stlucz>0){ docelowa = 0.8; j.stlucz--; }
   j.predkosc += (docelowa - j.predkosc) * 0.06;
   j.dystans += j.predkosc;
+  // jedziemy ślamazarnie? Franek popędza tatę
+  if(j.krzykT > 0) j.krzykT--;
+  if(j.dymek > 0) j.dymek--;
+  j.wolnoT = (j.predkosc < 3 && j.stlucz === 0 && j.koniecT === 0) ? j.wolnoT + 1 : 0;
+  if(j.wolnoT > 150 && j.krzykT === 0){
+    mow(Math.random() < 0.5 ? 'szybciej' : 'szybciej2');
+    j.krzykT = 540; j.dymek = 130; j.wolnoT = 0;
+  }
   if(j.trzes>0) j.trzes--;
   if(j.ups>0) j.ups--;
 
@@ -1675,6 +1711,14 @@ function rysujPrzeszkode(o){
       pr(x-20,y+13,12,6,'#000000'); pr(x+9,y+13,12,6,'#000000'); break;
   }
 }
+function twarzWOknie(nazwa, x, y, w, h){
+  const im = obraz(nazwa);
+  if(!im || !im.naturalWidth){ pr(x, y, w, h, SKORA); return; }
+  const s = Math.min(w/im.naturalWidth, h/im.naturalHeight);
+  const dw = Math.max(1, Math.round(im.naturalWidth*s));
+  const dh = Math.max(1, Math.round(im.naturalHeight*s));
+  ctx.drawImage(im, Math.round(x + (w-dw)/2), Math.round(y + h - dh), dw, dh);
+}
 function rysujAutoFranka(x,y,t){
   x=Math.round(x); y=Math.round(y);
   const podskok = Math.floor(Math.sin(t*0.5)*1);
@@ -1683,14 +1727,15 @@ function rysujAutoFranka(x,y,t){
   pr(x-34,y-4,68,20,'#d82800'); pr(x-34,y-4,68,2,'#fe8170');
   pr(x-34,y+14,68,2,'#a80020'); obrys(x-34,y-4,68,20);
   ctx.fillStyle='#d82800';
-  ctx.beginPath(); ctx.moveTo(x-20,y-3); ctx.lineTo(x-12,y-22); ctx.lineTo(x+18,y-22);
-  ctx.lineTo(x+26,y-3); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x-22,y-3); ctx.lineTo(x-17,y-24); ctx.lineTo(x+20,y-24);
+  ctx.lineTo(x+27,y-3); ctx.closePath(); ctx.fill();
   ctx.strokeStyle='#000000'; ctx.lineWidth=1; ctx.stroke();
-  // szyby z twarzami
-  pr(x-11,y-20,13,16,'#c0dfff'); obrys(x-11,y-20,13,16);
-  pr(x+3,y-20,13,16,'#c0dfff');  obrys(x+3,y-20,13,16);
-  if(obrazkiOK.tg) ctx.drawImage(glowaTaty,   x-10, y-19, 11, 14);
-  if(obrazkiOK.fg) ctx.drawImage(glowaFranka, x+4,  y-19, 11, 14);
+  // szyby z twarzami – widać, kto jedzie
+  const b = bohater();
+  pr(x-16,y-21,17,18,'#c0dfff'); obrys(x-16,y-21,17,18);
+  pr(x+2,y-21,17,18,'#c0dfff');  obrys(x+2,y-21,17,18);
+  twarzWOknie(b.glowaOp, x-15, y-20, 15, 16);
+  twarzWOknie(b.glowa,   x+3,  y-20, 15, 16);
   pr(x-24,y+15,14,8,'#000000'); pr(x-21,y+17,8,4,'#bcbcbc');
   pr(x+11,y+15,14,8,'#000000'); pr(x+14,y+17,8,4,'#bcbcbc');
   pr(x+30,y+2,5,5,'#f8d878');
@@ -1754,6 +1799,15 @@ function rysujJazde(){
   ctx.drawImage(spr('ik_czapka', IKONY.czapka), Math.round(W/2-96+176*post), 24, 16, 16);
   napis('^ v  ZMIEŃ PAS      >  SZYBCIEJ', W/2, 258, '#fffeff', '#000000', 1);
   if(j.ups>0) napis('UPS! OSTROŻNIE!', W/2, 90, '#fffeff', '#d82800', 2);
+  if(j.dymek>0 && j.ups<=0){
+    const tekst = 'SZYBCIEJ TATA, RURA!';
+    const tw = szerTekstu(tekst, 1);
+    const bx = 100, by = Math.round(j.y) - 44;
+    pr(bx-tw/2-5, by-9, tw+10, 18, '#000000');
+    pr(bx-tw/2-3, by-7, tw+6, 14, '#fffeff');
+    pr(bx-3, by+7, 6, 5, '#000000'); pr(bx-2, by+7, 4, 4, '#fffeff');
+    napis(tekst, bx, by, '#d82800', null, 1);
+  }
   if(j.koniecT>0){
     ctx.globalAlpha=0.6; pr(0,0,W,H,'#000000'); ctx.globalAlpha=1;
     napis('DOJECHALIŚMY!', W/2, 120, '#f8d878', '#000000', 3);

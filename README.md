@@ -33,7 +33,8 @@ wraca w bezpieczne miejsce.
 3. **Myjemy ząbki** — pasta → szczoteczka → minigra szorowania
 4. **Wychodzimy!** — czapka → kurtka → buty
 5. **Do samochodu!** — spacer z tatą
-6. **Jedziemy do przedszkola** — omijanie przeszkód na ulicy
+6. **Jedziemy do przedszkola** — omijanie przeszkód na ulicy; w oknach auta
+   widać Franka i tatę, a gdy tata wlecze się wolno, Franek go popędza
 7. **Wyścig do furtki** — naciskaj ◀ ▶ na zmianę; Franek zawsze wygrywa z tatą
 8. **Szatnia** — zdejmij buty, powieś kurtkę, zdejmij czapkę i biegnij do okna
 
@@ -56,7 +57,7 @@ Franek **ubiera się na oczach gracza** — każda zebrana rzecz pojawia się na
   (macOS Vision wycina sylwetkę, potem redukcja do kilkudziesięciu pikseli).
 - Postacie mają 4-klatkowy cykl chodu i osobną klatkę skoku.
 - **Narrator, efekty i muzyka wygenerowane przez ElevenLabs** (`audio/*.mp3`):
-  63 kwestie narratora po polsku, 6 efektów chiptune i 4 utwory.
+  73 kwestie narratora po polsku, 6 efektów chiptune i 4 utwory.
   Gdyby plików zabrakło, gra sama piszczy przez WebAudio.
 
 ## Uruchomienie lokalnie
@@ -74,6 +75,9 @@ Na górze `index.html`:
 const CZAS_MYCIA_ZEBOW = 35;        // ile SEKUND naprawdę trwa szczotkowanie
 const DROGA_DO_PRZEDSZKOLA = 7000;  // długość trasy samochodem
 ```
+
+Podczas mycia narrator zapowiada, ile zostało („została jeszcze minuta mycia"),
+a na finiszu odlicza **5, 4, 3, 2, 1** — cyfra pokazuje się też na ekranie.
 
 Zegar mycia zębów zawsze pokazuje odliczanie od `2:00` (bo tyle trzeba myć zęby
 naprawdę). Realnie leci szybciej, bo **ruch skraca czas**: trzymanie strzałki

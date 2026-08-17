@@ -117,6 +117,16 @@ NARRACJA = {
     'zad_legginsy': 'Teraz legginsy!',
     'zad_bluza':    'Teraz bluza!',
     'mama_czeka':   'Mama już czeka przy drzwiach!',
+    'szybciej':     'Szybciej tata! Rura!',
+    'zeby_minuta':  'Została jeszcze minuta mycia!',
+    'zeby_pol':     'Została jeszcze pół minuty!',
+    'zeby_20':      'Jeszcze dwadzieścia sekund!',
+    'licz5':        'Pięć!',
+    'licz4':        'Cztery!',
+    'licz3':        'Trzy!',
+    'licz2':        'Dwa!',
+    'licz1':        'Jeden!',
+    'szybciej2':    'Tata, jedź szybciej! Rura!',
     'koniec':       'Brawo Franek! Udało się! Jesteś w przedszkolu!',
 }
 
