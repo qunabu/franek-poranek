@@ -276,15 +276,16 @@ function graj(klucz){
 }
 const KLUCZE_MUZ = ['muz_menu','muz_gra','muz_jazda','muz_koniec'];
 const KLUCZE_MOWA = ['brawo1','brawo2','brawo3','brawo4','jazda','jedzenie','koniec','licz1',
-  'licz2','licz3','licz4','licz5','mama_czeka','mycie','mycie_koniec','p_koniec','p_poziom1',
-  'p_poziom2','p_poziom3','p_poziom4','p_poziom5','p_poziom6','p_start','pomachaj','poziom1',
-  'poziom2','poziom3','poziom4','poziom5','poziom6','poziom7','poziom8','start','szybciej',
-  'szybciej2','ups','wybor','wygrana','wyscig','wyscig_start','zad_bluza','zad_buty',
+  'licz2','licz3','licz4','licz5','mama_czeka','mycie','mycie2','mycie_koniec','p_koniec',
+  'p_poziom1','p_poziom2','p_poziom3','p_poziom4','p_poziom5','p_poziom6','p_start','pomachaj',
+  'poziom1','poziom2','poziom3','poziom4','poziom5','poziom6','poziom7','poziom8','start',
+  'szybciej','szybciej2','ups','wybor','wygrana','wyscig','wyscig_start','zad_bluza','zad_buty',
   'zad_czapka','zad_drzwi','zad_furtka','zad_grzebien','zad_kapcie','zad_karma','zad_koszulka',
   'zad_kurtka','zad_legginsy','zad_lyzka','zad_majtki','zad_mis','zad_miska','zad_mleko',
   'zad_okno','zad_pasta','zad_platki','zad_rybka','zad_samochod','zad_skarpetki',
   'zad_sniadanie','zad_spodnie','zad_szczoteczka','zad_zdejmij_buty','zad_zdejmij_czapke',
-  'zad_zdejmij_kurtke','zad_zeby','zeby_20','zeby_minuta','zeby_pol','zle'];
+  'zad_zdejmij_kurtke','zad_zeby','zeby_20','zeby_dol_przod','zeby_dol_tyl','zeby_gora_przod',
+  'zeby_gora_tyl','zeby_minuta','zeby_pol','zeby_strefa_ok','zle'];
 
 KLUCZE_MUZ.forEach(k => wczytajAudio(k, GLOSNOSC_MUZYKI, true));
 KLUCZE_SFX.forEach(k => wczytajAudio(k, GLOSNOSC_EFEKTOW, false));
@@ -1530,13 +1531,53 @@ function rysujHUD(p){
   }
 }
 
-/* ==================== MINIGRA: MYCIE ZĘBÓW ==================== */
+/* ==================== MINIGRA: MYCIE ZĘBÓW ====================
+   Cztery strefy jak przy prawdziwym myciu: górne i dolne, z przodu i od środka.
+   Ząbki mają widoczny brud, który schodzi dopiero od szorowania tam i z powrotem
+   – samo trzymanie strzałki prawie nic nie daje. */
+const ZEBOW = 8;
+const STREFY = [
+  {id:'gora_przod', nazwa:'GÓRNE Z PRZODU',  glos:'zeby_gora_przod',  gora:true,  tyl:false},
+  {id:'dol_przod',  nazwa:'DOLNE Z PRZODU',  glos:'zeby_dol_przod',   gora:false, tyl:false},
+  {id:'gora_tyl',   nazwa:'GÓRNE OD ŚRODKA', glos:'zeby_gora_tyl',    gora:true,  tyl:true},
+  {id:'dol_tyl',    nazwa:'DOLNE OD ŚRODKA', glos:'zeby_dol_tyl',     gora:false, tyl:true}
+];
 function startMycia(){
-  G.mycie = { poz:0.5, ostatnia:0.5, seg:new Array(10).fill(0),
-    czas:CZAS_MYCIA_ZEBOW*60, max:CZAS_MYCIA_ZEBOW*60, koniecT:0, dzwiekT:0,
-    kier:0, bonus:0, powiedziano:{}, ostatniaLiczba:0 };
+  const brud = STREFY.map(() => {
+    const rzad = [];
+    for(let i=0;i<ZEBOW;i++) rzad.push({ile:1, plamy:[]});
+    return rzad;
+  });
+  // losowe plamki brudu – rysowane zawsze tak samo, znikają wraz z myciem
+  brud.forEach(rzad => rzad.forEach((z,i) => {
+    const ile = 3 + ((i*7) % 3);
+    for(let p=0;p<ile;p++)
+      z.plamy.push({x: 4 + ((i*13 + p*29) % 22), y: 4 + ((i*17 + p*11) % 30), r: 3 + (p % 3)});
+  }));
+  G.mycie = {
+    strefa:0, poz:0.5, ostatnia:0.5, kier:0, bonus:0,
+    brud, pociagniecia:0,
+    czas:CZAS_MYCIA_ZEBOW*60, max:CZAS_MYCIA_ZEBOW*60,
+    koniecT:0, dzwiekT:0, powiedziano:{}, ostatniaLiczba:0, blyskStrefy:0
+  };
   G.ekran = 'mycie';
-  cisza(); mow('mycie');
+  cisza(); mow('mycie2', STREFY[0].glos);
+}
+function czystoscStrefy(m, s){
+  let suma = 0;
+  for(const z of m.brud[s]) suma += 1 - z.ile;
+  return suma / ZEBOW;
+}
+function czystoscCalosci(m){
+  let suma = 0;
+  for(let s=0;s<STREFY.length;s++) suma += czystoscStrefy(m, s);
+  return suma / STREFY.length;
+}
+function zmienStrefe(m, nowa){
+  if(nowa < 0 || nowa >= STREFY.length || nowa === m.strefa) return;
+  m.strefa = nowa;
+  m.blyskStrefy = 30;
+  dopowiedz(STREFY[nowa].glos);
 }
 function aktualizujMycie(){
   const m = G.mycie;
@@ -1544,33 +1585,71 @@ function aktualizujMycie(){
     m.koniecT--;
     if(m.koniecT === 0){
       const p = POZ()[G.poziom];
-      p.zadania[G.zrobione].wziete = true;
+      const zad = p.zadania[G.zrobione];
+      if(zad) zad.wziete = true;
       G.zrobione++; G.ostatnieZadanie = -1;
       G.ekran = 'gra'; graj('muz_gra'); ogloszZadanie(false);
     }
     aktualizujEfekty(); return;
   }
+  if(m.blyskStrefy > 0) m.blyskStrefy--;
+
+  // strzałki góra/dół przełączają strefę ręcznie
+  if(nowy('ArrowUp'))   zmienStrefe(m, m.strefa - 1);
+  if(nowy('ArrowDown')) zmienStrefe(m, m.strefa + 1);
+
   m.ostatnia = m.poz;
   let ruch = 0;
   if(klaw.ArrowLeft) ruch -= 1;
   if(klaw.ArrowRight) ruch += 1;
-  m.poz = Math.max(0, Math.min(1, m.poz + ruch*0.022));
-  // zmiana kierunku = prawdziwe szorowanie, dokłada premię do tempa
-  if(ruch !== 0 && ruch !== m.kier){ m.kier = ruch; m.bonus = 45; }
-  if(m.bonus > 0) m.bonus--;
-  if(Math.abs(m.poz - m.ostatnia) > 0.004){
-    const tempo = m.bonus > 0 ? 3 : 2;      // ruch przyspiesza zegar co najmniej 2x
-    m.czas -= tempo;
-    const i = Math.min(9, Math.max(0, Math.floor(m.poz*10)));
-    m.seg[i] = Math.min(1, m.seg[i] + 0.0072*tempo);
-    if(m.dzwiekT-- <= 0){ ton(300+Math.random()*300, 0.04, 'sawtooth', 0.02); m.dzwiekT = 5; }
-    if(Math.random()<0.3) G.czastki.push({x:60+m.poz*350, y:135+(Math.random()-0.5)*40,
-      vx:(Math.random()-0.5)*1.2, vy:-0.6-Math.random(), zyc:25+Math.random()*15, kol:'#fffeff', r:1+Math.random()*2});
+  m.poz = Math.max(0, Math.min(1, m.poz + ruch*0.028));
+
+  // zmiana kierunku = jedno pociągnięcie szczoteczką; to ono czyści naprawdę
+  if(ruch !== 0 && ruch !== m.kier){
+    m.kier = ruch;
+    m.bonus = 40;
+    m.pociagniecia++;
+    sfx('sfx_skok');
   }
-  // Ile realnie zostało sekund (zegar leci 2–3x szybciej niż pokazuje).
+  if(m.bonus > 0) m.bonus--;
+
+  const przesuniecie = Math.abs(m.poz - m.ostatnia);
+  const szoruje = przesuniecie > 0.004 && m.bonus > 0;   // tuż po zmianie kierunku
+  // Zegar leci zawsze – szorowanie 3x szybciej. Dzięki temu minigra kończy się
+  // nawet wtedy, gdy dziecko dojedzie szczoteczką do krawędzi i przestanie ruszać.
+  m.czas -= szoruje ? 3 : 1;
+  if(przesuniecie > 0.004){
+    const i = Math.min(ZEBOW-1, Math.max(0, Math.floor(m.poz*ZEBOW)));
+    const zab = m.brud[m.strefa][i];
+    const przed = zab.ile;
+    zab.ile = Math.max(0, zab.ile - (szoruje ? 0.036 : 0.004));
+    // sąsiednie zęby też trochę
+    for(const d of [-1, 1]){
+      const j = i + d;
+      if(j >= 0 && j < ZEBOW) m.brud[m.strefa][j].ile =
+        Math.max(0, m.brud[m.strefa][j].ile - (szoruje ? 0.014 : 0.001));
+    }
+    if(m.dzwiekT-- <= 0){ ton(280 + Math.random()*260, 0.04, 'sawtooth', 0.02); m.dzwiekT = 5; }
+    if(szoruje && Math.random() < 0.5){
+      const px = 70 + m.poz*330, py = STREFY[m.strefa].gora ? 132 : 168;
+      G.czastki.push({x:px, y:py, vx:(Math.random()-0.5)*1.4, vy:-0.5-Math.random(),
+                      zyc:22+Math.random()*16, kol:'#fffeff', r:1+Math.random()*2});
+    }
+    if(przed > 0 && zab.ile === 0) sfx('sfx_zbierz');
+  }
+
+  // strefa czysta -> sama przechodzi do następnej
+  if(czystoscStrefy(m, m.strefa) >= 0.999){
+    const nastepna = STREFY.findIndex((_, s) => czystoscStrefy(m, s) < 0.999);
+    if(nastepna >= 0 && nastepna !== m.strefa){
+      dopowiedz('zeby_strefa_ok');
+      zmienStrefe(m, nastepna);
+    }
+  }
+
+  // zapowiedzi i odliczanie
   const sekRealne = Math.ceil(m.czas / (60 * 2.5));
   const odliczamy = sekRealne <= 5;
-  // Na finiszu tylko odliczanie – żeby komunikaty nie wchodziły sobie w słowo.
   const pokazSek = Math.max(0, Math.ceil(120 * m.czas / m.max));
   for(const [prog, klucz] of [[60,'zeby_minuta'], [30,'zeby_pol'], [20,'zeby_20']]){
     if(pokazSek > prog || m.powiedziano[klucz]) continue;
@@ -1581,58 +1660,122 @@ function aktualizujMycie(){
     m.ostatniaLiczba = sekRealne;
     dopowiedz('licz' + sekRealne);
   }
-  if(m.czas <= 0 && m.koniecT === 0){
-    m.koniecT = 140; sfx('sfx_sukces'); mow('mycie_koniec');
-    iskry(W/2, 130, ['#fffeff','#3cbcfc','#f8d878'], 30);
+
+  const wszystkoCzyste = czystoscCalosci(m) >= 0.999;
+  if((wszystkoCzyste || m.czas <= 0) && m.koniecT === 0){
+    m.koniecT = 150; sfx('sfx_sukces'); mow('mycie_koniec');
+    iskry(W/2, 140, ['#fffeff','#3cbcfc','#f8d878'], 34);
   }
   aktualizujEfekty(); czyscNowe();
 }
+
+function rysujZab(x, y, w, h, zab, aktywny, odwrocony){
+  pr(x, y, w, h, '#000000');
+  pr(x+1, y+1, w-2, h-2, aktywny ? '#fffeff' : '#e4e4ee');
+  if(zab.ile > 0){
+    // brud: plamki gasną razem ze szorowaniem
+    for(const p of zab.plamy){
+      const r = Math.round(p.r * zab.ile);
+      if(r < 1) continue;
+      const py = odwrocony ? (h - p.y - r) : p.y;
+      if(p.y + r > h - 2) continue;
+      pr(x + Math.min(w-2-r, p.x), y + Math.max(1, py), r, r, zab.ile > 0.55 ? '#ac7c00' : '#e4e594');
+    }
+  } else if(aktywny) {
+    pr(x+w-7, y+3, 2, 2, '#fffeff');
+    pr(x+w-9, y+5, 2, 2, '#c0dfff');
+  }
+}
 function rysujMycie(){
   const m = G.mycie;
+  const strefa = STREFY[m.strefa];
   pr(0,0,W,H,'#c0dfff');
   for(let j=0;j<14;j++) for(let i=0;i<24;i++){
     pr(i*20,j*20,19,19,'#d3d2ff'); pr(i*20,j*20,19,1,'#fffeff'); pr(i*20,j*20+18,19,1,'#9290ff');
   }
-  const czyste = m.seg.reduce((a,b)=>a+b,0)/10;
-  // usta
-  pr(50,95,380,110,'#000000'); pr(52,97,376,106,'#fe6ecc'); pr(60,105,360,90,'#a80020');
-  // zęby: górny i dolny rząd
-  for(const gy of [108, 158]){
-    for(let i=0;i<10;i++){
-      const x = 66 + i*35, cz = m.seg[i];
-      pr(x, gy, 31, 36, '#000000');
-      pr(x+1, gy+1, 29, 34, '#fffeff');
-      if(cz < 1){
-        const wys = Math.round(34*(1-cz));
-        pr(x+1, gy+1, 29, wys, '#bcbe00');
-        if(wys > 6){ pr(x+6, gy+4, 5, 5, '#ac7c00'); pr(x+18, gy+6, 6, 4, '#ac7c00'); }
-      }
-    }
+
+  // usta – wargi z „obgryzionymi" narożnikami, żeby nie były prostokątem
+  const warga = strefa.tyl ? '#a80020' : '#fe6ecc';
+  pr(52, 88, 376, 122, '#000000');
+  pr(54, 90, 372, 118, warga);
+  for(const [dx,dy] of [[0,0],[1,0],[0,1]]){
+    pr(54+dx*6, 90+dy*6, 8-dx*4, 8-dy*4, '#c0dfff');
+    pr(418-dx*6+dx*4, 90+dy*6, 8-dx*4, 8-dy*4, '#c0dfff');
+    pr(54+dx*6, 200-dy*6+dy*4, 8-dx*4, 8-dy*4, '#c0dfff');
+    pr(418-dx*6+dx*4, 200-dy*6+dy*4, 8-dx*4, 8-dy*4, '#c0dfff');
   }
-  pr(64,148,352,10,'#6e0040');           // język / szpara
-  // szczoteczka
-  const bx = Math.round(60 + m.poz*350);
-  ctx.save(); ctx.translate(bx, 120); ctx.scale(2.5,2.5);
+  pr(62, 98, 356, 102, strefa.tyl ? '#6e0040' : '#a80020');
+
+  const szer = 42, odstep = 2, x0 = 70;
+  const gornyY = 104, dolnyY = 158;
+
+  // język widoczny przy myciu od środka
+  if(strefa.tyl) pr(66, 146, 348, 12, '#e2607a');
+
+  for(let rzad=0; rzad<2; rzad++){
+    const gora = rzad === 0;
+    const y = gora ? gornyY : dolnyY;
+    const nrStrefy = STREFY.findIndex(s => s.gora === gora && s.tyl === strefa.tyl);
+    const aktywny = nrStrefy === m.strefa;
+    if(aktywny && m.blyskStrefy > 0 && Math.floor(G.t/4)%2===0)
+      pr(x0-4, y-4, ZEBOW*(szer+odstep)+6, 54, '#f8d878');
+    for(let i=0;i<ZEBOW;i++){
+      const x = x0 + i*(szer+odstep);
+      rysujZab(x, y, szer, 46, m.brud[nrStrefy][i], aktywny, !gora);
+    }
+    if(!aktywny){ ctx.globalAlpha = 0.5; pr(x0, y, ZEBOW*(szer+odstep), 46, '#000000'); ctx.globalAlpha = 1; }
+  }
+
+  // szczoteczka wprost na myty ząb – włosiem do dziąsła
+  const rzadY = strefa.gora ? gornyY : dolnyY;
+  const bx = Math.round(x0 + 4 + m.poz * (ZEBOW*(szer+odstep) - 16));
+  const przechyl = (m.bonus > 0 ? (m.kier > 0 ? 2 : -2) : 0);
+  // ślad szorowania na zębie pod szczoteczką
+  if(m.bonus > 0 && Math.floor(G.t/3)%2===0)
+    pr(bx-14, rzadY + (strefa.gora ? 4 : 26), 28, 16, '#c0dfff');
+  ctx.save();
+  ctx.translate(bx + przechyl, rzadY + 23);
+  ctx.scale(2.6, strefa.gora ? 2.6 : -2.6);
   ctx.drawImage(spr('ik_szczoteczka', IKONY.szczoteczka), -8, -8);
   ctx.restore();
+
   rysujEfekty();
+
+  // nagłówek: która strefa
+  pr(0,0,W,22,'#000000');
+  napisL('MYJEMY ZĄBKI', 4, 11, '#fffeff', null, 1);
+  napis(strefa.nazwa, W/2 + 60, 11, '#f8d878', null, 1);
+
   // zegar
   const sek = Math.max(0, Math.ceil(120 * m.czas / m.max));
-  ramka(W/2-42, 8, 84, 26, '#0000bc');
-  napis(Math.floor(sek/60)+':'+String(sek%60).padStart(2,'0'), W/2, 21, '#3cbcfc', '#000000', 2);
+  ramka(W/2-42, 26, 84, 24, '#0000bc');
+  napis(Math.floor(sek/60)+':'+String(sek%60).padStart(2,'0'), W/2, 38, '#3cbcfc', '#000000', 2);
+
+  // cztery kropki postępu – po jednej na strefę
+  for(let s=0;s<STREFY.length;s++){
+    const cx = 30 + s*22, cz = czystoscStrefy(m, s);
+    pr(cx-9, 30, 18, 16, '#000000');
+    pr(cx-7, 32, 14, 12, cz >= 0.999 ? '#58d854' : (s === m.strefa ? '#f8d878' : '#4f4f4f'));
+    if(cz > 0 && cz < 0.999) pr(cx-7, 32, Math.max(1, Math.round(14*cz)), 12, '#b8f818');
+  }
+
   // pasek czystości
-  pr(88,225,304,16,'#000000'); pr(90,227,300,12,'#4f4f4f');
-  pr(90,227,Math.round(300*czyste),12,'#58d854');
-  napis('CZYSTE ZĄBKI '+Math.round(czyste*100)+'%', W/2, 233, '#fffeff', '#000000', 1);
-  // na finiszu podpowiedź ustępuje miejsca dużej cyfrze odliczania
+  const czyste = czystoscCalosci(m);
+  pr(88,222,304,16,'#000000'); pr(90,224,300,12,'#4f4f4f');
+  pr(90,224,Math.round(300*czyste),12,'#58d854');
+  napis('CZYSTE ZĄBKI '+Math.round(czyste*100)+'%', W/2, 230, '#fffeff', '#000000', 1);
+
   const odliczanie = m.koniecT === 0 && m.czas > 0 &&
                      m.ostatniaLiczba >= 1 && m.ostatniaLiczba <= 5;
-  if(odliczanie) napis(String(m.ostatniaLiczba), W/2, 60, '#f8d878', '#000000', 5);
-  else napis('NACISKAJ  <  I  >', W/2, 62, '#fffeff', '#000000', 2);
+  if(odliczanie) napis(String(m.ostatniaLiczba), W/2, 62, '#f8d878', '#000000', 5);
+  else napis('SZORUJ  <  >     ZMIEŃ  ^  v', W/2, 250, '#fffeff', '#000000', 1);
+
   if(m.koniecT > 0){
     ctx.globalAlpha = 0.8; pr(0,0,W,H,'#fffeff'); ctx.globalAlpha = 1;
-    napis('ZĄBKI CZYŚCIUTKIE!', W/2, 120, '#0058f8', '#000000', 2);
-    napis('* * *', W/2, 160, '#f8d878', '#000000', 2.4);
+    const wynik = Math.round(czystoscCalosci(m)*100);
+    napis(wynik >= 99 ? 'ZĄBKI CZYŚCIUTKIE!' : 'DOBRA ROBOTA!', W/2, 116, '#0058f8', '#000000', 2);
+    napis('UMYTE W ' + wynik + '%', W/2, 146, '#d82800', '#000000', 1.6);
+    napis('* * *', W/2, 176, '#f8d878', '#000000', 2.4);
   }
 }
 
