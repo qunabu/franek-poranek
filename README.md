@@ -66,13 +66,20 @@ Franek **ubiera się na oczach gracza** — każda zebrana rzecz pojawia się na
 ## Instalacja na pulpicie (PWA)
 
 Gra jest aplikacją PWA, więc da się ją **zainstalować jak zwykły program**
-i uruchamiać na pełnym ekranie, bez paska adresu:
+i uruchamiać na pełnym ekranie, bez paska adresu.
 
-- **Komputer (Chrome / Edge):** wejdź na stronę gry i kliknij ikonę instalacji
-  po prawej w pasku adresu (albo menu ⋮ → *Zainstaluj*). Gra dostaje własną
-  ikonę na pulpicie i osobne okno.
-- **Android (Chrome):** menu ⋮ → *Dodaj do ekranu głównego*.
+Najprościej: na ekranie wyboru postaci (a na telefonie trzymanym pionowo — pod
+prośbą o obrót) jest przycisk **📲 ZAINSTALUJ GRĘ**. Na Androidzie i na
+komputerze otwiera prawdziwe okienko instalacji, a na iPhonie tłumaczy krok po
+kroku, gdzie kliknąć. Przycisk chowa się na czas gry, żeby nie zasłaniał planszy.
+
+Ręcznie, gdyby ktoś wolał:
+
+- **Komputer (Chrome / Edge):** ikona instalacji po prawej w pasku adresu
+  (albo menu ⋮ → *Zainstaluj*). Gra dostaje własną ikonę i osobne okno.
+- **Android (Chrome):** menu ⋮ → *Zainstaluj aplikację* / *Dodaj do ekranu głównego*.
 - **iPhone / iPad (Safari):** przycisk *Udostępnij* → *Do ekranu początkowego*.
+  Safari **nigdy** nie proponuje instalacji sam — na iPhonie zawsze robi się to ręcznie.
 
 Po instalacji gra:
 

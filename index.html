@@ -59,6 +59,30 @@
     #obroc{display:flex;}
     #wrap,#dotyk,#glosnik{display:none !important;}
   }
+  /* --- instalacja na pulpicie --- */
+  #instaluj{position:fixed;top:10px;left:12px;z-index:100;display:none;
+    padding:9px 13px;border:3px solid #fffeff;border-radius:8px;background:#0000bc;color:#f8d878;
+    font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;letter-spacing:1px;cursor:pointer;}
+  #instaluj:active{background:#a80020;}
+  body.mozna.wMenu #instaluj{display:block;}
+  #jakInstalowac{position:fixed;inset:0;z-index:101;display:none;align-items:center;justify-content:center;
+    padding:20px;box-sizing:border-box;background:rgba(0,0,0,.8);
+    font-family:ui-monospace,Menlo,Consolas,monospace;}
+  #jakInstalowac.widac{display:flex;}
+  #jakInstalowac .pudlo{background:#0000bc;border:4px solid #fffeff;border-radius:10px;
+    padding:22px;max-width:30em;color:#c0dfff;text-align:center;}
+  #jakInstalowac h2{margin:0 0 14px;font-size:16px;color:#f8d878;letter-spacing:1px;}
+  #jakInstalowac p{margin:0 0 16px;font-size:13px;line-height:1.7;}
+  #jakInstalowac b{color:#fffeff;}
+  #jakInstalowac button{padding:9px 20px;border:3px solid #fffeff;border-radius:8px;
+    background:#a80020;color:#fffeff;font-family:inherit;font-size:13px;letter-spacing:1px;cursor:pointer;}
+  /* telefon pionowo: gra jest schowana, więc przycisk instalacji na środku pod spodem */
+  @media (orientation: portrait) and (pointer: coarse){
+    body.mozna #instaluj{display:block;top:auto;bottom:22px;left:50%;transform:translateX(-50%);}
+  }
+  @media (orientation: portrait) and (hover: none){
+    body.mozna #instaluj{display:block;top:auto;bottom:22px;left:50%;transform:translateX(-50%);}
+  }
   /* niskie ekrany (telefon poziomo) – mniejsze przyciski, żeby nie zasłaniały gry */
   @media (pointer: coarse) and (max-height: 460px){
     #dotyk{padding:8px 10px;}
@@ -75,6 +99,14 @@
 </div>
 <div id="wrap"><canvas id="c" width="480" height="270" tabindex="0"></canvas></div>
 <button id="glosnik" title="Dźwięk włącz/wyłącz">🔊</button>
+<button id="instaluj">📲 ZAINSTALUJ GRĘ</button>
+<div id="jakInstalowac">
+  <div class="pudlo">
+    <h2>GRA NA PULPICIE</h2>
+    <p id="jakTresc"></p>
+    <button id="zamknijJak">DOBRA, ROZUMIEM</button>
+  </div>
+</div>
 <div id="dotyk">
   <div class="grupa"><button data-k="ArrowLeft">◀</button><button data-k="ArrowRight">▶</button></div>
   <div class="grupa"><button data-k="ArrowDown">▼</button><button data-k="ArrowUp">▲</button></div>
@@ -2398,6 +2430,7 @@ function odswiezPrzyciski(){
   if(G.ekran === ostatniEkranPrzyciskow) return;
   ostatniEkranPrzyciskow = G.ekran;
   document.body.classList.toggle('wAucie', G.ekran === 'jazda');
+  document.body.classList.toggle('wMenu', G.ekran === 'wybor' || G.ekran === 'intro');
 }
 function krok(){
   G.t++;
@@ -2451,7 +2484,72 @@ function powitaj(){ if(powitano) return; powitano = true; graj('muz_menu'); mow(
 ['keydown','pointerdown','touchstart'].forEach(z => addEventListener(z, powitaj, {once:false}));
 requestAnimationFrame(petla);
 
-/* ==================== PWA: instalacja i zawsze świeża wersja ====================
+/* ==================== PWA: przycisk „zainstaluj" ====================
+   Chrome sam nie pyta – chowa instalację w menu ⋮, a Safari na iPhonie w ogóle
+   jej nie proponuje. Dlatego gra ma własny przycisk: na Androidzie i na
+   komputerze otwiera prawdziwe okienko instalacji, a na iPhonie tłumaczy,
+   gdzie kliknąć. Przycisk pokazuje się tylko w menu, żeby nie zasłaniać gry. */
+const przyciskInstaluj = document.getElementById('instaluj');
+const okienkoJak = document.getElementById('jakInstalowac');
+let zachetaInstalacji = null;
+
+function juzZainstalowana(){
+  return matchMedia('(display-mode: standalone)').matches
+      || matchMedia('(display-mode: fullscreen)').matches
+      || navigator.standalone === true;
+}
+function pokazPrzyciskInstaluj(napisNaPrzycisku){
+  if(juzZainstalowana()) return;
+  przyciskInstaluj.textContent = napisNaPrzycisku;
+  document.body.classList.add('mozna');
+}
+const naIPhonie = /iPhone|iPad|iPod/.test(navigator.userAgent)
+               || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function tekstJakZainstalowac(){
+  if(naIPhonie) return 'Na iPhonie i iPadzie instaluje się ręcznie, w <b>Safari</b>:<br><br>' +
+    '1. dotknij <b>Udostępnij</b> (kwadracik ze strzałką w górę, na dole ekranu)<br>' +
+    '2. przewiń listę i wybierz <b>Do ekranu początkowego</b><br>' +
+    '3. potwierdź <b>Dodaj</b><br><br>' +
+    'Gra pojawi się jako ikona z Frankiem i będzie chodzić na pełnym ekranie.';
+  return 'Jeśli przeglądarka nie proponuje instalacji sama:<br><br>' +
+    '• <b>Android, Chrome:</b> menu <b>⋮</b> w prawym górnym rogu → <b>Zainstaluj aplikację</b> ' +
+    '(albo <b>Dodaj do ekranu głównego</b>)<br>' +
+    '• <b>Komputer, Chrome / Edge:</b> ikonka instalacji po prawej stronie paska adresu<br><br>' +
+    'Gdyby tego nie było, odśwież stronę – gra musi się raz wczytać do końca.';
+}
+przyciskInstaluj.addEventListener('click', async e => {
+  e.stopPropagation();
+  if(zachetaInstalacji){
+    try{
+      zachetaInstalacji.prompt();
+      const wybor = await zachetaInstalacji.userChoice.catch(() => null);
+      zachetaInstalacji = null;
+      if(wybor && wybor.outcome === 'accepted') document.body.classList.remove('mozna');
+      return;
+    }catch(err){
+      zachetaInstalacji = null;      // okienko się nie otworzyło – zostaje instrukcja
+    }
+  }
+  document.getElementById('jakTresc').innerHTML = tekstJakZainstalowac();
+  okienkoJak.classList.add('widac');
+});
+document.getElementById('zamknijJak').addEventListener('click', e => {
+  e.stopPropagation(); okienkoJak.classList.remove('widac');
+});
+addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  zachetaInstalacji = e;
+  pokazPrzyciskInstaluj('📲 ZAINSTALUJ GRĘ');
+});
+addEventListener('appinstalled', () => {
+  zachetaInstalacji = null;
+  document.body.classList.remove('mozna');
+});
+// iPhone nigdy nie da zachęty; na innych czekamy chwilę i też podpowiadamy ręcznie
+if(naIPhonie) pokazPrzyciskInstaluj('📲 JAK ZAINSTALOWAĆ?');
+else setTimeout(() => { if(!zachetaInstalacji) pokazPrzyciskInstaluj('📲 JAK ZAINSTALOWAĆ?'); }, 4000);
+
+/* ==================== PWA: zawsze świeża wersja ====================
    Service worker trzyma grę offline, ale index.html bierze najpierw z sieci,
    więc po każdym wejściu gra jest w najnowszej wersji. Gdy w tle pojawi się
    nowa wersja, strona przeładowuje się sama (ale nigdy w środku zabawy). */
