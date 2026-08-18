@@ -26,7 +26,7 @@ Przedmioty zbiera się samym dotknięciem. Świecąca rzecz ze strzałką to ta,
 po którą trzeba iść teraz. **Nie da się przegrać** — po spadnięciu Franek
 wraca w bezpieczne miejsce.
 
-## Poziomy Franka (8)
+## Poziomy Franka (9)
 
 1. **Wstawaj, Franek!** — majtki → spodnie → skarpetki → koszulka
 2. **Śniadanko** — schody na dół, potem miska → łódeczki → mleko → łyżka → jedzenie
@@ -36,7 +36,10 @@ wraca w bezpieczne miejsce.
 6. **Jedziemy do przedszkola** — omijanie przeszkód na ulicy; w oknach auta
    widać Franka i tatę, a gdy tata wlecze się wolno, Franek go popędza
 7. **Wyścig do furtki** — naciskaj ◀ ▶ na zmianę; Franek zawsze wygrywa z tatą
-8. **Szatnia** — zdejmij buty, powieś kurtkę, zdejmij czapkę i biegnij do okna
+8. **Szatnia** — zdejmij buty, powieś kurtkę, zdejmij czapkę i **przytul tatę**
+   na do widzenia (tata staje i czeka, na jego piersi świeci serduszko)
+9. **Wyścig do okna** — korytarzem do okna, a tata idzie tą samą drogą za szybą;
+   na mecie Franek macha mu przez okno „pa pa" (◀ ▶ na zmianę, jak przy furtce)
 
 ## Poziomy Poli (6)
 
@@ -57,12 +60,38 @@ Franek **ubiera się na oczach gracza** — każda zebrana rzecz pojawia się na
   (macOS Vision wycina sylwetkę, potem redukcja do kilkudziesięciu pikseli).
 - Postacie mają 4-klatkowy cykl chodu i osobną klatkę skoku.
 - **Narrator, efekty i muzyka wygenerowane przez ElevenLabs** (`audio/*.mp3`):
-  79 kwestii narratora po polsku, 6 efektów chiptune i 4 utwory.
+  82 kwestie narratora po polsku, 6 efektów chiptune i 4 utwory.
   Gdyby plików zabrakło, gra sama piszczy przez WebAudio.
+
+## Instalacja na pulpicie (PWA)
+
+Gra jest aplikacją PWA, więc da się ją **zainstalować jak zwykły program**
+i uruchamiać na pełnym ekranie, bez paska adresu:
+
+- **Komputer (Chrome / Edge):** wejdź na stronę gry i kliknij ikonę instalacji
+  po prawej w pasku adresu (albo menu ⋮ → *Zainstaluj*). Gra dostaje własną
+  ikonę na pulpicie i osobne okno.
+- **Android (Chrome):** menu ⋮ → *Dodaj do ekranu głównego*.
+- **iPhone / iPad (Safari):** przycisk *Udostępnij* → *Do ekranu początkowego*.
+
+Po instalacji gra:
+
+- startuje **na pełnym ekranie i w poziomie** (`display: fullscreen`,
+  `orientation: landscape`),
+- **zawsze pokazuje najnowszą wersję** — `sw.js` bierze `index.html` najpierw
+  z sieci, a gdy w tle pojawi się nowa wersja, okno samo się przeładowuje,
+- **działa bez internetu** — ikony, twarze i strona są zapisane od razu,
+  a dźwięki dogrywają się do zapasu przy pierwszym graniu (potem gra chodzi
+  offline; przy okazji każdy plik po cichu odświeża się na nowszy).
+
+Ikony na pulpit robi `tools/gen_ikony.py` z pikselowego portretu Franka
+(czysty Python, bez bibliotek).
 
 ## Uruchomienie lokalnie
 
 Otwórz `index.html` w przeglądarce (dwuklik). Wymaga tylko plików z tego repo.
+Service worker działa jednak dopiero po `http://`, więc żeby sprawdzić PWA,
+odpal `python3 -m http.server` w katalogu gry.
 
 Chcesz podmienić głos narratora? W `tools/gen_audio.py` zmień `GLOS`
 na inne ID głosu ElevenLabs i uruchom ponownie (potrzebny własny klucz w `.env`).

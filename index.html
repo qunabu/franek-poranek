@@ -2,8 +2,18 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Poranek Franka</title>
+<meta name="description" content="Ośmiobitowa gra 2D dla 5–6 latków: poranek Franka i Poli, od wstawania do przedszkola.">
+<!-- PWA: da się zainstalować na pulpicie i chodzi na pełnym ekranie -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0000bc">
+<link rel="icon" href="ikona-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Poranek Franka">
 <style>
   html,body{margin:0;padding:0;height:100%;background:#0b0c14;overflow:hidden;
     font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-user-select:none;user-select:none;}
@@ -278,7 +288,8 @@ const KLUCZE_MUZ = ['muz_menu','muz_gra','muz_jazda','muz_koniec'];
 const KLUCZE_MOWA = ['brawo1','brawo2','brawo3','brawo4','jazda','jedzenie','koniec','licz1',
   'licz2','licz3','licz4','licz5','mama_czeka','mycie','mycie2','mycie_koniec','p_koniec',
   'p_poziom1','p_poziom2','p_poziom3','p_poziom4','p_poziom5','p_poziom6','p_start','pomachaj',
-  'poziom1','poziom2','poziom3','poziom4','poziom5','poziom6','poziom7','poziom8','start',
+  'poziom1','poziom2','poziom3','poziom4','poziom5','poziom6','poziom7','poziom8','poziom9',
+  'przytulas','start','zad_przytulas',
   'szybciej','szybciej2','ups','wybor','wygrana','wyscig','wyscig_start','zad_bluza','zad_buty',
   'zad_czapka','zad_drzwi','zad_furtka','zad_grzebien','zad_kapcie','zad_karma','zad_koszulka',
   'zad_kurtka','zad_legginsy','zad_lyzka','zad_majtki','zad_mis','zad_miska','zad_mleko',
@@ -473,6 +484,11 @@ bluza:[
 ".kpppppppppppk..",".kpppppppppppk..",".kkkppppppokkk..","...kpppppppk....",
 "...kppoppoppk...","...kpppppppk....","...kppoppoppk...","...kpppppppk....",
 "...kkkkkkkkk....","................","................","................"],
+przytulas:[
+"................","..kkkk...kkkk...",".kkrrkk.kkrrkk..","kkrrrrkkrrrrkk..",
+"krrrrrrrrrrrrrk.","krrwrrrrrrrrrrk.","krrwrrrrrrrrrrk.",".krrrrrrrrrrrk..",
+"..krrrrrrrrrk...","...krrrrrrrk....","....krrrrrk.....",".....krrrk......",
+"......krk.......",".......kk.......","................","................"],
 zeby:[
 "................","..kkkkkkkkkkkk..","..kwwwwwwwwwwk..","..kwkwkwkwkwwk..",
 "..kwwwwwwwwwwk..","..kkkkkkkkkkkk..","..kwwwwwwwwwwk..","..kwkwkwkwkwwk..",
@@ -485,7 +501,7 @@ const NAZWY = {
   szczoteczka:'szczoteczkę', pasta:'pastę', zeby:'umywalkę',
   kapcie:'kapcie', mis:'misia', grzebien:'grzebień', karma:'karmę dla rybki',
   rybka:'rybkę', legginsy:'legginsy', bluza:'bluzę',
-  czapka:'czapkę', kurtka:'kurtkę', buty:'buty'
+  czapka:'czapkę', kurtka:'kurtkę', buty:'buty', przytulas:'tatę'
 };
 function rysujIkone(typ, x, y, odbij){
   const w = IKONY[typ] || IKONY.miska;
@@ -974,10 +990,10 @@ const POZIOMY_FRANEK = [
   },
   { typ:'jazda', nazwa:'Jedziemy do przedszkola!', podtytul:'▲▼ pas, ▶ szybciej', glos:'poziom6' },
   { typ:'wyscig', nazwa:'Wyścig do furtki!', podtytul:'Naciskaj ◀ ▶ na zmianę', glos:'poziom7' },
-  { nazwa:'Szatnia', podtytul:'Rozbierz się i biegnij do okna', tlo:'szatnia', szer:760,
+  { nazwa:'Szatnia', podtytul:'Rozbierz się i przytul tatę', tlo:'szatnia', szer:820,
     tata:true, glos:'poziom8', start:{x:30,y:170},
     platformy:[
-      {x:0,y:235,w:760,h:35,styl:'kafle'},
+      {x:0,y:235,w:820,h:35,styl:'kafle'},
       {x:110,y:205,w:110,h:30,styl:'lawka'},
       {x:300,y:210,w:90,h:25,styl:'polkaButy'},
       {x:470,y:190,w:80,h:45,styl:'komoda'}
@@ -985,10 +1001,12 @@ const POZIOMY_FRANEK = [
     zadania:[
       {typ:'buty',   zdejmij:'buty',   x:345,y:196, zadanie:'Zdejmij buty!',  glos:'zad_zdejmij_buty'},
       {typ:'kurtka', zdejmij:'kurtka', x:165,y:190, zadanie:'Powieś kurtkę!', glos:'zad_zdejmij_kurtke'},
-      {typ:'czapka', zdejmij:'czapka', x:510,y:175, zadanie:'Zdejmij czapkę!',glos:'zad_zdejmij_czapke'}
+      {typ:'czapka', zdejmij:'czapka', x:510,y:175, zadanie:'Zdejmij czapkę!',glos:'zad_zdejmij_czapke'},
+      {typ:'przytulas', x:620,y:202, zadanie:'Przytul tatę!', glos:'zad_przytulas'}
     ],
-    drzwi:{x:660,y:145,w:70,h:90,tekst:'Do okna!',okno:true,glos:'zad_okno'}
-  }
+    drzwi:{x:720,y:165,w:50,h:70,tekst:'Do sali!'}
+  },
+  { typ:'wyscig_okno', nazwa:'Wyścig do okna!', podtytul:'Biegnij i pomachaj tacie', glos:'poziom9' }
 ];
 
 /* ---------- poziomy Poli ---------- */
@@ -1129,7 +1147,7 @@ const G = {
   ekran:'wybor', kto:'franek', poziom:0, t:0, kartaT:0,
   gracz:null, kamera:0, zrobione:0, ekwipunek:[],
   czastki:[], overlay:null, info:null, infoT:0,
-  tata:{x:0,y:0}, mycie:null, jazda:null, wyscig:null, ostatnieZadanie:-1,
+  tata:{x:0,y:0}, mycie:null, jazda:null, wyscig:null, okno:null, ostatnieZadanie:-1,
   stroj:{spodnie:false, skarpetki:false, koszulka:false, czapka:false, kurtka:false, buty:false}
 };
 function nowaGra(){
@@ -1144,6 +1162,7 @@ function startPoziomu(i){
   const p = POZ()[i];
   if(p.typ === 'jazda'){ startJazdy(); return; }
   if(p.typ === 'wyscig'){ startWyscigu(); return; }
+  if(p.typ === 'wyscig_okno'){ startWyscigDoOkna(); return; }
   G.gracz = nowyGracz(p.start.x, p.start.y);
   G.kamera = 0; G.zrobione = 0; G.ekwipunek = [];
   G.czastki = []; G.overlay = null; G.ostatnieZadanie = -1;
@@ -1152,6 +1171,10 @@ function startPoziomu(i){
   G.ekran = 'gra';
   graj('muz_gra');
   ogloszZadanie(true);
+}
+function dalejPoPoziomie(){
+  if(G.poziom + 1 < POZ().length) kartaPoziomu(G.poziom + 1);
+  else { G.ekran = 'koniec'; graj('muz_koniec'); mow(bohater().glosKoniec); }
 }
 function kartaPoziomu(i){
   G.poziom = i; G.kartaT = 0; G.ekran = 'karta';
@@ -1180,16 +1203,32 @@ function iskry(x,y,kolory,n=14){
       kol:kolory[(Math.random()*kolory.length)|0], r:1+Math.random()*2});
   }
 }
+const SERDUSZKO = [
+".kk.kk.",
+"kqqqqqk",
+"kqqqqqk",
+".kqqqk.",
+"..kqk.."];
+function serduszka(x,y,n=14){                 // serduszka lecą do góry, nie spadają
+  for(let i=0;i<n;i++)
+    G.czastki.push({x:x+(Math.random()-0.5)*34, y:y+(Math.random()-0.5)*20,
+      vx:(Math.random()-0.5)*0.7, vy:-0.5-Math.random()*0.9,
+      zyc:70+Math.random()*45, serce:true, kol:'#fe6ecc', r:2});
+}
 function aktualizujEfekty(){
   for(let i=G.czastki.length-1;i>=0;i--){
     const c = G.czastki[i];
-    c.x+=c.vx; c.y+=c.vy; c.vy+=0.1; c.zyc--;
+    c.x+=c.vx; c.y+=c.vy; c.zyc--;
+    if(c.serce) c.vy *= 0.985; else c.vy += 0.1;
     if(c.zyc<=0) G.czastki.splice(i,1);
   }
   if(G.infoT>0) G.infoT--;
 }
 function rysujEfekty(){
-  for(const c of G.czastki) pr(c.x, c.y, Math.max(1,Math.round(c.r)), Math.max(1,Math.round(c.r)), c.kol);
+  for(const c of G.czastki){
+    if(c.serce) rysujSpr('serduszko', SERDUSZKO, c.x-3, c.y-2, false);
+    else pr(c.x, c.y, Math.max(1,Math.round(c.r)), Math.max(1,Math.round(c.r)), c.kol);
+  }
 }
 function pokazInfo(t){ G.info = t; G.infoT = 110; }
 
@@ -1353,8 +1392,13 @@ function aktualizujGre(){
 
   if(p.tata){
     const t = G.tata;
-    t.x += ((g.x - 38) - t.x) * 0.045;
-    t.y += ((g.y + g.h - 58) - t.y) * 0.12;
+    const nast = p.zadania[G.zrobione];
+    const czekaNaPrzytulas = nast && nast.typ === 'przytulas' && !nast.wziete;
+    // przy przytulasie tata staje w jednym miejscu i czeka z otwartymi rękami
+    const celX = czekaNaPrzytulas ? nast.x - 12 : g.x - 38;
+    const celY = czekaNaPrzytulas ? 177        : g.y + g.h - 58;
+    t.x += (celX - t.x) * (czekaNaPrzytulas ? 0.06 : 0.045);
+    t.y += (celY - t.y) * 0.12;
   }
 
   if(!blok){
@@ -1377,6 +1421,11 @@ function aktualizujGre(){
       iskry(z.x, z.y, ['#f8d878','#fffeff','#58d854','#3cbcfc']);
       const brawo = 'brawo' + (1 + ((Math.random()*4)|0));
       if(z.typ === 'sniadanie'){ G.overlay = {typ:'jedzenie', t:150}; mow('jedzenie'); }
+      else if(z.typ === 'przytulas'){
+        G.overlay = {typ:'przytulas', t:200};
+        serduszka(z.x, z.y - 6);
+        sfx('sfx_sukces'); mow('przytulas');
+      }
       else mow(brawo, glosZadania(p, G.zrobione));
       G.ostatnieZadanie = G.zrobione;
     }
@@ -1388,8 +1437,7 @@ function aktualizujGre(){
     if(zachodzi(g,{x:d.x,y:d.y,w:d.w,h:d.h})){
       sfx('sfx_sukces'); cisza();
       iskry(d.x+d.w/2, d.y+d.h/2, ['#f8d878','#fffeff','#58d854'], 26);
-      if(G.poziom+1 < POZ().length) kartaPoziomu(G.poziom+1);
-      else { G.ekran = 'koniec'; graj('muz_koniec'); mow(bohater().glosKoniec); }
+      dalejPoPoziomie();
     }
   }
   aktualizujEfekty();
@@ -1457,6 +1505,8 @@ function rysujGre(){
   ctx.translate(-Math.round(G.kamera), 0);
   for(const pl of p.platformy) rysujPlatforme(pl);
 
+  if(p.tata) rysujTate(G.tata.x, G.tata.y, 1, G.t*0.1);
+
   for(let i=0;i<p.zadania.length;i++){
     const z = p.zadania[i];
     if(z.wziete) continue;
@@ -1473,12 +1523,12 @@ function rysujGre(){
     ctx.globalAlpha = aktualny ? 1 : 0.4;
     rysujIkone(z.typ, z.x, z.y+un, false);
     ctx.globalAlpha = 1;
-    if(aktualny) strzalka(z.x, z.y - 22 + un, G.t);
+    // przy przytulasie strzałka idzie wyżej – nad głowę taty
+    if(aktualny) strzalka(z.x, z.y - (z.typ === 'przytulas' ? 48 : 22) + un, G.t);
   }
 
   const otwarte = G.zrobione >= p.zadania.length;
   rysujDrzwi(p.drzwi, otwarte, G.t);
-  if(p.tata) rysujTate(G.tata.x, G.tata.y, 1, G.t*0.1);
   rysujFranka(g.x, g.y, g.kier, g.chodT, !g.ziemia, g.vy>0);
   rysujEfekty();
   ctx.restore();
@@ -1497,6 +1547,7 @@ function rysujGre(){
     }
   }
   if(G.overlay && G.overlay.typ === 'jedzenie') rysujJedzenie(G.overlay);
+  if(G.overlay && G.overlay.typ === 'przytulas') rysujPrzytulas(G.overlay);
   if(G.infoT > 0){
     ramka(W/2-110, 232, 220, 24, '#a80020');
     napis(G.info, W/2, 244, '#f8d878', '#000000', 1);
@@ -1513,6 +1564,29 @@ function rysujJedzenie(o){
   ctx.drawImage(spr(pusta ? 'ik_miska' : 'ik_sniadanie', pusta ? IKONY.miska : IKONY.sniadanie), 0, 0);
   ctx.restore();
   napis(pusta ? 'ZJEDZONE!' : 'PYSZNE ŁÓDECZKI!', W/2, 172, '#fffeff', '#000000', 2);
+}
+function rysujPrzytulas(o){
+  const post = 1 - o.t/200;
+  ctx.globalAlpha = 0.75; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+  ramka(W/2-124, 40, 248, 190, '#a80020');
+  napis('PRZYTULAS!', W/2, 60, '#f8d878', '#000000', 2.4);
+
+  const b = Math.floor(Math.sin(G.t*0.11)*1.6);
+  const u = bohater().opiekunUbior;
+  ctx.save();
+  ctx.translate(W/2-44, 82+b); ctx.scale(2,2);
+  rysujTate(0, 0, 1, 0);
+  rysujFranka(20, 8, -1, 0, false, false);
+  pr(18, 30, 15, 4, u.gora);  pr(32, 30, 4, 4, SKORA);   // ręka taty na plecach
+  pr(11, 33, 12, 3, SKORA);                              // rączka Franka
+  ctx.restore();
+
+  for(let i=0;i<7;i++){                                  // serduszka fruwają wokół
+    const f = (G.t*0.9 + i*29) % 90;
+    const x = W/2 - 60 + i*20 + Math.sin((G.t+i*20)*0.06)*5;
+    rysujSpr('serduszko', SERDUSZKO, x, 176 - f*0.9, false);
+  }
+  napis(post > 0.55 ? 'DO WIDZENIA, TATO!' : 'MOCNO, MOCNO!', W/2, 212, '#fffeff', '#000000', 1.6);
 }
 function rysujHUD(p){
   pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
@@ -1961,6 +2035,15 @@ function rysujJazde(){
    Naciskanie ◀ i ▶ na zmianę rozpędza bohatera. Opiekun biegnie tuż obok,
    ale zawsze przegrywa o włos – dziecko ma wygrać. */
 const META_WYSCIGU = 1400;
+/* naprzemienne stukanie w strzałki dodaje prędkości (wspólne dla obu wyścigów) */
+function rozpedzBieg(w){
+  if(nowy('ArrowLeft')  && w.ostatni !== -1){ w.v += 0.55; w.ostatni = -1; sfx('sfx_skok'); }
+  if(nowy('ArrowRight') && w.ostatni !==  1){ w.v += 0.55; w.ostatni =  1; sfx('sfx_skok'); }
+  if(klaw.ArrowRight || klaw.ArrowLeft) w.v += 0.012;      // samo trzymanie też działa
+  w.v = Math.max(0, Math.min(3.4, w.v - 0.028));
+  w.x += w.v;
+  w.faza += w.v * 0.22;
+}
 function startWyscigu(){
   G.wyscig = {
     x:0, v:0, opiekun:-30, ostatni:0, odliczanie:180,
@@ -1974,16 +2057,10 @@ function aktualizujWyscig(){
   if(w.odliczanie > 0){ w.odliczanie--; aktualizujEfekty(); czyscNowe(); return; }
   if(w.koniecT > 0){
     w.koniecT--;
-    if(w.koniecT === 0) kartaPoziomu(G.poziom + 1);
+    if(w.koniecT === 0) dalejPoPoziomie();
     aktualizujEfekty(); czyscNowe(); return;
   }
-  // naprzemienne stukanie w strzałki dodaje prędkości
-  if(nowy('ArrowLeft')  && w.ostatni !== -1){ w.v += 0.55; w.ostatni = -1; sfx('sfx_skok'); }
-  if(nowy('ArrowRight') && w.ostatni !==  1){ w.v += 0.55; w.ostatni =  1; sfx('sfx_skok'); }
-  if(klaw.ArrowRight || klaw.ArrowLeft) w.v += 0.012;      // samo trzymanie też działa
-  w.v = Math.max(0, Math.min(3.4, w.v - 0.028));
-  w.x += w.v;
-  w.faza += w.v * 0.22;
+  rozpedzBieg(w);
 
   // opiekun goni, ale nie wyprzedza – trzyma się tuż za bohaterem
   const celOp = Math.min(w.x - 12, META_WYSCIGU - 90);
@@ -2060,6 +2137,148 @@ function rysujWyscig(){
     ctx.globalAlpha=0.6; pr(0,0,W,H,'#000000'); ctx.globalAlpha=1;
     napis(bohater().imie + ' WYGRYWA!', W/2, 110, '#f8d878', '#000000', 3);
     napis('BRAWO!', W/2, 145, '#fffeff', '#000000', 2);
+  } else {
+    napis('NACISKAJ  <  >  NA ZMIANĘ', W/2, 258, '#fffeff', '#000000', 1.6);
+  }
+}
+
+/* ==================== MINIGRA: WYŚCIG DO OKNA ====================
+   Korytarz przedszkola: Franek biegnie do okna, a tata idzie tą samą drogą
+   na zewnątrz, za szybą. Trzeba zdążyć, żeby pomachać mu na do widzenia.
+   Tata – jak w wyścigu do furtki – zawsze jest odrobinę wolniejszy. */
+const META_OKNA = 1100;
+function startWyscigDoOkna(){
+  G.okno = { x:0, v:0, opiekun:-70, ostatni:0, odliczanie:180,
+             faza:0, fazaOp:0, koniecT:0 };
+  G.czastki = []; G.ekran = 'wyscig_okno';
+  graj('muz_jazda'); mow('wyscig_start', 'zad_okno', 'wyscig');
+}
+function aktualizujWyscigDoOkna(){
+  const w = G.okno;
+  if(w.odliczanie > 0){ w.odliczanie--; aktualizujEfekty(); czyscNowe(); return; }
+  if(w.koniecT > 0){
+    w.koniecT--;
+    if(w.koniecT % 24 === 0) serduszka(384, 196, 3);
+    if(w.koniecT === 0) dalejPoPoziomie();
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  rozpedzBieg(w);
+  if(w.x > META_OKNA) w.x = META_OKNA;
+
+  const staryOp = w.opiekun;
+  w.opiekun += (Math.min(w.x - 6, META_OKNA - 26) - w.opiekun) * 0.055;
+  w.fazaOp += (w.opiekun - staryOp) * 0.24;
+
+  if(w.x >= META_OKNA && w.koniecT === 0){
+    w.koniecT = 260; sfx('sfx_sukces'); mow('pomachaj');
+    serduszka(384, 196, 10);
+    for(let i=0;i<50;i++) G.czastki.push({x:Math.random()*W, y:-8-Math.random()*70,
+      vx:(Math.random()-0.5)*1, vy:0.6+Math.random()*1.5, zyc:220,
+      kol:['#d82800','#f8d878','#58d854','#3cbcfc','#fe6ecc'][(Math.random()*5)|0], r:2+Math.random()*2});
+  }
+  aktualizujEfekty(); czyscNowe();
+}
+function rysujMachanie(x, y, t, kol){        // rączka machająca „pa pa”
+  const o = Math.floor(Math.sin(t*0.28)*3);
+  pr(x, y-6+o, 3, 9, kol);
+  pr(x-1, y-11+o, 5, 5, SKORA);
+}
+function rysujWyscigDoOkna(){
+  const w = G.okno;
+  const kam = Math.max(0, Math.min(META_OKNA - W + 150, w.x - 110));
+  const kr = Math.round(kam);
+
+  // ściana korytarza w kaflach
+  pr(0,0,W,H,'#c0dfff');
+  for(let j=0;j<11;j++) for(let i=-1;i<24;i++){
+    const x = i*22 - (kr%22), y = j*20;
+    pr(x,y,21,19,'#d3d2ff'); pr(x,y,21,1,'#fffeff'); pr(x,y+18,21,1,'#9290ff');
+  }
+  // lampy pod sufitem
+  for(let i=-1;i<6;i++){ const x = i*130 - (kr%130) + 30;
+    pr(x+20,20,4,6,'#4f4f4f'); pr(x,26,44,7,'#f8d878'); pr(x,31,44,2,'#ac7c00'); }
+
+  // wielkie okno na podwórko
+  pr(6,44,W-12,150,'#000000');
+  ctx.save();
+  ctx.beginPath(); ctx.rect(10,48,W-20,142); ctx.clip();
+  pr(10,48,W-20,142,'#5c94fc');
+  slonce(396,52,26);
+  const c1 = -Math.round(kam*0.2)%620;
+  for(let k=0;k<2;k++) for(const [x,y] of [[60,54],[290,64],[470,52]])
+    rysujSpr('ch',CHMURA, x+c1+k*620, y, false);
+  // domki za płotem
+  const c2 = -Math.round(kam*0.5)%300;
+  for(let k=-1;k<4;k++){ const x = c2 + k*300 + 30;
+    pr(x,80,74,46,'#f7d8a5'); obrys(x,80,74,46);
+    ctx.fillStyle='#a80020';
+    ctx.beginPath(); ctx.moveTo(x-8,82); ctx.lineTo(x+37,58); ctx.lineTo(x+82,82); ctx.closePath(); ctx.fill();
+    pr(x+10,92,20,15,'#64b0ff'); obrys(x+10,92,20,15);
+    pr(x+44,92,20,15,'#64b0ff'); obrys(x+44,92,20,15);
+  }
+  // trawnik i biały płotek
+  pr(10,126,W-20,64,'#58d854'); pr(10,126,W-20,4,'#b8f818');
+  const c3 = -Math.round(kam*0.85)%26;
+  for(let i=-1;i<21;i++){ const x = c3 + i*26 + 8;
+    pr(x,102,7,26,'#fffeff'); pr(x,102,2,26,'#e4e594'); }
+  pr(-10,108,W+20,3,'#fffeff'); pr(-10,118,W+20,3,'#fffeff');
+
+  // furtka na końcu drogi taty
+  const fx = Math.round(META_OKNA - kam) + 78;
+  if(fx > -90 && fx < W + 90){
+    pr(fx-6,96,8,86,'#503000'); pr(fx+48,96,8,86,'#503000');
+    pr(fx-10,88,68,9,'#d82800'); obrys(fx-10,88,68,9);
+    for(let i=0;i<4;i++) pr(fx+2+i*12,106,6,76,'#f8d878');
+  }
+
+  // tata za szybą – idzie tą samą drogą, ale zawsze odrobinę wolniej
+  const ox = Math.round(w.opiekun - kam) + 50;
+  rysujTate(ox, 120, 1, w.koniecT > 0 ? 0 : w.fazaOp);
+  if(w.koniecT > 0) rysujMachanie(ox+23, 134, G.t + 9, bohater().opiekunUbior.gora);
+  ctx.restore();
+
+  // szprosy, rama i parapet
+  for(let i=-1;i<6;i++){ const x = i*118 - (kr%118) + 24;
+    pr(x,44,7,150,'#fffeff'); pr(x,44,2,150,'#bcbcbc'); }
+  pr(6,94,W-12,6,'#fffeff'); pr(6,94,W-12,2,'#bcbcbc');
+  pr(6,44,W-12,6,'#fffeff'); pr(6,184,W-12,6,'#fffeff');
+  obrys(6,44,W-12,150);
+  pr(0,190,W,10,'#ac7c00'); pr(0,190,W,2,'#f7d8a5'); pr(0,198,W,2,'#503000');
+
+  // podłoga korytarza
+  blok(0,205,W,H-205,'#e4e594','#ac7c00','#883800');
+  for(let i=-(kr%44); i<W; i+=44) pr(i,205,2,H-205,'#883800');
+
+  // szyba mety – to okno, przy którym trzeba stanąć i pomachać
+  const mx = Math.round(META_OKNA - kam) + 44;
+  if(mx > -70 && mx < W + 70){
+    if(Math.floor(G.t/8)%2===0){
+      pr(mx-38,44,7,150,'#f8d878'); pr(mx+34,44,7,150,'#f8d878');
+      pr(mx-38,44,79,6,'#f8d878');  pr(mx-38,188,79,6,'#f8d878');
+    }
+    napis('OKNO', mx-2, 34, '#f8d878', '#000000', 1.6);
+  }
+
+  // Franek biegnie korytarzem
+  const bx = Math.round(Math.min(w.x, META_OKNA) - kam) + 50;
+  const stoi = w.koniecT > 0 || w.odliczanie > 0;
+  rysujFranka(bx, 185, 1, stoi ? 0 : w.faza, false, false);
+  if(w.koniecT > 0) rysujMachanie(bx+21, 199, G.t, bohater().ubior.gora);
+  rysujEfekty();
+
+  // pasek postępu
+  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+  napisL('WYŚCIG DO OKNA', 4, 10, '#fffeff', null, 1);
+  const post = Math.min(1, w.x/META_OKNA);
+  pr(W/2-80,4,160,12,'#000000'); pr(W/2-78,6,156,8,'#4f4f4f');
+  pr(W/2-78,6,Math.round(156*post),8,'#58d854');
+
+  if(w.odliczanie > 0){
+    const sek = Math.ceil(w.odliczanie/60);
+    napis(sek > 0 ? String(sek) : 'START!', W/2, 96, '#f8d878', '#000000', 6);
+  } else if(w.koniecT > 0){
+    napis('PA PA, TATO!', W/2, 68, '#f8d878', '#000000', 3);
+    napis('DO ZOBACZENIA PO PODWIECZORKU!', W/2, 258, '#fffeff', '#000000', 1.2);
   } else {
     napis('NACISKAJ  <  >  NA ZMIANĘ', W/2, 258, '#fffeff', '#000000', 1.6);
   }
@@ -2201,6 +2420,7 @@ function krok(){
     case 'mycie': aktualizujMycie(); break;
     case 'jazda': aktualizujJazde(); break;
     case 'wyscig': aktualizujWyscig(); break;
+    case 'wyscig_okno': aktualizujWyscigDoOkna(); break;
     case 'koniec':
       if(G.t % 5 === 0 && G.czastki.length < 120)
         G.czastki.push({x:Math.random()*W, y:-6, vx:(Math.random()-0.5)*1, vy:0.6+Math.random()*1.4,
@@ -2221,6 +2441,7 @@ function rysuj(){
     case 'mycie': rysujMycie(); break;
     case 'jazda': rysujJazde(); break;
     case 'wyscig': rysujWyscig(); break;
+    case 'wyscig_okno': rysujWyscigDoOkna(); break;
     case 'koniec': rysujKoniec(); break;
   }
 }
@@ -2229,6 +2450,27 @@ let powitano = false;
 function powitaj(){ if(powitano) return; powitano = true; graj('muz_menu'); mow('wybor'); }
 ['keydown','pointerdown','touchstart'].forEach(z => addEventListener(z, powitaj, {once:false}));
 requestAnimationFrame(petla);
+
+/* ==================== PWA: instalacja i zawsze świeża wersja ====================
+   Service worker trzyma grę offline, ale index.html bierze najpierw z sieci,
+   więc po każdym wejściu gra jest w najnowszej wersji. Gdy w tle pojawi się
+   nowa wersja, strona przeładowuje się sama (ale nigdy w środku zabawy). */
+if('serviceWorker' in navigator){
+  const bylJuzWorker = !!navigator.serviceWorker.controller;
+  let przeladowano = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if(!bylJuzWorker || przeladowano) return;   // pierwsza instalacja nie przeładowuje
+    przeladowano = true;
+    location.reload();
+  });
+  addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js', {scope:'./', updateViaCache:'none'}).then(rej => {
+      const sprawdz = () => { if(document.visibilityState === 'visible') rej.update().catch(()=>{}); };
+      addEventListener('visibilitychange', sprawdz);
+      setInterval(sprawdz, 15 * 60 * 1000);      // gra bywa włączona godzinami
+    }).catch(()=>{});
+  });
+}
 </script>
 </body>
 </html>
