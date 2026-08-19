@@ -137,6 +137,34 @@ NARRACJA = {
     'licz1':        'Jeden!',
     'szybciej2':    'Tata, jedź szybciej! Rura!',
     'koniec':       'Brawo Franek! Udało się! Jesteś w przedszkolu!',
+
+    # --- nowe etapy poranka Franka: światło, wstawanie, siku ---
+    'poziom_swiatlo':   'Poziom pierwszy. Ciemno! Zapal światło w pokoju.',
+    'poziom_wstawanie': 'Poziom drugi. Wstawaj Franek! Wygrzeb się z łóżka.',
+    'poziom_siku':      'Poziom trzeci. Lecimy do kibelka na siku!',
+    'swiatlo_jak':      'Wyciągnij rączkę do ściany. Strzałki w lewo i w prawo, '
+                        'a strzałka w górę naciska.',
+    'swiatlo_ok':       'Jasno! Brawo Franek!',
+    'swiatlo_zle':      'To nie to. Szukaj kontaktu na ścianie!',
+    'wstawanie_jak':    'Naciskaj w lewo i w prawo na zmianę, żeby wstać z łóżka!',
+    'wstawanie_ok':     'Wstałeś! Brawo! Teraz lecimy do kibelka.',
+    'wstawanie_spij':   'Nie zasypiaj! Naciskaj szybciej!',
+    'siku_jak':         'Sikaj do środka muszli. Strzałka w lewo bliżej, '
+                        'w prawo dalej. Nie obsikaj deski!',
+    'siku_deska':       'Ups! Celuj do wody w środku!',
+    'siku_ok':          'Wszystko do środka i deska czysta! Brawo! Spłukujemy.',
+    'siku_koniec':      'Spłukujemy. Teraz umyj rączki!',
+
+    # --- przenumerowane zapowiedzi poziomów Franka (po dodaniu trzech etapów) ---
+    'f_poziom4':  'Poziom czwarty. Ubierz się po kolei.',
+    'f_poziom5':  'Poziom piąty. Zejdź po schodach i zrób sobie śniadanko.',
+    'f_poziom6':  'Poziom szósty. Czas umyć ząbki!',
+    'f_poziom7':  'Poziom siódmy. Ubieramy się i wychodzimy!',
+    'f_poziom8':  'Poziom ósmy. Idziemy do samochodu, tata już czeka.',
+    'f_poziom9':  'Poziom dziewiąty. Jedziemy do przedszkola!',
+    'f_poziom10': 'Poziom dziesiąty. Wyścig z tatą do furtki przedszkola!',
+    'f_poziom11': 'Poziom jedenasty. Szatnia! Rozbierz się i przytul tatę.',
+    'f_poziom12': 'Ostatni poziom! Wyścig do okna. Zdąż pomachać tacie!',
 }
 
 EFEKTY = {

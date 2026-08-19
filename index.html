@@ -22,16 +22,32 @@
     image-rendering:pixelated;image-rendering:crisp-edges;
     box-shadow:0 0 0 4px #1a1c2c, 0 0 60px rgba(0,0,0,.8);touch-action:none;display:block;}
   canvas:focus{outline:3px solid #f8d878;outline-offset:6px;}
-  #dotyk{position:fixed;inset:auto 0 0 0;display:none;justify-content:space-between;
-    padding:14px 18px;box-sizing:border-box;pointer-events:none;}
-  #dotyk .grupa{display:flex;gap:12px;pointer-events:auto;}
-  #dotyk button{width:78px;height:78px;border-radius:10px;border:3px solid #fffeff;font-size:32px;color:#fffeff;
-    background:rgba(0,0,0,.45);font-family:monospace;}
+  /* Przyciski dotykowe leżą na sztywnych pozycjach, bo w niektórych etapach
+     ◀ i ▶ rozjeżdżają się do obu krawędzi – wtedy gra się dwoma kciukami. */
+  #dotyk{position:fixed;inset:0;display:none;pointer-events:none;
+    --bw:78px; --pad:18px; --luz:12px;}
+  #dotyk button{position:absolute;bottom:calc(var(--pad) - 4px);pointer-events:auto;
+    width:var(--bw);height:var(--bw);border-radius:10px;border:3px solid #fffeff;
+    font-size:32px;color:#fffeff;background:rgba(0,0,0,.45);font-family:monospace;}
   #dotyk button:active{background:rgba(248,216,120,.6);}
-  body.dotyk #dotyk{display:flex;}
-  /* ▼ zmienia pas tylko w samochodzie – na platformówce nic nie robi */
+  body.dotyk #dotyk{display:block;}
+  /* domyślnie: chodzenie po lewej pod jednym kciukiem, skok po prawej */
+  #dotyk button[data-k="ArrowLeft"] {left:var(--pad);}
+  #dotyk button[data-k="ArrowRight"]{left:calc(var(--pad) + var(--bw) + var(--luz));}
+  #dotyk button[data-k="ArrowUp"]   {right:var(--pad);}
+  #dotyk button[data-k="ArrowDown"] {right:calc(var(--pad) + var(--bw) + var(--luz));}
+  /* ▼ zmienia pas tylko w samochodzie, a strefę tylko przy myciu ząbków */
   #dotyk button[data-k="ArrowDown"]{display:none;}
-  body.wAucie #dotyk button[data-k="ArrowDown"]{display:block;}
+  body.wAucie #dotyk button[data-k="ArrowDown"],
+  body.strefy #dotyk button[data-k="ArrowDown"]{display:block;}
+  /* etapy „na dwa kciuki" (wyścigi, szorowanie, sikanie, wstawanie, światło):
+     ◀ przy lewej krawędzi, ▶ przy prawej, a ▲ ▼ na środku pod spodem */
+  body.dwaKciuki #dotyk button[data-k="ArrowRight"]{left:auto;right:var(--pad);}
+  body.dwaKciuki #dotyk button[data-k="ArrowUp"]{right:auto;left:50%;
+    margin-left:calc(var(--luz) / 2);}
+  body.dwaKciuki #dotyk button[data-k="ArrowDown"]{right:auto;left:50%;
+    margin-left:calc(-1 * var(--bw) - var(--luz) / 2);}
+  body.dwaKciuki:not(.strefy) #dotyk button[data-k="ArrowUp"]{margin-left:calc(var(--bw) / -2);}
   #glosnik{position:fixed;top:10px;right:12px;width:44px;height:44px;border:3px solid #fffeff;
     border-radius:8px;background:rgba(0,0,0,.5);color:#fffeff;font-size:20px;cursor:pointer;}
 
@@ -85,8 +101,8 @@
   }
   /* niskie ekrany (telefon poziomo) – mniejsze przyciski, żeby nie zasłaniały gry */
   @media (pointer: coarse) and (max-height: 460px){
-    #dotyk{padding:8px 10px;}
-    #dotyk button{width:58px;height:58px;font-size:24px;opacity:.75;}
+    #dotyk{--bw:58px; --pad:12px; --luz:10px;}
+    #dotyk button{font-size:24px;opacity:.75;}
     #glosnik{width:36px;height:36px;font-size:16px;top:6px;right:8px;}
   }
 </style>
@@ -108,8 +124,8 @@
   </div>
 </div>
 <div id="dotyk">
-  <div class="grupa"><button data-k="ArrowLeft">◀</button><button data-k="ArrowRight">▶</button></div>
-  <div class="grupa"><button data-k="ArrowDown">▼</button><button data-k="ArrowUp">▲</button></div>
+  <button data-k="ArrowLeft">◀</button><button data-k="ArrowRight">▶</button>
+  <button data-k="ArrowDown">▼</button><button data-k="ArrowUp">▲</button>
 </div>
 <script>
 "use strict";
@@ -141,6 +157,9 @@ addEventListener('keydown', e => {
   if (KLAWISZE.includes(e.key)) { e.preventDefault(); if(!klaw[e.key]) klaw[e.key+'_nowy']=true; klaw[e.key]=true; }
   odblokujDzwiek();
   if (e.key === 'ArrowUp') pelnyEkranPrzyWyborze();
+  // DEBUG: P – następny etap, O – poprzedni (do podglądania, jak co wygląda)
+  if (e.key === 'p' || e.key === 'P') debugEtap(1);
+  if (e.key === 'o' || e.key === 'O') debugEtap(-1);
 });
 addEventListener('keyup', e => { if (KLAWISZE.includes(e.key)) { e.preventDefault(); klaw[e.key]=false; } });
 addEventListener('blur', () => KLAWISZE.forEach(k => klaw[k]=false));
@@ -317,7 +336,13 @@ function graj(klucz){
   }
 }
 const KLUCZE_MUZ = ['muz_menu','muz_gra','muz_jazda','muz_koniec'];
-const KLUCZE_MOWA = ['brawo1','brawo2','brawo3','brawo4','jazda','jedzenie','koniec','licz1',
+const KLUCZE_MOWA = [
+  // nowe etapy: światło, wstawanie, siku – oraz przenumerowane poziomy Franka
+  'poziom_swiatlo','poziom_wstawanie','poziom_siku','swiatlo_jak','swiatlo_ok','swiatlo_zle',
+  'wstawanie_jak','wstawanie_ok','wstawanie_spij','siku_jak','siku_deska','siku_ok','siku_koniec',
+  'f_poziom4','f_poziom5','f_poziom6','f_poziom7','f_poziom8','f_poziom9','f_poziom10',
+  'f_poziom11','f_poziom12',
+  'brawo1','brawo2','brawo3','brawo4','jazda','jedzenie','koniec','licz1',
   'licz2','licz3','licz4','licz5','mama_czeka','mycie','mycie2','mycie_koniec','p_koniec',
   'p_poziom1','p_poziom2','p_poziom3','p_poziom4','p_poziom5','p_poziom6','p_start','pomachaj',
   'poziom1','poziom2','poziom3','poziom4','poziom5','poziom6','poziom7','poziom8','poziom9',
@@ -406,6 +431,14 @@ function slonce(x,y,r){                 // pikselowe koło – liczone wiersz po
     const pol = Math.sqrt(Math.max(0, wr*wr - dy*dy));
     if(pol < 0.5) continue;
     pr(cx-pol, y+j, pol*2, 1, '#fffeff');
+  }
+}
+
+function kolo(cx, cy, r, kol){            // pikselowe koło (środek, promień)
+  for(let j=-r;j<=r;j++){
+    const pol = Math.sqrt(Math.max(0, r*r - j*j));
+    if(pol < 0.5) continue;
+    pr(cx-pol, cy+j, pol*2, 1, kol);
   }
 }
 
@@ -942,7 +975,11 @@ const TLA = {
 
 /* ==================== POZIOMY (współrzędne w pikselach 480x270) ==================== */
 const POZIOMY_FRANEK = [
-  { nazwa:'Wstawaj, Franek!', podtytul:'Ubierz się po kolei', tlo:'sypialnia', szer:950, glos:'poziom1',
+  { typ:'swiatlo',   nazwa:'Ciemno!',           podtytul:'Zapal światło w pokoju', glos:'poziom_swiatlo' },
+  { typ:'wstawanie', nazwa:'Wstawaj, Franek!',  podtytul:'Wygrzeb się z łóżka',    glos:'poziom_wstawanie' },
+  { typ:'siku',      nazwa:'Siku do kibelka',   podtytul:'Nie obsikaj deski!',     glos:'poziom_siku' },
+  { nazwa:'Ubieramy się', podtytul:'Ubierz się po kolei', tlo:'sypialnia', szer:950,
+    glos:'f_poziom4', glosZapas:'poziom1',
     start:{x:60,y:140},
     platformy:[
       {x:0,y:235,w:950,h:35,styl:'podloga'},
@@ -960,7 +997,8 @@ const POZIOMY_FRANEK = [
     ],
     drzwi:{x:870,y:165,w:50,h:70,tekst:'Na dół!'}
   },
-  { nazwa:'Śniadanko', podtytul:'Zejdź po schodach', tlo:'kuchnia', szer:1150, glos:'poziom2',
+  { nazwa:'Śniadanko', podtytul:'Zejdź po schodach', tlo:'kuchnia', szer:1150,
+    glos:'f_poziom5', glosZapas:'poziom2',
     start:{x:40,y:40},
     platformy:[
       {x:0,y:235,w:1150,h:35,styl:'podloga'},
@@ -981,7 +1019,8 @@ const POZIOMY_FRANEK = [
     ],
     drzwi:{x:1075,y:165,w:50,h:70,tekst:'Do łazienki!'}
   },
-  { nazwa:'Myjemy ząbki', podtytul:'Dwie minuty szorowania', tlo:'lazienka', szer:725, glos:'poziom3',
+  { nazwa:'Myjemy ząbki', podtytul:'Dwie minuty szorowania', tlo:'lazienka', szer:725,
+    glos:'f_poziom6', glosZapas:'poziom3',
     start:{x:30,y:170},
     platformy:[
       {x:0,y:235,w:725,h:35,styl:'kafle'},
@@ -996,7 +1035,8 @@ const POZIOMY_FRANEK = [
     ],
     drzwi:{x:635,y:165,w:50,h:70,tekst:'Do przedpokoju!'}
   },
-  { nazwa:'Wychodzimy!', podtytul:'Czapka, kurtka i buty', tlo:'przedpokoj', szer:875, glos:'poziom4',
+  { nazwa:'Wychodzimy!', podtytul:'Czapka, kurtka i buty', tlo:'przedpokoj', szer:875,
+    glos:'f_poziom7', glosZapas:'poziom4',
     start:{x:30,y:170},
     platformy:[
       {x:0,y:235,w:875,h:35,styl:'podloga'},
@@ -1009,7 +1049,8 @@ const POZIOMY_FRANEK = [
     ],
     drzwi:{x:780,y:160,w:55,h:75,tekst:'Na dwór!'}
   },
-  { nazwa:'Do samochodu!', podtytul:'Tata już czeka', tlo:'podworko', szer:800, tata:true, glos:'poziom5',
+  { nazwa:'Do samochodu!', podtytul:'Tata już czeka', tlo:'podworko', szer:800, tata:true,
+    glos:'f_poziom8', glosZapas:'poziom5',
     start:{x:30,y:170},
     platformy:[
       {x:0,y:235,w:800,h:35,styl:'ziemia'},
@@ -1020,10 +1061,12 @@ const POZIOMY_FRANEK = [
     zadania:[],
     drzwi:{x:650,y:170,w:115,h:65,tekst:'Wsiadaj!',auto:true}
   },
-  { typ:'jazda', nazwa:'Jedziemy do przedszkola!', podtytul:'▲▼ pas, ▶ szybciej', glos:'poziom6' },
-  { typ:'wyscig', nazwa:'Wyścig do furtki!', podtytul:'Naciskaj ◀ ▶ na zmianę', glos:'poziom7' },
+  { typ:'jazda', nazwa:'Jedziemy do przedszkola!', podtytul:'▲▼ pas, ▶ szybciej',
+    glos:'f_poziom9', glosZapas:'poziom6' },
+  { typ:'wyscig', nazwa:'Wyścig do furtki!', podtytul:'Naciskaj ◀ ▶ na zmianę',
+    glos:'f_poziom10', glosZapas:'poziom7' },
   { nazwa:'Szatnia', podtytul:'Rozbierz się i przytul tatę', tlo:'szatnia', szer:820,
-    tata:true, glos:'poziom8', start:{x:30,y:170},
+    tata:true, glos:'f_poziom11', glosZapas:'poziom8', start:{x:30,y:170},
     platformy:[
       {x:0,y:235,w:820,h:35,styl:'kafle'},
       {x:110,y:205,w:110,h:30,styl:'lawka'},
@@ -1038,7 +1081,8 @@ const POZIOMY_FRANEK = [
     ],
     drzwi:{x:720,y:165,w:50,h:70,tekst:'Do sali!'}
   },
-  { typ:'wyscig_okno', nazwa:'Wyścig do okna!', podtytul:'Biegnij i pomachaj tacie', glos:'poziom9' }
+  { typ:'wyscig_okno', nazwa:'Wyścig do okna!', podtytul:'Biegnij i pomachaj tacie',
+    glos:'f_poziom12', glosZapas:'poziom9' }
 ];
 
 /* ---------- poziomy Poli ---------- */
@@ -1180,6 +1224,7 @@ const G = {
   gracz:null, kamera:0, zrobione:0, ekwipunek:[],
   czastki:[], overlay:null, info:null, infoT:0,
   tata:{x:0,y:0}, mycie:null, jazda:null, wyscig:null, okno:null, ostatnieZadanie:-1,
+  swiatlo:null, wstawanie:null, siku:null, debug:0,
   stroj:{spodnie:false, skarpetki:false, koszulka:false, czapka:false, kurtka:false, buty:false}
 };
 function nowaGra(){
@@ -1189,12 +1234,18 @@ function nowaGra(){
 function nowyGracz(x,y){
   return { x, y, w:22, h:50, vx:0, vy:0, ziemia:false, kier:1, chodT:0, coyote:0, bufor:0, bezpiecz:{x,y} };
 }
+const STARTY_MINIGIER = {
+  jazda: () => startJazdy(),
+  wyscig: () => startWyscigu(),
+  wyscig_okno: () => startWyscigDoOkna(),
+  swiatlo: () => startSwiatla(),
+  wstawanie: () => startWstawania(),
+  siku: () => startSiku()
+};
 function startPoziomu(i){
   G.poziom = i;
   const p = POZ()[i];
-  if(p.typ === 'jazda'){ startJazdy(); return; }
-  if(p.typ === 'wyscig'){ startWyscigu(); return; }
-  if(p.typ === 'wyscig_okno'){ startWyscigDoOkna(); return; }
+  if(p.typ){ STARTY_MINIGIER[p.typ](); return; }
   G.gracz = nowyGracz(p.start.x, p.start.y);
   G.kamera = 0; G.zrobione = 0; G.ekwipunek = [];
   G.czastki = []; G.overlay = null; G.ostatnieZadanie = -1;
@@ -1211,7 +1262,42 @@ function dalejPoPoziomie(){
 function kartaPoziomu(i){
   G.poziom = i; G.kartaT = 0; G.ekran = 'karta';
   graj('muz_menu');
-  mow(POZ()[i].glos);
+  const p = POZ()[i];
+  mow(najlepszyGlos(p.glos, p.glosZapas));
+}
+/* Nowe kwestie narratora dochodzą osobnym plikiem. Póki go nie ma, gra sięga
+   po starą kwestię tego poziomu, żeby zawsze coś powiedzieć. */
+function najlepszyGlos(...klucze){
+  const pewny = klucze.find(k => k && gotowe[k] === true);
+  if(pewny) return pewny;
+  return klucze.find(k => k && gotowe[k] !== false) || null;
+}
+
+/* ==================== DEBUG: P / O przeskakuje etapy ==================== */
+function debugEtap(kierunek){
+  if(G.ekran === 'wybor' || G.ekran === 'intro'){
+    if(G.ekran === 'wybor' && kierunek < 0) return;
+    nowaGra(); G.debug = 150; startPoziomu(0); return;
+  }
+  const ile = POZ().length;
+  let i = G.poziom + kierunek;
+  if(i < 0) i = ile - 1;
+  if(i >= ile) i = 0;
+  cisza();
+  G.mycie = null; G.jazda = null; G.wyscig = null; G.okno = null;
+  G.swiatlo = null; G.wstawanie = null; G.siku = null;
+  G.czastki = []; G.overlay = null;
+  G.debug = 150;
+  startPoziomu(i);
+  sfx('sfx_zbierz');
+}
+function rysujDebug(){
+  if(G.debug <= 0) return;
+  G.debug--;
+  const t = 'DEBUG  ETAP ' + (G.poziom+1) + '/' + POZ().length + '  (P / O)';
+  const w = szerTekstu(t, 1) + 8;
+  pr(W-w-2, H-13, w, 11, '#000000');
+  napisL(t, W-w+2, H-8, '#b8f818', null, 1);
 }
 function glosZadania(p, idx){
   if(idx >= p.zadania.length) return p.drzwi.glos || (p.drzwi.auto ? 'zad_samochod' : 'zad_drzwi');
@@ -1584,6 +1670,7 @@ function rysujGre(){
     ramka(W/2-110, 232, 220, 24, '#a80020');
     napis(G.info, W/2, 244, '#f8d878', '#000000', 1);
   }
+  rysujDebug();
 }
 function rysujJedzenie(o){
   const post = 1 - o.t/150;
@@ -1637,6 +1724,499 @@ function rysujHUD(p){
   }
 }
 
+
+/* ==================== MINIGRA: ZAPAL ŚWIATŁO ====================
+   Pierwszy etap poranka. W pokoju jest ciemno, Franek leży w łóżku i wyciąga
+   rączkę do ściany. ◀ ▶ przesuwają rączkę, ▲ naciska. Kontakt jest jeden,
+   a obok wiszą obrazek i gniazdko – w nie naciskać nie ma sensu. */
+const RZECZY_NA_SCIANIE = [
+  {x:232, w:30, h:26, y:120, co:'obrazek'},
+  {x:314, w:22, h:32, y:118, co:'kontakt'},
+  {x:402, w:20, h:20, y:124, co:'gniazdko'}
+];
+const REKA_OD = 214, REKA_DO = 428, REKA_Y = 134;
+function startSwiatla(){
+  G.swiatlo = { reka:0.06, zapalone:false, koniecT:0, pudlo:0, klik:0 };
+  G.czastki = []; G.ekran = 'swiatlo';
+  graj('muz_menu');
+  mow(najlepszyGlos('swiatlo_jak'));
+}
+function rekaX(sw){ return REKA_OD + sw.reka * (REKA_DO - REKA_OD); }
+function celPodRekao(sw){
+  const x = rekaX(sw);
+  return RZECZY_NA_SCIANIE.find(r => x > r.x - 12 && x < r.x + r.w + 12) || null;
+}
+function aktualizujSwiatlo(){
+  const sw = G.swiatlo;
+  if(sw.koniecT > 0){
+    sw.koniecT--;
+    if(sw.koniecT === 0) dalejPoPoziomie();
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(sw.pudlo > 0) sw.pudlo--;
+  if(sw.klik > 0) sw.klik--;
+
+  let ruch = 0;
+  if(klaw.ArrowLeft)  ruch -= 1;
+  if(klaw.ArrowRight) ruch += 1;
+  sw.reka = Math.max(0, Math.min(1, sw.reka + ruch*0.011));
+
+  if(nowy('ArrowUp')){
+    const cel = celPodRekao(sw);
+    sw.klik = 12;
+    if(cel && cel.co === 'kontakt'){
+      sw.zapalone = true; sw.koniecT = 190;
+      sfx('sfx_sukces'); cisza(); mow(najlepszyGlos('swiatlo_ok'));
+      iskry(cel.x + cel.w/2, cel.y + cel.h/2, ['#f8d878','#fffeff','#b8f818'], 30);
+    } else {
+      sw.pudlo = 90; sfx('sfx_zle');            // napis „TO NIE TO!" rysuje rysujSwiatlo
+      dopowiedz(najlepszyGlos('swiatlo_zle'));
+    }
+  }
+  // iskierki nad rączką, gdy jest już blisko kontaktu – podpowiedź dla malucha
+  const cel = celPodRekao(sw);
+  if(cel && cel.co === 'kontakt' && G.t % 6 === 0)
+    G.czastki.push({x:rekaX(sw)+(Math.random()-0.5)*10, y:REKA_Y-8, vx:0, vy:-0.4,
+                    zyc:26, kol:'#f8d878', r:1});
+  aktualizujEfekty(); czyscNowe();
+}
+function rysujSwiatlo(){
+  const sw = G.swiatlo;
+  const jasno = sw.zapalone;
+  const sciana  = jasno ? '#f7d8a5' : '#181a3a';
+  const pasek   = jasno ? '#e4e594' : '#22254e';
+  const podloga = jasno ? '#ac7c00' : '#191428';
+  const kontur  = jasno ? '#503000' : '#0d0e20';
+
+  pr(0,0,W,H,sciana);
+  for(let i=0;i<W;i+=16) pr(i,0,8,206,pasek);
+  pr(0,206,W,4,kontur);
+  pr(0,210,W,H-210,podloga);
+  for(let i=0;i<W;i+=22) pr(i,210,1,H-210,kontur);
+
+  // lampa pod sufitem
+  pr(238,0,4,26,jasno ? '#503000' : '#0d0e20');
+  if(jasno){
+    ctx.globalAlpha = 0.35;
+    ctx.fillStyle = '#f8d878';
+    ctx.beginPath(); ctx.moveTo(224,34); ctx.lineTo(256,34); ctx.lineTo(340,210); ctx.lineTo(140,210);
+    ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
+  }
+  kolo(240, 36, 15, jasno ? '#f8d878' : '#2b2b33');
+  kolo(240, 34, 8, jasno ? '#fffeff' : '#4f4f4f');
+  pr(234,20,12,6, jasno ? '#ac7c00' : '#22254e');
+
+  // okno z księżycem albo z porankiem
+  pr(58,34,96,74,'#000000');
+  pr(60,36,92,70, jasno ? '#64b0ff' : '#0b1030');
+  if(jasno){ pr(60,88,92,18,'#58d854'); slonce(96,50,30); }
+  else {
+    for(const [gx,gy] of [[70,46],[92,68],[126,44],[140,84],[108,92],[82,96]])
+      pr(gx,gy,2,2, Math.floor(G.t/14+gx)%3 ? '#fffeff' : '#c0dfff');
+    kolo(126,60,13,'#e4e594'); kolo(132,57,11,'#0b1030');
+  }
+  pr(60,36,92,3,'#fffeff'); pr(104,36,3,70,'#fffeff'); pr(60,68,92,3,'#fffeff');
+
+  // rzeczy na ścianie
+  for(const r of RZECZY_NA_SCIANIE){
+    if(r.co === 'obrazek'){
+      pr(r.x,r.y,r.w,r.h,'#000000');
+      pr(r.x+2,r.y+2,r.w-4,r.h-4, jasno ? '#3cbcfc' : '#1d2a52');
+      pr(r.x+2,r.y+r.h-9,r.w-4,7, jasno ? '#00a800' : '#16303a');
+      pr(r.x+r.w-11,r.y+5,7,7, jasno ? '#f8d878' : '#3a3a52');
+    } else if(r.co === 'kontakt'){
+      // kontakt świeci i ma strzałkę – tak jak każda rzecz „do wzięcia teraz"
+      if(!jasno){
+        const rr = 12 + (Math.floor(G.t/8)%2)*2;
+        const cx = r.x + r.w/2, cy = r.y + r.h/2;
+        for(const [sx,sy] of [[-1,-1],[1,-1],[-1,1],[1,1]])
+          pr(cx + sx*rr - 1, cy + sy*rr - 1, 2, 2, '#f8d878');
+      }
+      pr(r.x-1,r.y-1,r.w+2,r.h+2,'#000000');
+      pr(r.x,r.y,r.w,r.h, jasno ? '#fffeff' : '#8a90c0');
+      pr(r.x+4,r.y+ (jasno ? 4 : r.h-16), r.w-8, 12, jasno ? '#e4e4ee' : '#c0dfff');
+      pr(r.x+4,r.y+ (jasno ? 4 : r.h-16), r.w-8, 2, '#fffeff');
+      if(!jasno) strzalka(r.x + r.w/2, r.y - 20, G.t);
+    } else {
+      pr(r.x,r.y,r.w,r.h, jasno ? '#e4e4ee' : '#4a4f78'); obrys(r.x,r.y,r.w,r.h);
+      pr(r.x+5,r.y+7,3,6,'#000000'); pr(r.x+12,r.y+7,3,6,'#000000');
+    }
+  }
+
+  // łóżko z Frankiem – leży pod kołdrą i wyciąga rączkę do ściany
+  const u = bohater().ubior;
+  pr(58,168,150,10, jasno ? '#ac7c00' : '#241d3a');            // zagłówek
+  pr(58,178,150,46, jasno ? '#b71e7b' : '#2b1436'); obrys(58,178,150,46);
+  pr(64,166,44,16,'#fffeff'); obrys(64,166,44,16);             // poduszka
+  const gl = obraz(bohater().glowa);
+  if(gl) ctx.drawImage(gl, 74, 148, 24, 22);
+  else pr(74,148,24,22,SKORA);
+
+  // rączka: od ramienia w łóżku do dłoni na ścianie
+  const hx = Math.round(rekaX(sw)), hy = REKA_Y + (sw.klik > 6 ? 3 : 0);
+  const sx = 150, sy = 176;
+  const n = 30;
+  for(let i=1;i<=n;i++){
+    const t = i/n;
+    const rx = sx + (hx-sx)*t, ry = sy + (hy-sy)*t;
+    pr(rx-3, ry-3, 6, 6, '#000000');
+    pr(rx-2, ry-2, 4, 4, i > n-4 ? SKORA : (jasno ? u.pizama : '#5a5f8a'));
+  }
+  pr(hx-5, hy-5, 10, 10, SKORA); obrys(hx-5, hy-5, 10, 10);
+  pr(hx-4, hy-4, 8, 3, '#ffe4dc');
+
+  // kołdra na wierzchu – zasłania resztę Franka
+  pr(104,180,104,40, jasno ? '#fec4ea' : '#3a2350');
+  for(let j=0;j<40;j+=8) pr(104,180+j,104,2, jasno ? '#fe6ecc' : '#472a60');
+  obrys(104,180,104,40);
+
+  if(!sw.zapalone){
+    for(let i=0;i<3;i++){                                       // zzz nad głową
+      const f = (G.t*0.6 + i*30) % 90;
+      napis('Z', 104 + f*0.4, 142 - f*0.5, '#c0dfff', '#000000', 1 + i*0.3);
+    }
+  }
+  rysujEfekty();
+
+  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+  napisL('CIEMNO! ZAPAL ŚWIATŁO', 4, 10, '#fffeff', null, 1);
+  if(sw.koniecT > 0){
+    ramka(W/2-150, 42, 300, 66, '#0000bc');
+    napis('JASNO!', W/2, 64, '#f8d878', '#000000', 3.4);
+    napis('BRAWO! TERAZ WSTAWAJ!', W/2, 92, '#fffeff', '#000000', 1.6);
+  } else if(sw.pudlo > 0){
+    ramka(W/2-110, 40, 220, 30, '#a80020');
+    napis('TO NIE TO!', W/2, 55, '#f8d878', '#000000', 2.2);
+    napis('SZUKAJ KONTAKTU NA ŚCIANIE', W/2, 258, '#fffeff', '#000000', 1.2);
+  } else {
+    napis('SIĘGNIJ  <  >     NACIŚNIJ  ^', W/2, 258, '#fffeff', '#000000', 1.4);
+  }
+  rysujDebug();
+}
+
+/* ==================== MINIGRA: WSTAWANIE ====================
+   Wstać wcale nie jest łatwo. Naprzemienne ◀ ▶ wygrzebują Franka z łóżka,
+   a sen ciągnie go z powrotem – co chwilę przychodzi „atak snu", w którym
+   pasek spada dużo szybciej. */
+function startWstawania(){
+  G.wstawanie = { moc:0, ostatni:0, koniecT:0, atak:0, doAtaku:240, tupanie:0, powiedziano:0, czas:0 };
+  G.czastki = []; G.ekran = 'wstawanie';
+  graj('muz_gra');
+  mow(najlepszyGlos('wstawanie_jak'));
+}
+function aktualizujWstawanie(){
+  const w = G.wstawanie;
+  if(w.koniecT > 0){
+    w.koniecT--;
+    if(w.koniecT === 0) dalejPoPoziomie();
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  // Po 20 sekundach sen zaczyna odpuszczać – nawet powolne stukanie w końcu
+  // wystarczy, bo w tej grze nie da się przegrać.
+  w.czas++;
+  const ulga = Math.min(1, Math.max(0, (w.czas - 1200)/1800));
+  const kop = 0.075 + 0.05*ulga;
+
+  // naprzemienne stukanie podnosi Franka
+  let stuk = false;
+  if(nowy('ArrowLeft')  && w.ostatni !== -1){ w.moc += kop; w.ostatni = -1; stuk = true; }
+  if(nowy('ArrowRight') && w.ostatni !==  1){ w.moc += kop; w.ostatni =  1; stuk = true; }
+  if(klaw.ArrowLeft || klaw.ArrowRight) w.moc += 0.0012;   // samo trzymanie nie wystarczy
+  if(stuk){ w.tupanie = 8; sfx('sfx_skok'); }
+  if(w.tupanie > 0) w.tupanie--;
+
+  // sen ciągnie w dół, a w ataku snu ciągnie mocno
+  if(w.atak > 0){
+    w.atak--;
+    w.moc -= 0.007 - 0.005*ulga;
+    if(G.t % 8 === 0) G.czastki.push({x:150+Math.random()*40, y:150, vx:0.3, vy:-0.5,
+                                      zyc:40, kol:'#c0dfff', r:2});
+  } else {
+    w.moc -= 0.0025 - 0.0018*ulga;
+    if(--w.doAtaku <= 0 && w.moc < 0.94 && ulga < 0.9){
+      w.atak = 80; w.doAtaku = 260 + ((Math.random()*120)|0);
+      sfx('sfx_zle');
+      if(w.powiedziano++ < 2) dopowiedz(najlepszyGlos('wstawanie_spij'));
+    }
+  }
+  w.moc = Math.max(0, Math.min(1, w.moc));
+
+  if(w.moc >= 1 && w.koniecT === 0){
+    w.koniecT = 190; w.atak = 0;
+    sfx('sfx_sukces'); cisza(); mow(najlepszyGlos('wstawanie_ok'));
+    iskry(300, 150, ['#f8d878','#fffeff','#58d854'], 30);
+  }
+  aktualizujEfekty(); czyscNowe();
+}
+function rysujWstawanie(){
+  const w = G.wstawanie;
+  const u = bohater().ubior;
+  TLA.sypialnia(0, G.t);
+
+  // podłoga i łóżko
+  pr(0,232,W,H-232,'#ac7c00'); pr(0,232,W,2,'#e45c10');
+  for(let i=0;i<W;i+=18) pr(i,234,1,H-234,'#503000');
+  pr(112,168,224,10,'#ac7c00'); obrys(112,168,224,10);
+  pr(112,178,224,54,'#b71e7b'); obrys(112,178,224,54);
+  pr(118,180,212,10,'#e4e4ee');                       // prześcieradło
+  pr(236,164,64,16,'#fffeff'); obrys(236,164,64,16);  // poduszka
+
+  const drg = w.tupanie > 0 ? (Math.floor(G.t/2)%2 ? 1 : -1) : 0;
+  const siada = Math.min(1, w.moc/0.62);              // najpierw siada na łóżku
+  const wyj   = Math.max(0, (w.moc-0.62)/0.38);       // potem wychodzi na podłogę
+  const ky = 186 + Math.round(w.moc * 18);            // kołdra zsuwa się w dół
+
+  if(wyj <= 0){                                        // jeszcze w łóżku – widać głowę
+    const gy = 174 - Math.round(siada*28) + drg;
+    const gl = obraz(bohater().glowa);
+    if(gl) ctx.drawImage(gl, 250, gy, 24, 22); else pr(250, gy, 24, 22, SKORA);
+    pr(246, gy+21, 32, 12, u.pizama);
+    pr(246, gy+24, 32, 2, u.pizamaPas);
+  }
+  // kołdra z przodu – zasłania resztę Franka w łóżku
+  pr(112, ky, 224, 48, '#fec4ea');
+  for(let j=0;j<48;j+=8) pr(112, ky+j, 224, 2, '#fe6ecc');
+  obrys(112, ky, 224, 48);
+  if(wyj > 0)                                          // już nad kołdrą – cały Franek
+    rysujFranka(272 + Math.round(wyj*76), 150 + Math.round(wyj*32) + drg, -1, 0, false, false);
+
+  // tata w drzwiach woła „wstawaj!"
+  pr(404,110,70,125,'#503000'); obrys(404,110,70,125);
+  pr(410,116,58,113,'#ac7c00');
+  rysujTate(420, 168, -1, w.atak > 0 ? 0 : G.t*0.02);
+  if(Math.floor(G.t/70)%2===0 && w.koniecT === 0){
+    const tekst = 'WSTAWAJ!';
+    const tw = szerTekstu(tekst, 1);
+    pr(392-tw, 118, tw+8, 18, '#000000'); pr(394-tw, 120, tw+4, 14, '#fffeff');
+    napis(tekst, 396-tw/2, 127, '#d82800', null, 1);
+  }
+
+  if(w.atak > 0 && w.koniecT === 0){
+    ctx.globalAlpha = 0.45; pr(0,0,W,H,'#0000bc'); ctx.globalAlpha = 1;
+    for(let i=0;i<3;i++){
+      const f = (G.t*0.9 + i*30) % 90;
+      napis('Z', 300 + f*0.5, 130 - f*0.6, '#fffeff', '#000000', 1.4 + i*0.4);
+    }
+    napis('NIE ZASYPIAJ!', W/2, 76, '#f8d878', '#a80020', 2.4);
+  }
+  rysujEfekty();
+
+  // HUD: pasek wstawania
+  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+  napisL('WSTAWAJ, ' + bohater().imie + '!', 4, 10, '#fffeff', null, 1);
+  pr(88,26,304,18,'#000000'); pr(90,28,300,14,'#4f4f4f');
+  pr(90,28,Math.round(300*w.moc),14, w.moc > 0.75 ? '#58d854' : (w.moc > 0.4 ? '#f8d878' : '#d82800'));
+  napis('WSTAWANIE ' + Math.round(w.moc*100) + '%', W/2, 35, '#fffeff', '#000000', 1);
+
+  if(w.koniecT > 0){
+    napis('WSTAŁEM!', W/2, 70, '#f8d878', '#000000', 4);
+    napis('LECIMY DO KIBELKA!', W/2, 100, '#d82800', '#000000', 1.6);
+  } else {
+    napis('NACISKAJ  <  >  NA ZMIANĘ', W/2, 258, '#fffeff', '#000000', 1.6);
+  }
+  rysujDebug();
+}
+
+/* ==================== MINIGRA: SIKU DO KIBELKA ====================
+   Steruje się strumieniem: ◀ bliżej, ▶ dalej. Trzeba trafiać do wody
+   w środku muszli i nie obsikać deski ani podłogi. Im pęcherz pustszy,
+   tym mniejsze ciśnienie – strumień sam się skraca, więc trzeba dodawać ▶. */
+const SIKU_SEK = 13;                       // ile sekund leci siku
+const SIKU_OD = 258;                       // skąd startuje strumień
+const MUSZLA = {x:294, w:86, rim:166, wodaOd:318, wodaDo:356};
+function startSiku(){
+  G.siku = { kat:0.42, pecherz:1, trafione:0, klatki:0, deska:0, kaluza:0,
+             koniecT:0, ups:0, mowilOUps:0, splok:0 };
+  G.czastki = []; G.ekran = 'siku';
+  graj('muz_gra');
+  mow(najlepszyGlos('siku_jak'));
+}
+function zasiegSiku(s){
+  const cisnienie = 0.7 + 0.3*s.pecherz;
+  return (30 + s.kat*132) * cisnienie + Math.sin(G.t*0.06)*3;
+}
+function strefaSiku(lx){
+  if(lx < MUSZLA.x + 2) return 'podloga';
+  if(lx < MUSZLA.wodaOd) return 'deska';
+  if(lx <= MUSZLA.wodaDo) return 'woda';
+  if(lx <= MUSZLA.x + MUSZLA.w) return 'deska';
+  return 'sciana';
+}
+function aktualizujSiku(){
+  const s = G.siku;
+  if(s.koniecT > 0){
+    s.koniecT--; s.splok++;
+    if(s.koniecT === 0) dalejPoPoziomie();
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(s.ups > 0) s.ups--;
+  if(s.mowilOUps > 0) s.mowilOUps--;
+
+  let ruch = 0;
+  if(klaw.ArrowLeft)  ruch -= 1;
+  if(klaw.ArrowRight) ruch += 1;
+  s.kat = Math.max(0, Math.min(1, s.kat + ruch*0.013));
+
+  const lx = SIKU_OD + zasiegSiku(s);
+  const gdzie = strefaSiku(lx);
+  s.klatki++;
+  if(gdzie === 'woda'){
+    s.trafione++;
+    if(G.t % 4 === 0) G.czastki.push({x:lx+(Math.random()-0.5)*8, y:184, vx:(Math.random()-0.5)*1.2,
+                                      vy:-0.9-Math.random(), zyc:20, kol:'#3cbcfc', r:1+Math.random()*2});
+    if(G.t % 9 === 0) ton(300 + Math.random()*200, 0.05, 'triangle', 0.015);
+  } else {
+    if(gdzie === 'podloga'){ s.kaluza = Math.min(1, s.kaluza + 0.014); }
+    else { s.deska = Math.min(1, s.deska + 0.014); }
+    if(s.ups <= 0){
+      s.ups = 70; sfx('sfx_zle');
+      if(s.mowilOUps <= 0){ s.mowilOUps = 240; dopowiedz(najlepszyGlos('siku_deska')); }
+    }
+    if(G.t % 3 === 0) G.czastki.push({x:lx+(Math.random()-0.5)*6, y:MUSZLA.rim-2,
+                                      vx:(Math.random()-0.5)*1.4, vy:-0.6-Math.random(),
+                                      zyc:24, kol:'#f8d878', r:1+Math.random()*2});
+  }
+
+  s.pecherz -= 1/(60*SIKU_SEK);
+  if(s.pecherz <= 0 && s.koniecT === 0){
+    s.pecherz = 0; s.koniecT = 230; s.splok = 0;
+    sfx('sfx_drzwi'); cisza();
+    const czysto = s.deska < 0.05 && s.kaluza < 0.05;
+    mow(najlepszyGlos(czysto ? 'siku_ok' : 'siku_koniec'));
+  }
+  aktualizujEfekty(); czyscNowe();
+}
+function rysujMuszle(s){
+  const m = MUSZLA;
+  // spłuczka na ścianie
+  pr(m.x+46, 96, 58, 56, '#000000');
+  pr(m.x+48, 98, 54, 52, '#fffeff');
+  pr(m.x+52, 102, 46, 8, '#e4e4ee');
+  pr(m.x+82, 90, 16, 8, '#bcbcbc'); obrys(m.x+82, 90, 16, 8);
+  pr(m.x+52, 152, 20, 10, '#e4e4ee'); obrys(m.x+52, 152, 20, 10);
+  // podniesiona klapa – stoi za muszlą, opiera się o spłuczkę
+  ctx.save();
+  ctx.translate(m.x+62, m.rim+2);
+  ctx.rotate(0.12);
+  pr(-2, -60, 26, 62, '#000000');
+  pr(0, -58, 22, 58, '#fffeff');
+  pr(3, -54, 16, 50, '#e4e4ee');
+  ctx.restore();
+  // czasza – zwęża się ku dołowi
+  ctx.fillStyle = '#fffeff';
+  ctx.beginPath();
+  ctx.moveTo(m.x+4, m.rim+8); ctx.lineTo(m.x+m.w-2, m.rim+8);
+  ctx.lineTo(m.x+m.w-16, 228); ctx.lineTo(m.x+18, 228); ctx.closePath();
+  ctx.fill(); ctx.strokeStyle='#000000'; ctx.lineWidth=1; ctx.stroke();
+  pr(m.x+12, m.rim+12, 7, 40, '#e4e4ee');
+  pr(m.x+22, 228, m.w-44, 18, '#fffeff'); obrys(m.x+22, 228, m.w-44, 18);
+  // woda w środku
+  pr(m.wodaOd-2, m.rim+6, m.wodaDo-m.wodaOd+4, 26, '#000000');
+  const fala = Math.round(Math.sin(G.t*0.12));
+  pr(m.wodaOd, m.rim+8+fala, m.wodaDo-m.wodaOd, 22, '#3cbcfc');
+  pr(m.wodaOd, m.rim+8+fala, m.wodaDo-m.wodaOd, 3, '#c0dfff');
+  // deska (obręcz) – przód i tył; brud widać od razu
+  for(const [od, doo] of [[m.x, m.wodaOd-2], [m.wodaDo+2, m.x+m.w]]){
+    pr(od, m.rim-3, doo-od, 13, '#000000');
+    pr(od+1, m.rim-2, doo-od-2, 11, '#fffeff');
+    pr(od+1, m.rim-1, doo-od-2, 3, '#e4e4ee');
+  }
+  if(s.deska > 0){
+    for(let i=0;i<16;i++){
+      const px = m.x + 2 + ((i*19) % (m.w-6));
+      if(px > m.wodaOd-6 && px < m.wodaDo+4) continue;
+      if(i/16 > s.deska) continue;
+      pr(px, m.rim + (i%3), 3, 3, '#e4e594');
+      pr(px, m.rim + (i%3), 3, 1, '#f8d878');
+    }
+  }
+  // kałuża na podłodze przed muszlą
+  if(s.kaluza > 0){
+    const szer = Math.round(22 + s.kaluza*70);
+    pr(m.x+10-szer, 242, szer, 7, '#e4e594');
+    pr(m.x+10-szer, 242, szer, 2, '#f8d878');
+    pr(m.x+10-szer, 247, szer, 2, '#ac7c00');
+  }
+  // papier toaletowy na ścianie
+  pr(m.x+128, 146, 4, 20, '#bcbcbc');
+  kolo(m.x+142, 152, 13, '#000000');
+  kolo(m.x+142, 152, 12, '#fffeff');
+  kolo(m.x+142, 152, 4, '#bcbcbc');
+  pr(m.x+153, 152, 9, 24, '#fffeff'); obrys(m.x+153, 152, 9, 24);
+}
+function rysujSiku(){
+  const s = G.siku;
+  // łazienka w kaflach
+  pr(0,0,W,H,'#c0dfff');
+  for(let j=0;j<11;j++) for(let i=0;i<24;i++){
+    pr(i*20,j*20,19,19,'#d3d2ff'); pr(i*20,j*20,19,1,'#fffeff'); pr(i*20,j*20+18,19,1,'#9290ff');
+  }
+  pr(0,214,W,H-214,'#c0dfff');
+  for(let i=0;i<W;i+=12) pr(i,216,1,H-216,'#9290ff');
+  for(let j=226;j<H;j+=12) pr(0,j,W,1,'#9290ff');
+  pr(0,210,W,4,'#fffeff');
+
+  rysujMuszle(s);
+  rysujFranka(226, 164, 1, 0, false, false);
+
+  // strumień – łuk od Franka do miejsca lądowania
+  if(s.koniecT === 0){
+    const ox = SIKU_OD, oy = 196;
+    const lx = ox + zasiegSiku(s);
+    // do wody strumień wpada głębiej, na deskę i podłogę zatrzymuje się wyżej
+    const st0 = strefaSiku(lx);
+    const ly = st0 === 'woda' ? MUSZLA.rim + 18 : (st0 === 'podloga' ? 244 : MUSZLA.rim - 2);
+    const luk = 22 + (lx-ox)*0.10;
+    const n = 20;
+    for(let i=0;i<=n;i++){
+      const u = i/n;
+      const x = ox + (lx-ox)*u;
+      const y = oy + (ly-oy)*u - luk*Math.sin(Math.PI*u);
+      const r = i > n-4 ? 3 : 2;
+      pr(x-1, y-1, r, r, i%2 ? '#f8d878' : '#e4e594');
+    }
+    // celownik na miejscu lądowania
+    const kol = st0 === 'woda' ? '#58d854' : '#d82800';
+    if(Math.floor(G.t/6)%2===0){
+      const cy = st0 === 'woda' ? MUSZLA.rim - 8 : ly - 4;
+      pr(lx-7, cy, 14, 2, kol); pr(lx-1, cy-6, 2, 6, kol);
+    }
+  }
+  rysujEfekty();
+
+  // HUD
+  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+  napisL('SIKU DO KIBELKA', 4, 10, '#fffeff', null, 1);
+  const traf = s.klatki ? s.trafione/s.klatki : 0;
+  pr(300,4,150,12,'#000000'); pr(302,6,146,8,'#4f4f4f');
+  pr(302,6,Math.round(146*s.pecherz),8,'#f8d878');
+  napisL('PĘCHERZ', 246, 10, '#f8d878', null, 1);
+
+  ramka(W/2-92, 24, 184, 22, '#0000bc');
+  napis('DO ŚRODKA: ' + Math.round(traf*100) + '%', W/2, 35, '#3cbcfc', '#000000', 1.4);
+
+  if(s.koniecT > 0){
+    ctx.globalAlpha = 0.75; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+    const czysto = s.deska < 0.05 && s.kaluza < 0.05;
+    ramka(W/2-130, 60, 260, 140, czysto ? '#0000bc' : '#a80020');
+    napis('SPŁUKANE!', W/2, 84, '#f8d878', '#000000', 2.6);
+    napis('DO ŚRODKA W ' + Math.round(traf*100) + '%', W/2, 116, '#fffeff', '#000000', 1.6);
+    napis(czysto ? 'DESKA CZYSTA! BRAWO!' : 'DESKA DO WYTARCIA...', W/2, 146,
+          czysto ? '#58d854' : '#fe8170', '#000000', 1.4);
+    napis('UMYJ RĄCZKI!', W/2, 178, '#c0dfff', '#000000', 1.4);
+    for(let i=0;i<6;i++){                                   // wirująca woda
+      const a = G.t*0.16 + i;
+      pr(W/2 + Math.cos(a)*22, 216 + Math.sin(a)*6, 3, 3, '#3cbcfc');
+    }
+  } else if(s.ups > 0){
+    napis('UPS! OBOK!', W/2, 62, '#f8d878', '#a80020', 2.4);
+    napis('CELUJ DO WODY:  <  BLIŻEJ    >  DALEJ', W/2, 258, '#fffeff', '#000000', 1.2);
+  } else {
+    napis('CELUJ:  <  BLIŻEJ      >  DALEJ', W/2, 258, '#fffeff', '#000000', 1.4);
+  }
+  rysujDebug();
+}
+
 /* ==================== MINIGRA: MYCIE ZĘBÓW ====================
    Cztery strefy jak przy prawdziwym myciu: górne i dolne, z przodu i od środka.
    Ząbki mają widoczny brud, który schodzi dopiero od szorowania tam i z powrotem
@@ -1654,11 +2234,14 @@ function startMycia(){
     for(let i=0;i<ZEBOW;i++) rzad.push({ile:1, plamy:[]});
     return rzad;
   });
-  // losowe plamki brudu – rysowane zawsze tak samo, znikają wraz z myciem
-  brud.forEach(rzad => rzad.forEach((z,i) => {
+  // plamki brudu – rysowane zawsze tak samo, znikają wraz z myciem
+  brud.forEach((rzad, s) => rzad.forEach((z,i) => {
     const ile = 3 + ((i*7) % 3);
     for(let p=0;p<ile;p++)
-      z.plamy.push({x: 4 + ((i*13 + p*29) % 22), y: 4 + ((i*17 + p*11) % 30), r: 3 + (p % 3)});
+      z.plamy.push({x: 3 + ((i*13 + p*29) % 22), y: 3 + ((i*17 + p*11) % 15), r: 3 + (p % 3)});
+    // na kilku ząbkach siedzi coś większego: listek, okruszek albo bakteria
+    const paskudy = [null,'liscie',null,'bakteria',null,null,'okruch',null];
+    z.paskuda = paskudy[(i + s) % 8];
   }));
   G.mycie = {
     strefa:0, poz:0.5, ostatnia:0.5, kier:0, bonus:0,
@@ -1736,9 +2319,10 @@ function aktualizujMycie(){
         Math.max(0, m.brud[m.strefa][j].ile - (szoruje ? 0.014 : 0.001));
     }
     if(m.dzwiekT-- <= 0){ ton(280 + Math.random()*260, 0.04, 'sawtooth', 0.02); m.dzwiekT = 5; }
-    if(szoruje && Math.random() < 0.5){
-      const px = 70 + m.poz*330, py = STREFY[m.strefa].gora ? 132 : 168;
-      G.czastki.push({x:px, y:py, vx:(Math.random()-0.5)*1.4, vy:-0.5-Math.random(),
+    if(szoruje && Math.random() < 0.6){
+      const pkt = punktLuku(STREFY[m.strefa].gora, m.poz);
+      G.czastki.push({x:pkt.x + (Math.random()-0.5)*10, y:pkt.y + (Math.random()-0.5)*10,
+                      vx:(Math.random()-0.5)*1.4, vy:-0.5-Math.random(),
                       zyc:22+Math.random()*16, kol:'#fffeff', r:1+Math.random()*2});
     }
     if(przed > 0 && zab.ile === 0) sfx('sfx_zbierz');
@@ -1775,106 +2359,193 @@ function aktualizujMycie(){
   aktualizujEfekty(); czyscNowe();
 }
 
-function rysujZab(x, y, w, h, zab, aktywny, odwrocony){
-  pr(x, y, w, h, '#000000');
-  pr(x+1, y+1, w-2, h-2, aktywny ? '#fffeff' : '#e4e4ee');
-  if(zab.ile > 0){
-    // brud: plamki gasną razem ze szorowaniem
-    for(const p of zab.plamy){
-      const r = Math.round(p.r * zab.ile);
-      if(r < 1) continue;
-      const py = odwrocony ? (h - p.y - r) : p.y;
-      if(p.y + r > h - 2) continue;
-      pr(x + Math.min(w-2-r, p.x), y + Math.max(1, py), r, r, zab.ile > 0.55 ? '#ac7c00' : '#e4e594');
+/* --- widok jak u dentysty: szeroko otwarte usta, łuk górnych i dolnych ząbków,
+   język w środku, a na ząbkach siedzi brud: plamy, listek, okruszek i bakteria.
+   Szczoteczka jeździ po łuku – z przodu po zewnętrznej stronie ząbków,
+   „od środka" po wewnętrznej. --- */
+const LUK = {x:240, y:150, rx:142, ry:56, zabW:32, zabH:26, dol:0.90, rozstaw:12};
+const LUK_OD = 1.028, LUK_DO = 1.972;          // 185° .. 355° (w wielokrotnościach PI)
+/* Ząbki rozstawiamy po RÓWNEJ DŁUGOŚCI łuku, nie po równym kącie – inaczej
+   przy bokach ust nachodziłyby na siebie. Tabelka liczona raz na start. */
+const LUK_MAPA = (() => {
+  const n = 300, kroki = [];
+  const dA = Math.PI*(LUK_DO - LUK_OD)/n;
+  let suma = 0;
+  for(let i=0;i<=n;i++){
+    const a = Math.PI*(LUK_OD + (LUK_DO-LUK_OD)*(i/n));
+    if(i > 0){
+      const sr = a - dA/2;
+      suma += dA * Math.sqrt(LUK.rx*LUK.rx*Math.sin(sr)*Math.sin(sr) +
+                             LUK.ry*LUK.ry*Math.cos(sr)*Math.cos(sr));
     }
-  } else if(aktywny) {
-    pr(x+w-7, y+3, 2, 2, '#fffeff');
-    pr(x+w-9, y+5, 2, 2, '#c0dfff');
+    kroki.push({a, s:suma});
+  }
+  return {kroki, dl:suma};
+})();
+function katLuku(u){
+  const cel = Math.max(0, Math.min(1, u)) * LUK_MAPA.dl, k = LUK_MAPA.kroki;
+  for(let i=1;i<k.length;i++) if(k[i].s >= cel){
+    const t = (cel - k[i-1].s) / ((k[i].s - k[i-1].s) || 1);
+    return k[i-1].a + (k[i].a - k[i-1].a)*t;
+  }
+  return k[k.length-1].a;
+}
+function punktLuku(gora, u){
+  const a = katLuku(u) * (gora ? 1 : -1);      // dolny łuk to odbicie górnego
+  const rx = LUK.rx * (gora ? 1 : LUK.dol), ry = LUK.ry * (gora ? 1 : LUK.dol);
+  const y0 = LUK.y + (gora ? -LUK.rozstaw : LUK.rozstaw);   // szczęki rozjechane
+  return {
+    x: LUK.x + rx*Math.cos(a),
+    y: y0 + ry*Math.sin(a),
+    // kąt normalnej (na zewnątrz łuku) – po nim obracamy ząbek i szczoteczkę
+    nk: Math.atan2(Math.sin(a)/ry, Math.cos(a)/rx)
+  };
+}
+const LISCIE = [
+  "..gg....",".gGGgg..","gGllGGg.","gGlllGg.","gGllGGg.",".gGGgg..","..gg....","........"];
+const OKRUCH = [
+  "..kk....",".kjjk...","kjooojk.","kjoooojk","kjooojk.",".kjjjk..","..kk....","........"];
+const BAKTERIA = [
+  "..kkkk..",".kgggGk.","kgwgwggk","kgkgkggk","kggggggk","kgGggGgk",".kkkkkk.","..k..k.."];
+function rysujZabLuk(zab, gora, u, aktywny, przygaszony){
+  const p = punktLuku(gora, u);
+  const w = LUK.zabW, h = LUK.zabH;
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  ctx.rotate(p.nk + Math.PI/2);                 // lokalne +y = do środka ust
+  // dziąsło nad korzeniem
+  pr(-w/2, -11, w, 12, przygaszony ? '#8a1236' : '#d8386a');
+  pr(-w/2, -11, w, 3,  przygaszony ? '#a01a44' : '#fe6ecc');
+  // ząbek – z zaokrąglonym „kopytkiem" od strony wnętrza ust
+  pr(-w/2+1, -1, w-2, h, '#000000');
+  pr(-w/2+2, 0, w-4, h-2, aktywny ? '#fffeff' : '#e4e4ee');
+  pr(-w/2+2, 0, w-4, 3, '#fffeff');
+  pr(-w/2+1, h-4, 3, 3, '#6e0040'); pr(w/2-4, h-4, 3, 3, '#6e0040');
+  pr(-w/2+2, h-2, 2, 2, '#000000'); pr(w/2-4, h-2, 2, 2, '#000000');
+  if(zab.ile > 0){
+    ctx.globalAlpha = 0.45 * zab.ile;                 // żółty nalot – schodzi z myciem
+    pr(-w/2+2, 0, w-4, h-2, '#e4e594');
+    ctx.globalAlpha = 1;
+    for(const pl of zab.plamy){
+      const r = Math.max(0, Math.round(pl.r * zab.ile));
+      if(r < 1) continue;
+      const px = -w/2 + 3 + Math.min(w-6-r, pl.x);
+      const py = Math.min(h-3-r, pl.y);
+      pr(px, py, r, r, zab.ile > 0.55 ? '#ac7c00' : '#e4e594');
+    }
+    if(zab.paskuda && zab.ile > 0.45){
+      const sp = zab.paskuda === 'liscie' ? LISCIE : (zab.paskuda === 'okruch' ? OKRUCH : BAKTERIA);
+      const drg = zab.paskuda === 'bakteria' ? (Math.floor(G.t/8)%2) : 0;
+      ctx.save(); ctx.scale(1.7, 1.7);
+      rysujSpr('pask_'+zab.paskuda+drg, sp, -4, (h/2-8+drg)/1.7, false);
+      ctx.restore();
+    }
+  } else {
+    pr(w/2-7, 3, 2, 2, '#fffeff');            // błysk na czystym ząbku
+    pr(w/2-9, 6, 2, 2, '#c0dfff');
+  }
+  if(przygaszony){ ctx.globalAlpha = 0.5; pr(-w/2, -12, w, h+13, '#6e0040'); ctx.globalAlpha = 1; }
+  ctx.restore();
+}
+function elipsa(cx, cy, rx, ry, kol){
+  for(let j=-ry;j<=ry;j++){
+    const pol = rx*Math.sqrt(Math.max(0, 1 - (j*j)/(ry*ry)));
+    if(pol < 0.5) continue;
+    pr(cx-pol, cy+j, pol*2, 1, kol);
   }
 }
 function rysujMycie(){
   const m = G.mycie;
   const strefa = STREFY[m.strefa];
+
+  // łazienkowe kafle w tle
   pr(0,0,W,H,'#c0dfff');
   for(let j=0;j<14;j++) for(let i=0;i<24;i++){
     pr(i*20,j*20,19,19,'#d3d2ff'); pr(i*20,j*20,19,1,'#fffeff'); pr(i*20,j*20+18,19,1,'#9290ff');
   }
 
-  // usta – wargi z „obgryzionymi" narożnikami, żeby nie były prostokątem
-  const warga = strefa.tyl ? '#a80020' : '#fe6ecc';
-  pr(52, 88, 376, 122, '#000000');
-  pr(54, 90, 372, 118, warga);
-  for(const [dx,dy] of [[0,0],[1,0],[0,1]]){
-    pr(54+dx*6, 90+dy*6, 8-dx*4, 8-dy*4, '#c0dfff');
-    pr(418-dx*6+dx*4, 90+dy*6, 8-dx*4, 8-dy*4, '#c0dfff');
-    pr(54+dx*6, 200-dy*6+dy*4, 8-dx*4, 8-dy*4, '#c0dfff');
-    pr(418-dx*6+dx*4, 200-dy*6+dy*4, 8-dx*4, 8-dy*4, '#c0dfff');
-  }
-  pr(62, 98, 356, 102, strefa.tyl ? '#6e0040' : '#a80020');
+  // twarz wokół ust – policzki, żeby usta nie wisiały w powietrzu
+  elipsa(240, 150, 232, 132, '#fecCc5');
+  elipsa(240, 150, 228, 128, '#ffe4dc');
+  // wargi i ciemne wnętrze ust
+  elipsa(240, 150, 213, 122, '#000000');
+  elipsa(240, 150, 209, 118, '#d82800');
+  elipsa(240, 150, 199, 108, '#fe6ecc');
+  elipsa(240, 151, 186, 100, '#000000');
+  elipsa(240, 151, 182,  96, '#6e0040');
 
-  const szer = 42, odstep = 2, x0 = 70;
-  const gornyY = 104, dolnyY = 158;
+  // język – wielki, na środku ust, częściowo za dolnymi ząbkami
+  elipsa(240, 206, 102, 44, '#000000');
+  elipsa(240, 205, 98, 41, '#e2607a');
+  elipsa(240, 197, 72, 26, '#fe8170');
+  pr(238, 172, 4, 40, '#c2405a');
 
-  // język widoczny przy myciu od środka
-  if(strefa.tyl) pr(66, 146, 348, 12, '#e2607a');
-
+  // ząbki: oba łuki, nieaktywny przygaszony
   for(let rzad=0; rzad<2; rzad++){
     const gora = rzad === 0;
-    const y = gora ? gornyY : dolnyY;
     const nrStrefy = STREFY.findIndex(s => s.gora === gora && s.tyl === strefa.tyl);
     const aktywny = nrStrefy === m.strefa;
-    if(aktywny && m.blyskStrefy > 0 && Math.floor(G.t/4)%2===0)
-      pr(x0-4, y-4, ZEBOW*(szer+odstep)+6, 54, '#f8d878');
-    for(let i=0;i<ZEBOW;i++){
-      const x = x0 + i*(szer+odstep);
-      rysujZab(x, y, szer, 46, m.brud[nrStrefy][i], aktywny, !gora);
-    }
-    if(!aktywny){ ctx.globalAlpha = 0.5; pr(x0, y, ZEBOW*(szer+odstep), 46, '#000000'); ctx.globalAlpha = 1; }
+    for(let i=0;i<ZEBOW;i++)
+      rysujZabLuk(m.brud[nrStrefy][i], gora, (i+0.5)/ZEBOW, aktywny, !aktywny);
   }
 
-  // szczoteczka wprost na myty ząb – włosiem do dziąsła
-  const rzadY = strefa.gora ? gornyY : dolnyY;
-  const bx = Math.round(x0 + 4 + m.poz * (ZEBOW*(szer+odstep) - 16));
-  const przechyl = (m.bonus > 0 ? (m.kier > 0 ? 2 : -2) : 0);
-  // ślad szorowania na zębie pod szczoteczką
-  if(m.bonus > 0 && Math.floor(G.t/3)%2===0)
-    pr(bx-14, rzadY + (strefa.gora ? 4 : 26), 28, 16, '#c0dfff');
+  // błysk na świeżo wybranej strefie
+  if(m.blyskStrefy > 0 && Math.floor(G.t/4)%2===0){
+    for(let i=0;i<ZEBOW;i++){
+      const p = punktLuku(strefa.gora, (i+0.5)/ZEBOW);
+      pr(p.x-2, p.y-2, 4, 4, '#f8d878');
+    }
+  }
+
+  // szczoteczka na łuku – z przodu z zewnątrz, „od środka" od wnętrza ust
+  const pkt = punktLuku(strefa.gora, m.poz);
+  const naZewnatrz = !strefa.tyl;
+  const odsun = naZewnatrz ? 24 : -34;
+  const przechyl = (m.bonus > 0 ? (m.kier > 0 ? 0.16 : -0.16) : 0);
+  if(m.bonus > 0 && Math.floor(G.t/3)%2===0){          // ślad szorowania
+    ctx.save(); ctx.translate(pkt.x, pkt.y); ctx.rotate(pkt.nk + Math.PI/2);
+    pr(-13, naZewnatrz ? 1 : LUK.zabH-10, 26, 9, '#c0dfff');
+    ctx.restore();
+  }
   ctx.save();
-  ctx.translate(bx + przechyl, rzadY + 23);
-  ctx.scale(2.6, strefa.gora ? 2.6 : -2.6);
+  ctx.translate(pkt.x + Math.cos(pkt.nk)*odsun, pkt.y + Math.sin(pkt.nk)*odsun);
+  ctx.rotate(pkt.nk + Math.PI/2 + przechyl);
+  ctx.scale(3, naZewnatrz ? -3 : 3);                  // włosiem do ząbka
   ctx.drawImage(spr('ik_szczoteczka', IKONY.szczoteczka), -8, -8);
   ctx.restore();
 
   rysujEfekty();
 
-  // nagłówek: która strefa
-  pr(0,0,W,22,'#000000');
+  // ---- HUD ----
+  pr(0,0,W,24,'#000000'); pr(0,24,W,1,'#4f4f4f');
   napisL('MYJEMY ZĄBKI', 4, 11, '#fffeff', null, 1);
-  napis(strefa.nazwa, W/2 + 60, 11, '#f8d878', null, 1);
-
-  // zegar
-  const sek = Math.max(0, Math.ceil(120 * m.czas / m.max));
-  ramka(W/2-42, 26, 84, 24, '#0000bc');
-  napis(Math.floor(sek/60)+':'+String(sek%60).padStart(2,'0'), W/2, 38, '#3cbcfc', '#000000', 2);
-
-  // cztery kropki postępu – po jednej na strefę
+  napis(strefa.nazwa, 178, 11, '#f8d878', null, 1);
+  // cztery kwadraciki – po jednym na strefę
   for(let s=0;s<STREFY.length;s++){
-    const cx = 30 + s*22, cz = czystoscStrefy(m, s);
-    pr(cx-9, 30, 18, 16, '#000000');
-    pr(cx-7, 32, 14, 12, cz >= 0.999 ? '#58d854' : (s === m.strefa ? '#f8d878' : '#4f4f4f'));
-    if(cz > 0 && cz < 0.999) pr(cx-7, 32, Math.max(1, Math.round(14*cz)), 12, '#b8f818');
+    const cx = 286 + s*22, cz = czystoscStrefy(m, s);
+    pr(cx-9, 3, 18, 16, '#4f4f4f');
+    pr(cx-8, 4, 16, 14, cz >= 0.999 ? '#58d854' : (s === m.strefa ? '#f8d878' : '#2b2b33'));
+    if(cz > 0 && cz < 0.999) pr(cx-8, 4, Math.max(1, Math.round(16*cz)), 14, '#b8f818');
   }
+  // zegar mycia
+  const sek = Math.max(0, Math.ceil(120 * m.czas / m.max));
+  pr(W-64, 2, 62, 20, '#0000bc'); obrys(W-64, 2, 62, 20);
+  napis(Math.floor(sek/60)+':'+String(sek%60).padStart(2,'0'), W-33, 12, '#3cbcfc', '#000000', 1.6);
 
-  // pasek czystości
+  // pasek czystości na dole
   const czyste = czystoscCalosci(m);
-  pr(88,222,304,16,'#000000'); pr(90,224,300,12,'#4f4f4f');
-  pr(90,224,Math.round(300*czyste),12,'#58d854');
-  napis('CZYSTE ZĄBKI '+Math.round(czyste*100)+'%', W/2, 230, '#fffeff', '#000000', 1);
+  pr(88,248,304,18,'#000000'); pr(90,250,300,14,'#4f4f4f');
+  pr(90,250,Math.round(300*czyste),14,'#58d854');
+  napis('CZYSTE ZĄBKI '+Math.round(czyste*100)+'%', W/2, 257, '#fffeff', '#000000', 1);
 
+  // podpowiedź / odliczanie na środku ust
   const odliczanie = m.koniecT === 0 && m.czas > 0 &&
                      m.ostatniaLiczba >= 1 && m.ostatniaLiczba <= 5;
-  if(odliczanie) napis(String(m.ostatniaLiczba), W/2, 62, '#f8d878', '#000000', 5);
-  else napis('SZORUJ  <  >     ZMIEŃ  ^  v', W/2, 250, '#fffeff', '#000000', 1);
+  if(odliczanie) napis(String(m.ostatniaLiczba), W/2, 150, '#f8d878', '#000000', 5);
+  else if(m.czas > m.max - 260 && m.koniecT === 0){
+    napis('SZORUJ  <  >', W/2, 138, '#fffeff', '#000000', 1.6);
+    napis('ZMIEŃ ZĄBKI  ^  v', W/2, 160, '#f8d878', '#000000', 1.3);
+  }
 
   if(m.koniecT > 0){
     ctx.globalAlpha = 0.8; pr(0,0,W,H,'#fffeff'); ctx.globalAlpha = 1;
@@ -1883,6 +2554,7 @@ function rysujMycie(){
     napis('UMYTE W ' + wynik + '%', W/2, 146, '#d82800', '#000000', 1.6);
     napis('* * *', W/2, 176, '#f8d878', '#000000', 2.4);
   }
+  rysujDebug();
 }
 
 /* ==================== MINIGRA: JAZDA ==================== */
@@ -2061,6 +2733,7 @@ function rysujJazde(){
     ctx.globalAlpha=0.6; pr(0,0,W,H,'#000000'); ctx.globalAlpha=1;
     napis('DOJECHALIŚMY!', W/2, 120, '#f8d878', '#000000', 3);
   }
+  rysujDebug();
 }
 
 /* ==================== MINIGRA: WYŚCIG DO FURTKI ====================
@@ -2172,6 +2845,7 @@ function rysujWyscig(){
   } else {
     napis('NACISKAJ  <  >  NA ZMIANĘ', W/2, 258, '#fffeff', '#000000', 1.6);
   }
+  rysujDebug();
 }
 
 /* ==================== MINIGRA: WYŚCIG DO OKNA ====================
@@ -2314,6 +2988,7 @@ function rysujWyscigDoOkna(){
   } else {
     napis('NACISKAJ  <  >  NA ZMIANĘ', W/2, 258, '#fffeff', '#000000', 1.6);
   }
+  rysujDebug();
 }
 
 /* ==================== EKRANY ==================== */
@@ -2390,6 +3065,7 @@ function rysujKarte(){
   napis(p.nazwa.toUpperCase(), W/2, 132, '#f8d878', '#000000', 2.4);
   napis(p.podtytul.toUpperCase(), W/2, 162, '#3cbcfc', null, 1.3);
   if(G.kartaT>60 && Math.floor(G.t/20)%2===0) napis('NACIŚNIJ  ^', W/2, 220, '#fffeff', '#000000', 1.6);
+  rysujDebug();
 }
 function rysujKoniec(){
   pr(0,0,W,H,'#5c94fc');
@@ -2426,11 +3102,15 @@ function petla(ts){
   rysuj();
 }
 let ostatniEkranPrzyciskow = null;
+const ETAPY_DWA_KCIUKI = ['mycie','wyscig','wyscig_okno','swiatlo','wstawanie','siku'];
 function odswiezPrzyciski(){
   if(G.ekran === ostatniEkranPrzyciskow) return;
   ostatniEkranPrzyciskow = G.ekran;
   document.body.classList.toggle('wAucie', G.ekran === 'jazda');
   document.body.classList.toggle('wMenu', G.ekran === 'wybor' || G.ekran === 'intro');
+  // etapy, w których ◀ i ▶ idą do obu krawędzi – gra się dwoma kciukami
+  document.body.classList.toggle('dwaKciuki', ETAPY_DWA_KCIUKI.includes(G.ekran));
+  document.body.classList.toggle('strefy', G.ekran === 'mycie');
 }
 function krok(){
   G.t++;
@@ -2450,6 +3130,9 @@ function krok(){
       else if(G.kartaT > 260) startPoziomu(G.poziom);
       czyscNowe(); break;
     case 'gra': aktualizujGre(); break;
+    case 'swiatlo': aktualizujSwiatlo(); break;
+    case 'wstawanie': aktualizujWstawanie(); break;
+    case 'siku': aktualizujSiku(); break;
     case 'mycie': aktualizujMycie(); break;
     case 'jazda': aktualizujJazde(); break;
     case 'wyscig': aktualizujWyscig(); break;
@@ -2471,6 +3154,9 @@ function rysuj(){
     case 'intro': rysujIntro(); break;
     case 'karta': rysujKarte(); break;
     case 'gra': rysujGre(); break;
+    case 'swiatlo': rysujSwiatlo(); break;
+    case 'wstawanie': rysujWstawanie(); break;
+    case 'siku': rysujSiku(); break;
     case 'mycie': rysujMycie(); break;
     case 'jazda': rysujJazde(); break;
     case 'wyscig': rysujWyscig(); break;
