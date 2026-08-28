@@ -10,7 +10,7 @@
    • nowy worker nie czeka w kolejce (skipWaiting + clients.claim), a strona
      sama się przeładuje, kiedy przejmie ją nowa wersja.                     */
 
-const WERSJA = '2026-08-19-swiatlo-siku-zabki';
+const WERSJA = '2026-08-28-przedszkole-caly-dzien';
 const CACHE  = 'franek-' + WERSJA;
 
 /* to, co musi być dostępne offline od pierwszego uruchomienia */
@@ -23,7 +23,9 @@ const SZKIELET = [
   './ikona-maskowalna-512.png',
   './apple-touch-icon.png',
   './glowa_franek.png', './glowa_tata.png', './glowa_pola.png', './glowa_ola.png',
-  './portret_franek.png', './portret_tata.png', './portret_pola.png', './portret_ola.png'
+  './glowa_magda.png', './glowa_adam.png',
+  './portret_franek.png', './portret_tata.png', './portret_pola.png', './portret_ola.png',
+  './portret_magda.png', './portret_adam.png'
 ];
 
 self.addEventListener('install', e => {
