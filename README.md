@@ -3,9 +3,10 @@
 Ośmiobitowa gra 2D dla 5–6 latków. Na pierwszym ekranie wybierasz, kim grasz:
 **Frankiem** albo **Polą**. Franek przechodzi **cały dzień** – od ciemnego pokoju
 rano, przez przedszkole i zabawę u sąsiada, po kolację, kąpiel, książkę
-na dobranoc i sen o kotkach. Pola ma **tyle samo etapów
-poranka** i dodatkowo wybiera, **z kim idzie do przedszkola: z mamą Olą czy
-z tatą Adamem**. **Sterowanie: same strzałki.**
+na dobranoc i sen o kotkach. Pola ma **tyle samo etapów poranka** co Franek
+w swoim poranku. **Oboje wybierają na starcie, z kim jadą do przedszkola** —
+Franek z mamą Magdą albo z tatą, Pola z mamą Olą albo z tatą Adamem.
+**Sterowanie: same strzałki.**
 
 ▶ **Zagraj: https://qunabu.github.io/franek-poranek/**
 
@@ -35,6 +36,28 @@ pionowo prosi o obrócenie na poziomo. Na ekranie wyboru wystarczy **dotknąć
 portretu** — to od razu wybiera postać, zaczyna grę i **włącza pełny ekran**.
 Na pozostałych ekranach menu też wystarczy dotknąć/kliknąć.
 
+## Wybory w grze
+
+Gra pyta o dwie rzeczy i obie naprawdę zmieniają, co się dzieje na ekranie.
+
+**Z kim do przedszkola?** (ekran zaraz po wyborze postaci)
+
+| | Franek z tatą | Franek z mamą Magdą |
+|---|---|---|
+| rano | rodzinnym **autem** | **taksówką** (żółta, z szachownicą i kogutem) |
+| z przedszkola | tym samym autem | **autobusem** linii 42 |
+| etap 17 | **Tankujemy!** – nie rozlej benzyny | **Kasujemy bilet!** – wsuń bilet w kasownik i nie zgnieć go |
+| w domu czeka | mama | tata |
+
+Pola tak samo wybiera mamę Olę albo tatę Adama (jak dotąd — u niej wybór zmienia
+głowę, ubranie i odmianę słów, ale nie pojazd).
+
+Wybór podmienia głowę opiekuna, jego ubranie, odmianę słów na ekranie
+(„przytul tatę" / „przytul mamę") i kwestie narratora.
+
+**Kto kładzie cię spać?** (na początku etapu „Książka na dobranoc") — mama albo
+tata. Wybrane czyta książkę, a **drugie dostaje przytulasa** na dobranoc.
+
 Przedmioty zbiera się samym dotknięciem. Świecąca rzecz ze strzałką to ta,
 po którą trzeba iść teraz. **Nie da się przegrać** — po spadnięciu Franek
 wraca w bezpieczne miejsce.
@@ -58,7 +81,7 @@ wraca w bezpieczne miejsce.
 5. **Śniadanko** — schody na dół, potem miska → łódeczki → mleko → łyżka → jedzenie
 6. **Myjemy ząbki** — pasta → szczoteczka → minigra szorowania
 7. **Wychodzimy!** — czapka → kurtka → buty
-8. **Do samochodu!** — spacer z tatą
+8. **Do samochodu!** — spacer z opiekunem do auta (z mamą: **do taksówki**)
 9. **Jedziemy do przedszkola** — omijanie przeszkód na ulicy; w oknach auta
    widać Franka i tatę, a gdy tata wlecze się wolno, Franek go popędza
 10. **Wyścig do furtki** — naciskaj ◀ ▶ na zmianę; Franek zawsze wygrywa z tatą
@@ -76,10 +99,13 @@ wraca w bezpieczne miejsce.
     ◀ ▶ na zmianę. **Kto ucieknie do furtki, nie musi się myć**; kogo tata
     dogoni, ten idzie myć rączki i buzię (i wraca do domu czysty)
 16. **Jedziemy do domu** — ta sama jazda, ale w radiu leci **Kocia szajka**,
-    a meta to **stacja benzynowa**
+    a meta to **stacja benzynowa** (z mamą: jedzie się **autobusem**
+    na **przystanek**)
 17. **Tankujemy!** — ▲ trzyma pistolet, bak się napełnia. Trzeba dolać co
     najmniej do **zielonego pola**, ale puścić przed setką, bo benzyna leje
-    się na ziemię (gra pokazuje, ile procent i ile kropel obok)
+    się na ziemię (gra pokazuje, ile procent i ile kropel obok).
+    Z mamą zamiast tego **kasujemy bilet** w autobusie — ta sama zasada,
+    tylko zamiast rozlanej benzyny bilet się gniecie
 18. **Idziemy do domu** — ulicą do furtki; po drodze stoi **Igor**, trzeba
     powiedzieć mu „cześć" (wtedy obaj machają)
 19. **Jesteśmy w domu** — mama czeka w drzwiach. **Umytemu** mówi „fajnie, że
@@ -102,10 +128,11 @@ wraca w bezpieczne miejsce.
     część). Na koniec **wycieranie ręcznikiem** — i Franek chodzi w ręczniku
 25. **Ząbki i piżamka** — pasta → szczoteczka → **znów dwie minuty szorowania**
     → piżamka z komody
-26. **Książka na dobranoc** — Franek **wybiera książkę** (◀ ▶): **Muminki**,
-    **Kocia szajka**, **Pirat Rabarbar** albo **Zygzak McQueen**. Tata czyta trzy
-    strony (nad łóżkiem widać, co Franek sobie wyobraża), potem **przytulas dla
-    mamy** i **gasimy światło**
+26. **Książka na dobranoc** — najpierw Franek wybiera, **kto go kładzie spać**
+    (◀ mama, ▶ tata), potem **wybiera książkę**: **Muminki**, **Kocia szajka**,
+    **Pirat Rabarbar** albo **Zygzak McQueen**. Wybrany rodzic czyta trzy strony
+    (nad łóżkiem widać, co Franek sobie wyobraża), **drugi dostaje przytulasa**
+    i **gasimy światło**
 27. **Sen o kotkach** — zaśnieżona dolina, choinki i księżyc, a **kotki rzucają
     się śnieżkami**. ▲ rzuca śnieżkę razem z nimi. Franek śpi w rogu ekranu
 
@@ -141,10 +168,10 @@ Franek **ubiera się na oczach gracza** — każda zebrana rzecz pojawia się na
   (macOS Vision wycina sylwetkę, potem redukcja do kilkudziesięciu pikseli).
 - Postacie mają 4-klatkowy cykl chodu i osobną klatkę skoku.
 - **Narrator, efekty i muzyka wygenerowane przez ElevenLabs** (`audio/*.mp3`):
-  ponad 200 kwestii narratora po polsku, 6 efektów chiptune i 4 utwory.
+  ponad 230 kwestii narratora po polsku, 6 efektów chiptune i 4 utwory.
   Kwestie w rodzaju żeńskim i te z opiekunem mają własne pliki: dla Poli
   szukany jest najpierw `p_...` (z mamą) albo `pt_...` (z tatą Adamem),
-  a gdy takiego pliku nie ma, gra mówi wersję wspólną.
+  dla Franka z mamą `fm_...`, a gdy takiego pliku nie ma, gra mówi wersję wspólną.
   Gdyby plików zabrakło, gra sama piszczy przez WebAudio. Zapowiedzi poziomów
   Franka mają **klucz zapasowy** (`glosZapas`), więc dopóki nowe pliki się nie
   wygenerują, gra mówi starą kwestię tego poziomu.

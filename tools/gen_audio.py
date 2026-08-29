@@ -164,7 +164,7 @@ NARRACJA = {
     'f_poziom9':  'Poziom dziewiąty. Jedziemy do przedszkola!',
     'f_poziom10': 'Poziom dziesiąty. Wyścig z tatą do furtki przedszkola!',
     'f_poziom11': 'Poziom jedenasty. Szatnia! Rozbierz się i przytul tatę.',
-    'f_poziom12': 'Ostatni poziom! Wyścig do okna. Zdąż pomachać tacie!',
+    'f_poziom12': 'Poziom dwunasty. Wyścig do okna. Zdąż pomachać tacie!',
 
     # --- dwanaście etapów Poli (tyle samo co u Franka) ---
     'p2_poziom1':  'Poziom pierwszy. Ciemno! Zapal światło w pokoju.',
@@ -196,7 +196,7 @@ NARRACJA = {
     'f_poziom16': 'Poziom szesnasty. Jedziemy do domu i słuchamy Kociej szajki.',
     'f_poziom17': 'Poziom siedemnasty. Tankujemy auto. Nie rozlej benzyny!',
     'f_poziom18': 'Poziom osiemnasty. Idziemy do domu. Przywitaj się z Igorem!',
-    'f_poziom19': 'Ostatni poziom! Jesteśmy w domu, mama czeka w drzwiach.',
+    'f_poziom19': 'Poziom dziewiętnasty. Jesteśmy w domu, mama czeka w drzwiach.',
     'kolko_jak':  'Chodź dookoła kółka strzałkami, a strzałką w górę mów cześć.',
     'kolko_ok':   'Przywitałeś się ze wszystkimi dziećmi! Brawo!',
     'dzien_klocki': 'Budujemy wielką wieżę z klocków!',
@@ -279,6 +279,41 @@ NARRACJA = {
     'sen_koniec': 'Śpij słodko Franek. Kotki rzucają śnieżkami całą noc.',
     'f_koniec3':  'Brawo Franek! Cały dzień za tobą. Zabawa, kolacja, kąpiel, '
                   'książka i sen o kotkach.',
+
+    # --- Franek wybiera opiekuna: z tatą autem, z mamą Magdą taksówką ---
+    'f_wybor_opiekuna': 'Z kim jedziesz dziś do przedszkola? Strzałka w lewo to mama Magda '
+                        'i taksówka, w prawo tata i auto. Strzałka w górę zaczyna.',
+    'fm_poziom8':  'Poziom ósmy. Idziemy do taksówki, mama już czeka.',
+    'fm_poziom9':  'Poziom dziewiąty. Jedziemy taksówką do przedszkola!',
+    'fm_poziom10': 'Poziom dziesiąty. Wyścig z mamą do furtki przedszkola!',
+    'fm_poziom11': 'Poziom jedenasty. Szatnia! Rozbierz się i przytul mamę.',
+    'fm_poziom12': 'Poziom dwunasty. Wyścig do okna. Zdąż pomachać mamie!',
+    'fm_poziom15': 'Poziom piętnasty. Mama przyszła! Uciekaj, jeśli nie chcesz się myć!',
+    'fm_poziom16': 'Poziom szesnasty. Wracamy autobusem do domu.',
+    'fm_poziom17': 'Poziom siedemnasty. Kasujemy bilet w autobusie. Nie zgnieć go!',
+    'fm_poziom19': 'Poziom dziewiętnasty. Jesteśmy w domu, tata czeka w drzwiach.',
+    'fm_zad_przytulas':  'A teraz przytul mamę na do widzenia!',
+    'fm_przytulas':      'Ale super przytulas! Do widzenia mamo, do zobaczenia!',
+    'fm_pomachaj':       'Pomachaj mamie przez okno! Pa pa!',
+    'fm_szybciej':       'Szybciej mama! Rura!',
+    'fm_szybciej2':      'Mamo, jedź szybciej! Rura!',
+    'fm_lapanie_jak':    'Mama pyta: idziemy się umyć? Uciekaj! Naciskaj strzałki na zmianę.',
+    'fm_lapanie_uciekl': 'Uciekłeś mamie! Dzisiaj się nie myjemy!',
+    'fm_dom_czysty':     'Fajnie, że już jesteście!',
+    'fm_jazda_dom':      'Wracamy autobusem do domu. Franek nuci Kocią szajkę!',
+    'fm_zad_samochod':   'Wsiadaj do taksówki!',
+    'bilet_jak': 'Wsuwaj bilet w kasownik. Trzymaj strzałkę w górę i puść w zielonym polu, '
+                 'żeby go nie zgnieść!',
+    'bilet_ok':  'Bilet skasowany, równiutko! Brawo.',
+    'bilet_zle': 'Ojej, bilet się gniecie! Puszczaj!',
+
+    # --- kto kładzie Franka spać ---
+    'ksiazka_kto': 'Kto ma cię dziś położyć spać? Strzałka w lewo to mama, w prawo tata. '
+                   'Drugie dostanie przytulasa.',
+    'ksiazka_czyta_mama': 'Mama poczyta ci do snu.',
+    'ksiazka_czyta_tata': 'Tata poczyta ci do snu.',
+    'ksiazka_przytulas_mama': 'Koniec książki. Przytul mamę na dobranoc!',
+    'ksiazka_przytulas_tata': 'Koniec książki. Przytul tatę na dobranoc!',
 }
 
 EFEKTY = {

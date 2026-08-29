@@ -190,11 +190,16 @@ function klikniecieWPlansze(e){
     klaw['ArrowUp_nowy'] = true;
     return;
   }
-  if (G.ekran === 'opiekunP'){
+  const wybieramyRodzica = G.ekran === 'opiekun' ||
+    (G.ekran === 'ksiazka' && G.ksiazka && G.ksiazka.etap === 'ktoCzyta');
+  if (wybieramyRodzica){
     const r = cv.getBoundingClientRect();
     const punkt = (e && e.touches && e.touches[0]) ? e.touches[0] : e;
-    if (punkt && typeof punkt.clientX === 'number' && r.width)
-      G.opiekunPoli = ((punkt.clientX - r.left) / r.width < 0.5) ? 'mama' : 'tata';
+    if (punkt && typeof punkt.clientX === 'number' && r.width){
+      const lewa = (punkt.clientX - r.left) / r.width < 0.5;
+      if(G.ekran === 'opiekun') G.opiekun = lewa ? 'mama' : 'tata';
+      else G.ksiazka.czyta = lewa ? 'mama' : 'tata';
+    }
     klaw['ArrowUp_nowy'] = true;
     return;
   }
@@ -345,6 +350,13 @@ function graj(klucz){
 }
 const KLUCZE_MUZ = ['muz_menu','muz_gra','muz_jazda','muz_koniec'];
 const KLUCZE_MOWA = [
+  // Franek wybiera opiekuna (z mamą taksówka i autobus) oraz kto go kładzie spać
+  'f_wybor_opiekuna','ksiazka_kto','ksiazka_czyta_mama','ksiazka_czyta_tata',
+  'ksiazka_przytulas_mama','ksiazka_przytulas_tata','bilet_jak','bilet_ok','bilet_zle',
+  'fm_poziom8','fm_poziom9','fm_poziom10','fm_poziom11','fm_poziom12','fm_poziom15',
+  'fm_poziom16','fm_poziom17','fm_poziom19','fm_zad_przytulas','fm_przytulas','fm_pomachaj',
+  'fm_szybciej','fm_szybciej2','fm_lapanie_jak','fm_lapanie_uciekl','fm_dom_czysty',
+  'fm_jazda_dom','fm_zad_samochod',
   // wieczór Franka w domu: zabawa, Igor, kolacja, kąpiel, książka i sen
   'f_poziom20','f_poziom21','f_poziom22','f_poziom23','f_poziom24','f_poziom25',
   'f_poziom26','f_poziom27','f_koniec3',
@@ -633,6 +645,11 @@ kolacja:[
 "....kyykykkjjk..","....kykykjjjjk..","..kkkkkkkkkkkkk.",".kwwwwwwwwwwwwwk",
 ".kwwwwwwwwwwwwwk","..kwwwwwwwwwwwk.","...kkkkkkkkkkk..","................",
 "................","................","................","................"],
+bilet:[
+"................","................","..kkkkkkkkkkkk..","..kwwwwwwwwwwk..",
+"..kwkkkkkkkkwk..","..kwwwwwwwwwwk..","..kwkkkkkkwwwk..","..kwwwwwwwwwwk..",
+"..kwkkkkkkkkwk..","..kwwwkkkwwwwk..","..kwwwkkkwwwwk..","..kkkkkkkkkkkk..",
+"................","................","................","................"],
 pizama:[
 "................","................","...kk....kk.....","..kzzkkkkzzk....",
 ".kzzzzzzzzzzk...",".kwwwwwwwwwwk...",".kkkzzzzzzkkk...","...kwwwwwwk.....",
@@ -749,9 +766,11 @@ function rysujFranka(px, py, kier, faza, wPowietrzu, opada){
   ctx.restore();
 }
 
-function rysujTate(px, py, kier, faza){
+/* Wszyscy dorośli mają to samo ciało – różni ich głowa ze zdjęcia, ubranie
+   i (u mam) długie włosy wystające spod głowy. */
+function rysujRodzica(px, py, kier, faza, r){
   const x = Math.round(px), y = Math.round(py);
-  const b = bohater(), u = b.opiekunUbior;
+  const u = r.ubior;
   ctx.save();
   if(kier < 0){ ctx.translate(2*x + 24, 0); ctx.scale(-1, 1); }
   const kl = ((Math.floor(faza) % 4) + 4) % 4;
@@ -771,10 +790,30 @@ function rysujTate(px, py, kier, faza){
   pr(x+4, ty, 16, 1, u.goraJasna);
   pr(x+4, ty+16, 16, 2, u.goraCien);
 
-  const gl = obraz(b.glowaOp);
+  if(r.wlosy){ pr(x+1, gy+16, 4, 14, r.wlosy); pr(x+19, gy+16, 4, 14, r.wlosy); }
+  const gl = obraz(r.glowa);
   if(gl) ctx.drawImage(gl, x+2, gy, 20, 24);
-  else { pr(x+2, gy, 20, 24, SKORA); pr(x+2, gy+14, 20, 10, '#4f4f4f'); }
+  else { pr(x+2, gy, 20, 24, SKORA); pr(x+2, gy+14, 20, 10, r.wlosy || '#4f4f4f'); }
   ctx.restore();
+}
+/* rodzice Franka – potrzebni z imienia tam, gdzie gra sama wybiera, kto ma być
+   na ekranie (kto został w domu, kto czyta książkę) */
+const RODZICE = {
+  tata: { podpis:'TATA', wolacz:'TATO', glowa:'glowa_tata', portret:'portret_tata', wlosy:null,
+          ubior:{ gora:'#0058f8', goraJasna:'#3cbcfc', goraCien:'#0000bc',
+                  nogi:'#3a4a8b', nogiC:'#22357a', but:'#503000', butC:'#2b1a08' } },
+  mama: { podpis:'MAMA', wolacz:'MAMO', glowa:'glowa_magda', portret:'portret_magda', wlosy:'#2b1a08',
+          ubior:{ gora:'#adadad', goraJasna:'#e4e4ee', goraCien:'#4f4f4f',
+                  nogi:'#fe8170', nogiC:'#d82800', but:'#2b2b33', butC:'#000000' } }
+};
+/* opiekun, z którym bohater idzie do przedszkola */
+function rysujTate(px, py, kier, faza){
+  const b = bohater();
+  rysujRodzica(px, py, kier, faza, {glowa:b.glowaOp, ubior:b.opiekunUbior, wlosy:b.opiekunWlosy});
+}
+/* rodzic, który został w domu i czeka w drzwiach */
+function rysujMame(px, py, kier, faza){
+  rysujRodzica(px, py, kier, faza, RODZICE[bohater().domownik || 'mama']);
 }
 
 /* --- dzieci z przedszkola: rysowane pikselami, bez zdjęć --- */
@@ -830,33 +869,6 @@ function rysujDziecko(px, py, kier, faza, p){
   pr(x+18, ty+2-dy, 3, 8, p.gora); pr(x+18, ty+10-dy, 3, 3, SKORA);
   pr(x+4, ty, 14, 14, p.gora); pr(x+4, ty, 14, 1, p.goraJasna);
   glowaDziecka(x+11, gy, p, false);
-  ctx.restore();
-}
-
-/* --- mama Franka: głowa ze zdjęcia, reszta pikselami --- */
-const MAMA_UBIOR = { gora:'#adadad', goraJasna:'#e4e4ee', goraCien:'#4f4f4f',
-                     nogi:'#fe8170', nogiC:'#d82800', but:'#2b2b33', butC:'#000000' };
-function rysujMame(px, py, kier, faza){
-  const x = Math.round(px), y = Math.round(py);
-  const u = MAMA_UBIOR;
-  ctx.save();
-  if(kier < 0){ ctx.translate(2*x + 24, 0); ctx.scale(-1, 1); }
-  const k = CHOD[((Math.floor(faza) % 4) + 4) % 4];
-  const gy = y + k.bob, ty = gy + 23;
-  ctx.globalAlpha = 0.25; pr(x+4, y+57, 18, 2, '#000000'); ctx.globalAlpha = 1;
-  pr(x+9+k.b, ty+18, 6, 13, u.nogiC); pr(x+8+k.b, ty+31, 8, 4, u.butC);
-  pr(x+9+k.a, ty+18, 6, 13, u.nogi);  pr(x+8+k.a, ty+31, 8, 4, u.but);
-  const hus = -k.a;
-  pr(x+1,  ty+4+Math.round(hus/2), 3, 12, u.gora); pr(x+1,  ty+16+Math.round(hus/2), 3, 3, SKORA);
-  pr(x+20, ty+4-Math.round(hus/2), 3, 12, u.gora); pr(x+20, ty+16-Math.round(hus/2), 3, 3, SKORA);
-  pr(x+4, ty, 16, 18, u.gora);
-  pr(x+4, ty, 16, 1, u.goraJasna);
-  pr(x+4, ty+16, 16, 2, u.goraCien);
-  pr(x+1, gy+16, 4, 14, '#2b1a08'); pr(x+19, gy+16, 4, 14, '#2b1a08');   // długie włosy
-  const gl = obraz('glowa_magda');
-  if(gl) ctx.drawImage(gl, x+2, gy, 20, 24);
-  else { pr(x+2, gy+4, 20, 20, SKORA); pr(x, gy, 24, 8, '#2b1a08');
-         pr(x+7, gy+12, 2, 3, '#000000'); pr(x+15, gy+12, 2, 3, '#000000'); }
   ctx.restore();
 }
 
@@ -1325,6 +1337,7 @@ const POZIOMY_FRANEK = [
   },
   { nazwa:'Do samochodu!', podtytul:'Tata już czeka', tlo:'podworko', szer:800, tata:true,
     glos:'f_poziom8', glosZapas:'poziom5',
+    wariant:{ mama:{ nazwa:'Do taksówki!', podtytul:'Mama już czeka', glos:'fm_poziom8' } },
     start:{x:30,y:170},
     platformy:[
       {x:0,y:235,w:800,h:35,styl:'ziemia'},
@@ -1336,11 +1349,14 @@ const POZIOMY_FRANEK = [
     drzwi:{x:650,y:170,w:115,h:65,tekst:'Wsiadaj!',auto:true}
   },
   { typ:'jazda', nazwa:'Jedziemy do przedszkola!', podtytul:'▲▼ pas, ▶ szybciej',
-    glos:'f_poziom9', glosZapas:'poziom6' },
+    glos:'f_poziom9', glosZapas:'poziom6',
+    wariant:{ mama:{ nazwa:'Taksówką do przedszkola!', glos:'fm_poziom9' } } },
   { typ:'wyscig', nazwa:'Wyścig do furtki!', podtytul:'Naciskaj ◀ ▶ na zmianę',
-    glos:'f_poziom10', glosZapas:'poziom7' },
+    glos:'f_poziom10', glosZapas:'poziom7',
+    wariant:{ mama:{ glos:'fm_poziom10' } } },
   { nazwa:'Szatnia', podtytul:'Rozbierz się i przytul tatę', tlo:'szatnia', szer:820,
     tata:true, glos:'f_poziom11', glosZapas:'poziom8', start:{x:30,y:170},
+    wariant:{ mama:{ glos:'fm_poziom11' } },
     platformy:[
       {x:0,y:235,w:820,h:35,styl:'kafle'},
       {x:110,y:205,w:110,h:30,styl:'lawka'},
@@ -1356,18 +1372,24 @@ const POZIOMY_FRANEK = [
     drzwi:{x:720,y:165,w:50,h:70,tekst:'Do sali!'}
   },
   { typ:'wyscig_okno', nazwa:'Wyścig do okna!', podtytul:'Biegnij i pomachaj tacie',
-    glos:'f_poziom12', glosZapas:'poziom9' },
+    glos:'f_poziom12', glosZapas:'poziom9',
+    wariant:{ mama:{ glos:'fm_poziom12' } } },
   { typ:'kolko', nazwa:'Kółko powitalne', podtytul:'Przywitaj się z dziećmi',
     glos:'f_poziom13' },
   { typ:'dzien', nazwa:'Cały dzień w przedszkolu', podtytul:'Zabawa, obiadek, leżakowanie',
     glos:'f_poziom14' },
   { typ:'lapanie', nazwa:'Tata cię łapie!', podtytul:'Uciekniesz – nie myjesz się!',
-    meta:1500, glos:'f_poziom15' },
+    meta:1500, glos:'f_poziom15',
+    wariant:{ mama:{ glos:'fm_poziom15' } } },
   { typ:'jazda', nazwa:'Jedziemy do domu', podtytul:'W radiu Kocia Szajka',
-    dlugosc:5200, cel:'stacja', radio:true, tytul:'JEDZIEMY NA STACJĘ',
+    wariant:{ mama:{ nazwa:'Wracamy autobusem', podtytul:'W autobusie Kocia Szajka',
+                     glos:'fm_poziom16' } },
+    dlugosc:5200, cel:'stacja', powrot:true, radio:true, tytul:'JEDZIEMY NA STACJĘ',
     glos:'f_poziom16', glosJak:'jazda_dom' },
   { typ:'tankowanie', nazwa:'Tankujemy!', podtytul:'Nie rozlej benzyny',
-    glos:'f_poziom17' },
+    glos:'f_poziom17',
+    wariant:{ mama:{ nazwa:'Kasujemy bilet!', podtytul:'Wsuń bilet w kasownik',
+                     glos:'fm_poziom17' } } },
   { nazwa:'Idziemy do domu', podtytul:'Przywitaj się z Igorem', tlo:'ulica', szer:900,
     tata:true, glos:'f_poziom18', start:{x:30,y:170},
     platformy:[
@@ -1381,7 +1403,8 @@ const POZIOMY_FRANEK = [
     drzwi:{x:800,y:160,w:55,h:75,tekst:'Do domu!'}
   },
   { typ:'dom', nazwa:'Jesteśmy w domu', podtytul:'Mama czeka w drzwiach',
-    glos:'f_poziom19' },
+    glos:'f_poziom19',
+    wariant:{ mama:{ podtytul:'Tata czeka w drzwiach', glos:'fm_poziom19' } } },
 
   /* ---------- wieczór w domu ---------- */
   { nazwa:'Zabawa w domu', podtytul:'Tory, lego i rebusy', tlo:'salon', szer:1000,
@@ -1459,7 +1482,7 @@ const POZIOMY_FRANEK = [
     ],
     drzwi:{x:720,y:165,w:50,h:70,tekst:'Do łóżka!'}
   },
-  { typ:'ksiazka', nazwa:'Książka na dobranoc', podtytul:'Wybierz, co czyta tata',
+  { typ:'ksiazka', nazwa:'Książka na dobranoc', podtytul:'Kto czyta i jaką książkę',
     glos:'f_poziom26' },
   { typ:'sen', nazwa:'Sen o kotkach', podtytul:'Kotki rzucają śnieżkami',
     glos:'f_poziom27' }
@@ -1603,9 +1626,11 @@ const BOHATEROWIE = {
     imie:'FRANEK', opiekun:'TATĄ', wolacz:'TATO', opiekunM:'TATA',
     wstalem:'WSTAŁEM!', poWstaniu:'LECIMY DO KIBELKA!', sypialnia:'sypialnia',
     krzykWAucie:'SZYBCIEJ TATA, RURA!', doWidzenia:'DO WIDZENIA, TATO!',
-    przedrostki:[], podmienOpiekuna:false, wariantOp:'tata', imieOp:'TATA',
+    przedrostki:[], podmienNa:null, wariantOp:'tata', imieOp:'TATA',
+    domownik:'mama', pojazd:'auto', pojazdPowrot:'auto', opiekunWlosy:null,
     glowa:'glowa_franek', portret:'portret_franek', glowaW:24, glowaH:22, glowaDy:0,
     glowaOp:'glowa_tata', portretOp:'portret_tata',
+    glosWyborOpiekuna:'f_wybor_opiekuna',
     glosStart:'start', glosKoniec:'f_koniec3', glosKoniecZapas:'f_koniec2',
     koniecDom:'DOM', koniecOpis:'CAŁY DZIEŃ, KĄPIEL, KSIĄŻKA I SEN O KOTKACH!',
     ubior:{ pizama:'#dfe6ff', pizamaPas:'#9fb4e8', spodnie:'#a80020', spodnieC:'#6e0040',
@@ -1620,9 +1645,11 @@ const BOHATEROWIE = {
     imie:'POLA', opiekun:'MAMĄ', wolacz:'MAMO', opiekunM:'MAMA',
     wstalem:'WSTAŁAM!', poWstaniu:'GDZIE SĄ KAPCIE?', sypialnia:'sypialniaP',
     krzykWAucie:'SZYBCIEJ MAMA, SPÓŹNIMY SIĘ!', doWidzenia:'DO WIDZENIA, MAMO!',
-    przedrostki:['p_'], podmienOpiekuna:false, wariantOp:'mama', imieOp:'OLA',
+    przedrostki:['p_'], podmienNa:null, wariantOp:'mama', imieOp:'OLA',
+    domownik:'mama', pojazd:'auto', pojazdPowrot:'auto', opiekunWlosy:null,
     glowa:'glowa_pola', portret:'portret_pola', glowaW:24, glowaH:24, glowaDy:-2,
     glowaOp:'glowa_ola', portretOp:'portret_ola',
+    glosWyborOpiekuna:'p_wybor_opiekuna',
     glosStart:'p_start', glosKoniec:'p_koniec',
     koniecDom:'PRZEDSZKOLE', koniecOpis:'UBRANA, NAJEDZONA, Z CZYSTYMI ZĄBKAMI!',
     ubior:{ pizama:'#fec4ea', pizamaPas:'#e8a0c8', spodnie:'#4f4f4f', spodnieC:'#2b2b33',
@@ -1634,36 +1661,75 @@ const BOHATEROWIE = {
     poziomy: POZIOMY_POLA
   }
 };
-/* Pola wybiera na starcie, z kim idzie do przedszkola – z mamą Olą czy z tatą
-   Adamem. Wybór podmienia głowę, ubranie, odmianę słów i kwestie narratora. */
+/* Na starcie wybiera się, z kim idzie się do przedszkola. Wybór podmienia głowę,
+   ubranie, odmianę słów, kwestie narratora – a u Franka także pojazd. */
 const OPIEKUNOWIE_POLI = {
   mama: {
     opiekun:'MAMĄ', wolacz:'MAMO', opiekunM:'MAMA', imieOp:'OLA', wariantOp:'mama',
-    glowaOp:'glowa_ola', portretOp:'portret_ola',
+    podpisWyboru:'MAMA OLA', podpisPojazdu:'AUTEM',
+    glowaOp:'glowa_ola', portretOp:'portret_ola', opiekunWlosy:null,
     doWidzenia:'DO WIDZENIA, MAMO!', krzykWAucie:'SZYBCIEJ MAMA, SPÓŹNIMY SIĘ!',
-    przedrostki:['p_'], podmienOpiekuna:false,
+    przedrostki:['p_'], podmienNa:null, pojazd:'auto', pojazdPowrot:'auto', domownik:'mama',
     opiekunUbior:{ gora:'#22357a', goraJasna:'#3a4a8b', goraCien:'#0000bc',
                    nogi:'#2b2b33', nogiC:'#000000', but:'#4f4f4f', butC:'#000000' }
   },
   tata: {
     opiekun:'TATĄ', wolacz:'TATO', opiekunM:'TATA', imieOp:'ADAM', wariantOp:'tata',
-    glowaOp:'glowa_adam', portretOp:'portret_adam',
+    podpisWyboru:'TATA ADAM', podpisPojazdu:'AUTEM',
+    glowaOp:'glowa_adam', portretOp:'portret_adam', opiekunWlosy:null,
     doWidzenia:'DO WIDZENIA, TATO!', krzykWAucie:'SZYBCIEJ TATA, JEDZIEMY!',
-    przedrostki:['pt_','p_'], podmienOpiekuna:true,
+    przedrostki:['pt_','p_'], podmienNa:'tata', pojazd:'auto', pojazdPowrot:'auto', domownik:'mama',
     opiekunUbior:{ gora:'#4f4f4f', goraJasna:'#adadad', goraCien:'#2b2b33',
                    nogi:'#2b2b33', nogiC:'#000000', but:'#000000', butC:'#000000' }
   }
 };
-function ustawOpiekunaPoli(kto){
-  G.opiekunPoli = kto;
-  Object.assign(BOHATEROWIE.pola, OPIEKUNOWIE_POLI[kto]);
+/* Franek wybiera tak samo: z tatą jedzie się rodzinnym autem, a z mamą Magdą
+   taksówką – i wtedy z przedszkola wraca się autobusem. */
+const OPIEKUNOWIE_FRANKA = {
+  mama: {
+    opiekun:'MAMĄ', wolacz:'MAMO', opiekunM:'MAMA', imieOp:'MAGDA', wariantOp:'mama',
+    podpisWyboru:'MAMA MAGDA', podpisPojazdu:'TAKSÓWKĄ',
+    glowaOp:'glowa_magda', portretOp:'portret_magda', opiekunWlosy:'#2b1a08',
+    doWidzenia:'DO WIDZENIA, MAMO!', krzykWAucie:'SZYBCIEJ MAMA, RURA!',
+    przedrostki:['fm_'], podmienNa:'mama',
+    pojazd:'taxi', pojazdPowrot:'autobus', domownik:'tata',
+    opiekunUbior:RODZICE.mama.ubior
+  },
+  tata: {
+    opiekun:'TATĄ', wolacz:'TATO', opiekunM:'TATA', imieOp:'TATA', wariantOp:'tata',
+    podpisWyboru:'TATA', podpisPojazdu:'AUTEM',
+    glowaOp:'glowa_tata', portretOp:'portret_tata', opiekunWlosy:null,
+    doWidzenia:'DO WIDZENIA, TATO!', krzykWAucie:'SZYBCIEJ TATA, RURA!',
+    przedrostki:[], podmienNa:null,
+    pojazd:'auto', pojazdPowrot:'auto', domownik:'mama',
+    opiekunUbior:RODZICE.tata.ubior
+  }
+};
+const OPIEKUNOWIE = { franek:OPIEKUNOWIE_FRANKA, pola:OPIEKUNOWIE_POLI };
+const DOMYSLNY_OPIEKUN = { franek:'tata', pola:'mama' };
+function ustawOpiekuna(kto){
+  G.opiekun = kto;
+  const warianty = OPIEKUNOWIE[G.kto];
+  if(warianty && warianty[kto]) Object.assign(BOHATEROWIE[G.kto], warianty[kto]);
 }
-/* zamienia w napisach mamę na tatę, kiedy Pola idzie z tatą */
+/* Napisy w grze są pisane raz z mamą, raz z tatą. Jeżeli wybrany opiekun jest
+   inny, podmieniamy słowo – w obie strony, bo Pola może iść z tatą, a Franek
+   z mamą. Dłuższe formy idą pierwsze, żeby „mamie" nie zjadło „mama". */
+const ODMIANY_RODZICA = [
+  ['mamusia','tatuś'], ['Mamusia','Tatuś'],
+  ['mamie','tacie'], ['Mamie','Tacie'], ['MAMIE','TACIE'],
+  ['mamę','tatę'],   ['Mamę','Tatę'],   ['MAMĘ','TATĘ'],
+  ['mamą','tatą'],   ['Mamą','Tatą'],   ['MAMĄ','TATĄ'],
+  ['mamo','tato'],   ['Mamo','Tato'],   ['MAMO','TATO'],
+  ['mamy','taty'],   ['Mamy','Taty'],   ['MAMY','TATY'],
+  ['mama','tata'],   ['Mama','Tata'],   ['MAMA','TATA']
+];
 function zOpiekunem(t){
-  if(!bohater().podmienOpiekuna) return t;
-  return t.replace(/mamę/g,'tatę').replace(/Mamę/g,'Tatę').replace(/MAMĘ/g,'TATĘ')
-          .replace(/mamie/g,'tacie').replace(/Mamie/g,'Tacie').replace(/MAMIE/g,'TACIE')
-          .replace(/mama/g,'tata').replace(/Mama/g,'Tata').replace(/MAMA/g,'TATA');
+  const cel = bohater().podmienNa;
+  if(!cel || !t) return t;
+  const z = cel === 'tata' ? 0 : 1, na = cel === 'tata' ? 1 : 0;
+  for(const para of ODMIANY_RODZICA) t = t.split(para[z]).join(para[na]);
+  return t;
 }
 function bohater(){ return BOHATEROWIE[G.kto]; }
 function POZ(){ return BOHATEROWIE[G.kto].poziomy; }
@@ -1675,7 +1741,7 @@ const G = {
   czastki:[], overlay:null, info:null, infoT:0,
   tata:{x:0,y:0}, mycie:null, jazda:null, wyscig:null, okno:null, ostatnieZadanie:-1,
   swiatlo:null, wstawanie:null, siku:null, debug:0,
-  brud:0, kolko:null, dzien:null, lapanie:null, tank:null, dom:null, opiekunPoli:'mama',
+  brud:0, kolko:null, dzien:null, lapanie:null, tank:null, dom:null, opiekun:'tata',
   igorek:null, kapiel:null, ksiazka:null, sen:null,
   stroj:{spodnie:false, skarpetki:false, koszulka:false, czapka:false, kurtka:false,
          buty:false, recznik:false}
@@ -1724,12 +1790,21 @@ function dalejPoPoziomie(){
   else { G.ekran = 'koniec'; graj('muz_koniec');
          mow(najlepszyGlos(bohater().glosKoniec, bohater().glosKoniecZapas)); }
 }
+/* Etap może mieć osobną wersję dla wybranego opiekuna – inną nazwę, podtytuł
+   albo kwestię narratora (z mamą jedzie się autobusem, więc zamiast tankowania
+   kasuje się bilet). */
+function wariantEtapu(p){
+  return (p && p.wariant && p.wariant[bohater().wariantOp]) || null;
+}
+function nazwaEtapu(p){ const w = wariantEtapu(p); return (w && w.nazwa) || zOpiekunem(p.nazwa); }
+function podtytulEtapu(p){ const w = wariantEtapu(p); return (w && w.podtytul) || zOpiekunem(p.podtytul); }
 function kartaPoziomu(i){
   G.poziom = i; G.kartaT = 0; G.ekran = 'karta';
   graj('muz_menu');
   const p = POZ()[i];
+  const w = wariantEtapu(p);
   const wt = bohater().wariantOp === 'tata' && p.glosTaty ? p.glosTaty : null;
-  mow(najlepszyGlos(wt, p.glos, p.glosZapas));
+  mow(najlepszyGlos(w && w.glos, wt, p.glos, p.glosZapas));
 }
 /* Nowe kwestie narratora dochodzą osobnym plikiem. Póki go nie ma, gra sięga
    po starą kwestię tego poziomu, żeby zawsze coś powiedzieć. */
@@ -1737,6 +1812,7 @@ function kartaPoziomu(i){
    („przytul tatę" / „przytul mamę"). Dla Poli sięgamy najpierw po plik p_...,
    a gdyby go nie było – po wspólną kwestię. */
 function glosB(klucz){
+  if(!klucz) return null;
   const pre = bohater().przedrostki || [];
   if(!pre.length) return klucz;
   return najlepszyGlos(...pre.map(x => x + klucz), klucz) || klucz;
@@ -1776,10 +1852,12 @@ function rysujDebug(){
   napisL(t, W-w+2, H-8, '#b8f818', null, 1);
 }
 function glosZadania(p, idx){
-  if(idx >= p.zadania.length) return p.drzwi.glos || (p.drzwi.auto ? 'zad_samochod' : 'zad_drzwi');
+  if(idx >= p.zadania.length)
+    return glosB(p.drzwi.glos || (p.drzwi.auto ? 'zad_samochod' : 'zad_drzwi'));
   const z = p.zadania[idx];
   const wt = bohater().wariantOp === 'tata' && z.glosTaty ? z.glosTaty : null;
-  return najlepszyGlos(wt, z.glos, z.glosZapas, 'zad_' + z.typ);
+  return najlepszyGlos(wt, glosB(z.glos), z.glos, z.glosZapas,
+                       glosB('zad_' + z.typ), 'zad_' + z.typ);
 }
 function ogloszZadanie(odRazu){
   const p = POZ()[G.poziom];
@@ -2045,8 +2123,10 @@ function aktualizujGre(){
   czyscNowe();
 }
 function tekstZadania(p, idx){
-  if(idx >= p.zadania.length)
-    return zOpiekunem(p.drzwi.opis || ('Idź do ' + (p.drzwi.auto ? 'samochodu' : 'drzwi') + '!'));
+  if(idx >= p.zadania.length){
+    const pojazd = bohater().pojazd === 'taxi' ? 'taksówki' : 'samochodu';
+    return zOpiekunem(p.drzwi.opis || ('Idź do ' + (p.drzwi.auto ? pojazd : 'drzwi') + '!'));
+  }
   const z = p.zadania[idx];
   return zOpiekunem(z.zadanie || ('Znajdź ' + NAZWY[z.typ] + '!'));
 }
@@ -2088,10 +2168,14 @@ function rysujOkno(d, swieci, t){
 }
 function rysujSamochod(x,y,swieci,t){
   x=Math.round(x); y=Math.round(y);
+  const taxi = bohater().pojazd === 'taxi';
+  const kol  = taxi ? '#f8d878' : '#d82800';
+  const kolJ = taxi ? '#fffeff' : '#fe8170';
+  const kolC = taxi ? '#ea9e22' : '#a80020';
   if(swieci && Math.floor(t/8)%2===0) pr(x-2,y+20,119,48,'#f8d878');
-  pr(x, y+24, 115, 30, '#d82800'); pr(x, y+24, 115, 2, '#fe8170');
-  pr(x, y+52, 115, 2, '#a80020'); obrys(x, y+24, 115, 30);
-  ctx.fillStyle = '#d82800';
+  pr(x, y+24, 115, 30, kol); pr(x, y+24, 115, 2, kolJ);
+  pr(x, y+52, 115, 2, kolC); obrys(x, y+24, 115, 30);
+  ctx.fillStyle = kol;
   ctx.beginPath(); ctx.moveTo(x+20,y+25); ctx.lineTo(x+34,y+3); ctx.lineTo(x+86,y+3);
   ctx.lineTo(x+98,y+25); ctx.closePath(); ctx.fill();
   ctx.strokeStyle='#000000'; ctx.lineWidth=1; ctx.stroke();
@@ -2100,6 +2184,11 @@ function rysujSamochod(x,y,swieci,t){
   pr(x+18,y+54,20,10,'#000000'); pr(x+23,y+57,10,5,'#bcbcbc');
   pr(x+80,y+54,20,10,'#000000'); pr(x+85,y+57,10,5,'#bcbcbc');
   pr(x+108,y+32,7,7,'#f8d878');
+  if(taxi){
+    for(let i=0;i<11;i++) pr(x+3+i*10, y+38, 10, 6, i%2 ? '#000000' : '#fffeff');
+    pr(x+44, y-6, 32, 10, '#000000'); pr(x+46, y-4, 28, 6, '#f8d878');
+    napis('TAXI', x+60, y+1, '#000000', null, 1);
+  }
   if(swieci) strzalka(x+57, y-12, t);
 }
 function strzalka(x,y,t){
@@ -2236,7 +2325,7 @@ function rysujCzesc(o){
 }
 function rysujHUD(p){
   pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
-  napisL('POZIOM '+(G.poziom+1)+' - '+p.nazwa.toUpperCase(), 4, 10, '#fffeff', null, 1);
+  napisL('POZIOM '+(G.poziom+1)+' - '+nazwaEtapu(p).toUpperCase(), 4, 10, '#fffeff', null, 1);
   const zad = tekstZadania(p, G.zrobione).toUpperCase();
   const tw = szerTekstu(zad, 2);
   ramka(W/2-tw/2-8, 24, tw+16, 28, '#a80020');
@@ -3087,14 +3176,19 @@ function rysujMycie(){
 const PASY = [143, 178, 213];
 function startJazdy(){
   const p = POZ()[G.poziom];
+  const b = bohater();
+  const pojazd = p.powrot ? (b.pojazdPowrot || 'auto') : (b.pojazd || 'auto');
+  // autobus nie tankuje – wysiada się na przystanku
+  const cel = (p.cel === 'stacja' && pojazd === 'autobus') ? 'przystanek' : (p.cel || 'przedszkole');
   G.jazda = { pas:1, y:PASY[1], predkosc:2.5, dystans:0, przeszkody:[], nastepna:200,
-    stlucz:0, trzes:0, ups:0, koniecT:0, wolnoT:0, krzykT:0, dymek:0,
+    stlucz:0, trzes:0, ups:0, koniecT:0, wolnoT:0, krzykT:0, dymek:0, pojazd,
     dlugosc: p.dlugosc || DROGA_DO_PRZEDSZKOLA,
-    cel: p.cel || 'przedszkole',
-    tytul: p.tytul || 'JEDZIEMY DO PRZEDSZKOLA',
+    cel,
+    tytul: cel === 'przystanek' ? 'JEDZIEMY NA PRZYSTANEK'
+                                : (p.tytul || 'JEDZIEMY DO PRZEDSZKOLA'),
     radio: !!p.radio, radioT:0, radioI:0 };
   G.czastki = []; G.ekran = 'jazda';
-  graj('muz_jazda'); mow(najlepszyGlos(p.glosJak, 'jazda'));
+  graj('muz_jazda'); mow(najlepszyGlos(glosB(p.glosJak), p.glosJak, 'jazda'));
 }
 /* w drodze do domu w radiu leci „Kocia szajka" */
 const KOCIA_SZAJKA = ['KOCIA SZAJKA, ROZDZIAŁ 7', 'MIAU! DO DZIEŁA, KOTY!',
@@ -3179,19 +3273,49 @@ function rysujAutoFranka(x,y,t){
   x=Math.round(x); y=Math.round(y);
   const podskok = Math.floor(Math.sin(t*0.5)*1);
   y += podskok;
+  const b = bohater();
+  const pojazd = (G.jazda && G.jazda.pojazd) || b.pojazd || 'auto';
   ctx.globalAlpha=0.25; pr(x-32,y+20,64,4,'#000000'); ctx.globalAlpha=1;
-  pr(x-34,y-4,68,20,'#d82800'); pr(x-34,y-4,68,2,'#fe8170');
-  pr(x-34,y+14,68,2,'#a80020'); obrys(x-34,y-4,68,20);
-  ctx.fillStyle='#d82800';
+
+  if(pojazd === 'autobus'){
+    // autobus: pudełko z trzema szybami i drzwiami harmonijkowymi
+    pr(x-34,y-26,68,42,'#00a800'); pr(x-34,y-26,68,3,'#58d854');
+    pr(x-34,y+13,68,3,'#007800'); obrys(x-34,y-26,68,42);
+    pr(x-34,y-6,68,4,'#f8d878');                       // pas na burcie
+    for(const [sx,kto] of [[-30,null],[-10,b.glowaOp],[10,b.glowa]]){
+      pr(x+sx,y-22,18,14,'#c0dfff'); obrys(x+sx,y-22,18,14);
+      if(kto) twarzWOknie(kto, x+sx+1, y-21, 16, 12);
+    }
+    pr(x+22,y-22,10,32,'#64b0ff'); obrys(x+22,y-22,10,32);  // drzwi
+    pr(x+27,y-22,1,32,'#000000');
+    pr(x-30,y-32,26,7,'#000000'); pr(x-28,y-31,22,5,'#f8d878');
+    napis('42', x-17, y-27, '#000000', null, 1);            // numer linii
+    pr(x-24,y+15,14,8,'#000000'); pr(x-21,y+17,8,4,'#bcbcbc');
+    pr(x+11,y+15,14,8,'#000000'); pr(x+14,y+17,8,4,'#bcbcbc');
+    pr(x+30,y+2,5,5,'#f8d878');
+    return;
+  }
+
+  const taxi = pojazd === 'taxi';
+  const kol  = taxi ? '#f8d878' : '#d82800';
+  const kolJ = taxi ? '#fffeff' : '#fe8170';
+  const kolC = taxi ? '#ea9e22' : '#a80020';
+  pr(x-34,y-4,68,20,kol); pr(x-34,y-4,68,2,kolJ);
+  pr(x-34,y+14,68,2,kolC); obrys(x-34,y-4,68,20);
+  ctx.fillStyle=kol;
   ctx.beginPath(); ctx.moveTo(x-22,y-3); ctx.lineTo(x-17,y-24); ctx.lineTo(x+20,y-24);
   ctx.lineTo(x+27,y-3); ctx.closePath(); ctx.fill();
   ctx.strokeStyle='#000000'; ctx.lineWidth=1; ctx.stroke();
   // szyby z twarzami – widać, kto jedzie
-  const b = bohater();
   pr(x-16,y-21,17,18,'#c0dfff'); obrys(x-16,y-21,17,18);
   pr(x+2,y-21,17,18,'#c0dfff');  obrys(x+2,y-21,17,18);
   twarzWOknie(b.glowaOp, x-15, y-20, 15, 16);
   twarzWOknie(b.glowa,   x+3,  y-20, 15, 16);
+  if(taxi){
+    for(let i=0;i<7;i++) pr(x-33+i*10, y+4, 10, 5, i%2 ? '#000000' : '#fffeff');
+    pr(x-12,y-31,26,8,'#000000'); pr(x-10,y-30,22,5,'#f8d878');
+    napis('TAXI', x+1, y-26, '#000000', null, 1);
+  }
   pr(x-24,y+15,14,8,'#000000'); pr(x-21,y+17,8,4,'#bcbcbc');
   pr(x+11,y+15,14,8,'#000000'); pr(x+14,y+17,8,4,'#bcbcbc');
   pr(x+30,y+2,5,5,'#f8d878');
@@ -3231,7 +3355,16 @@ function rysujJazde(){
   const doMety = j.dlugosc - j.dystans;
   if(doMety < 560){
     const x = Math.round(150 + doMety*0.85);
-    if(j.cel === 'stacja'){
+    if(j.cel === 'przystanek'){
+      pr(x+30,60,10,74,'#bcbcbc');                          // słupek przystanku
+      pr(x+8,34,60,26,'#0058f8'); obrys(x+8,34,60,26);
+      napis('PRZYSTANEK', x+38, 47, '#fffeff', '#000000', 1);
+      pr(x+80,58,90,6,'#d82800'); obrys(x+80,58,90,6);      // wiata
+      pr(x+84,64,5,66,'#bcbcbc'); pr(x+160,64,5,66,'#bcbcbc');
+      pr(x+92,104,66,10,'#ac7c00'); obrys(x+92,104,66,10);  // ławka
+      pr(x+96,114,4,16,'#883800'); pr(x+150,114,4,16,'#883800');
+      pr(x,128,170,6,'#adadad');
+    } else if(j.cel === 'stacja'){
       pr(x,36,170,14,'#d82800'); obrys(x,36,170,14);        // zadaszenie
       pr(x,50,170,5,'#fffeff');
       pr(x+8,55,10,75,'#bcbcbc'); pr(x+152,55,10,75,'#bcbcbc');
@@ -3262,8 +3395,8 @@ function rysujJazde(){
   const post = Math.min(1, j.dystans/j.dlugosc);
   pr(W/2-90,26,180,12,'#000000'); pr(W/2-88,28,176,8,'#4f4f4f');
   pr(W/2-88,28,Math.round(176*post),8,'#58d854');
-  ctx.drawImage(spr(j.cel === 'stacja' ? 'ik_benzyna' : 'ik_czapka',
-                    j.cel === 'stacja' ? IKONY.benzyna : IKONY.czapka),
+  const ikonaCelu = j.cel === 'stacja' ? 'benzyna' : (j.cel === 'przystanek' ? 'bilet' : 'czapka');
+  ctx.drawImage(spr('ik_'+ikonaCelu, IKONY[ikonaCelu]),
                 Math.round(W/2-96+176*post), 24, 16, 16);
   napis('^ v  ZMIEŃ PAS      >  SZYBCIEJ', W/2, 258, '#fffeff', '#000000', 1);
   if(j.radio && j.ups<=0 && j.dymek<=0){
@@ -3788,7 +3921,7 @@ function rysujDzien(){
   if(d.koniecT > 0){
     ctx.globalAlpha = 0.6; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
     napis('KONIEC DNIA!', W/2, 110, '#f8d878', '#000000', 3);
-    napis('TATA JUŻ IDZIE PO CIEBIE!', W/2, 145, '#fffeff', '#000000', 1.6);
+    napis(bohater().opiekunM + ' JUŻ IDZIE PO CIEBIE!', W/2, 145, '#fffeff', '#000000', 1.6);
   } else {
     napis('^  DALEJ', W/2, 258, '#fffeff', '#000000', 1.4);
   }
@@ -3803,7 +3936,7 @@ function startLapania(){
   G.lapanie = { x:0, v:0, ostatni:0, faza:0, goniacy:-130, gv:2.3,
                 pytanie:210, koniecT:0, wynik:null, mycieT:0, meta: p.meta || 1500 };
   G.czastki = []; G.ekran = 'lapanie';
-  graj('muz_jazda'); mow(najlepszyGlos('lapanie_jak'));
+  graj('muz_jazda'); mow(glosB('lapanie_jak'));
 }
 function aktualizujLapanie(){
   const l = G.lapanie;
@@ -3827,9 +3960,9 @@ function aktualizujLapanie(){
   l.gv = 2.3 + Math.min(0.9, l.x / l.meta * 0.95);
   l.goniacy += l.gv;
   if(l.goniacy >= l.x - 4){
-    l.wynik = 'zlapany'; l.koniecT = 180; sfx('sfx_bum'); cisza(); mow(najlepszyGlos('lapanie_zlapany'));
+    l.wynik = 'zlapany'; l.koniecT = 180; sfx('sfx_bum'); cisza(); mow(glosB('lapanie_zlapany'));
   } else if(l.x >= l.meta){
-    l.wynik = 'uciekl'; l.koniecT = 210; sfx('sfx_sukces'); cisza(); mow(najlepszyGlos('lapanie_uciekl'));
+    l.wynik = 'uciekl'; l.koniecT = 210; sfx('sfx_sukces'); cisza(); mow(glosB('lapanie_uciekl'));
     for(let i=0;i<40;i++) G.czastki.push({x:Math.random()*W, y:-8-Math.random()*60,
       vx:(Math.random()-0.5), vy:0.6+Math.random()*1.4, zyc:190,
       kol:['#d82800','#f8d878','#58d854','#3cbcfc'][(Math.random()*4)|0], r:2+Math.random()*2});
@@ -3895,7 +4028,7 @@ function rysujLapanie(){
   rysujEfekty();
 
   pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
-  napisL('TATA CIĘ ŁAPIE!', 4, 10, '#fffeff', null, 1);
+  napisL(bohater().opiekunM + ' CIĘ ŁAPIE!', 4, 10, '#fffeff', null, 1);
   const post = Math.min(1, l.x/l.meta);
   pr(W/2-80,26,160,12,'#000000'); pr(W/2-78,28,156,8,'#4f4f4f');
   pr(W/2-78,28,Math.round(156*post),8,'#58d854');
@@ -3925,9 +4058,11 @@ function rysujLapanie(){
    ale puścić przed setką – inaczej benzyna leje się na ziemię. */
 const TANK_ZIELONA = 86;
 function startTankowania(){
-  G.tank = { ile:0, rozlane:0, lalo:false, start:170, koniecT:0, ostrzezone:false };
+  // z mamą wraca się autobusem, a tam zamiast tankowania kasuje się bilet
+  const autobus = bohater().pojazdPowrot === 'autobus';
+  G.tank = { ile:0, rozlane:0, lalo:false, start:170, koniecT:0, ostrzezone:false, autobus };
   G.czastki = []; G.ekran = 'tankowanie';
-  graj('muz_menu'); mow(najlepszyGlos('tank_jak'));
+  graj('muz_menu'); mow(najlepszyGlos(autobus ? 'bilet_jak' : 'tank_jak'));
 }
 function aktualizujTankowanie(){
   const k = G.tank;
@@ -3946,22 +4081,66 @@ function aktualizujTankowanie(){
       if(G.t % 9 === 0) ton(90 + k.ile, 0.05, 'sawtooth', 0.02);
     } else {
       k.rozlane += 0.5;
-      if(!k.ostrzezone){ k.ostrzezone = true; sfx('sfx_zle'); dopowiedz(najlepszyGlos('tank_rozlane')); }
+      if(!k.ostrzezone){ k.ostrzezone = true; sfx('sfx_zle');
+        dopowiedz(najlepszyGlos(k.autobus ? 'bilet_zle' : 'tank_rozlane')); }
       if(G.t % 3 === 0) G.czastki.push({x:300+Math.random()*6, y:176, vx:0, vy:1.6,
                                         zyc:34, kol:'#f8d878', r:2});
     }
   }
   if(!leje && k.lalo && k.ile >= TANK_ZIELONA && k.koniecT === 0){
     k.koniecT = 220; sfx('sfx_sukces'); cisza();
-    mow(najlepszyGlos(k.rozlane > 0 ? 'tank_rozlane' : 'tank_ok'));
+    mow(najlepszyGlos(k.rozlane > 0 ? (k.autobus ? 'bilet_zle' : 'tank_rozlane')
+                                    : (k.autobus ? 'bilet_ok'  : 'tank_ok')));
   }
   if(k.rozlane > 34 && k.koniecT === 0){
-    k.koniecT = 220; sfx('sfx_zle'); cisza(); mow(najlepszyGlos('tank_rozlane'));
+    k.koniecT = 220; sfx('sfx_zle'); cisza();
+    mow(najlepszyGlos(k.autobus ? 'bilet_zle' : 'tank_rozlane'));
   }
   aktualizujEfekty(); czyscNowe();
 }
+/* wnętrze autobusu: fotele, szyba z uciekającą ulicą i żółty kasownik */
+function scenaAutobusu(k){
+  pr(0,0,W,H,'#b3f3cc');
+  pr(0,0,W,26,'#00a800'); pr(0,26,W,3,'#007800');
+  // szyba, za którą przesuwa się ulica
+  pr(24,40,240,74,'#000000'); pr(27,43,234,68,'#64b0ff');
+  ctx.save();
+  ctx.beginPath(); ctx.rect(27,43,234,68); ctx.clip();
+  pr(27,86,234,25,'#58d854');
+  const kr = (G.t*2) % 120;
+  for(let x=27-kr; x<266; x+=120){ pr(x, 56, 30, 34, '#f7d8a5'); pr(x, 50, 30, 6, '#a80020'); }
+  ctx.restore();
+  obrys(24,40,240,74);
+  // poręcz pod sufitem
+  pr(0,34,W,4,'#bcbcbc');
+  for(let x=40;x<W;x+=60){ pr(x,38,3,14,'#bcbcbc'); pr(x-5,52,13,3,'#f8d878'); }
+  // podłoga i fotele
+  pr(0,166,W,H-166,'#4f4f4f'); pr(0,166,W,3,'#adadad');
+  for(let x=20;x<200;x+=84){
+    pr(x,120,60,46,'#0058f8'); obrys(x,120,60,46);
+    pr(x+4,124,52,10,'#3cbcfc');
+  }
+  // kasownik na słupku – nisko, żeby Franek dosięgnął
+  pr(338,52,8,148,'#bcbcbc');
+  pr(316,118,52,46,'#f8d878'); obrys(316,118,52,46);
+  pr(322,124,40,16,'#000000'); pr(324,126,36,12, k.ile >= TANK_ZIELONA ? '#b8f818' : '#d82800');
+  napis(Math.round(k.ile) + '%', 342, 134, '#000000', null, 1);
+  pr(326,146,32,5,'#000000');                       // szczelina na bilet
+  // bilet wsuwa się w szczelinę
+  const wsun = Math.min(1, k.ile/100) * 16;
+  ctx.save(); ctx.translate(332, 162 - wsun); ctx.scale(1.2,1.2);
+  ctx.drawImage(spr('ik_bilet', IKONY.bilet), 0, 0); ctx.restore();
+  rysujTate(396, 142, -1, 0);
+  rysujFranka(292, 140, 1, 0, false, false);
+  pr(310,166,8,3,SKORA); pr(315,144,3,25,SKORA); pr(315,143,16,4,SKORA);  // rączka z biletem
+  if(k.rozlane > 0){                                // zgnieciony bilet
+    napis('CHRUP!', 356, 152, '#d82800', '#000000', 1 + Math.min(1, k.rozlane/34));
+  }
+}
 function rysujTankowanie(){
   const k = G.tank;
+  if(k.autobus){ scenaAutobusu(k); rysujEfekty(); }
+  else {
   pr(0,0,W,H,'#5c94fc');
   slonce(60, 24, 26);
   for(const [x,y] of [[150,32],[300,20],[420,44]]) rysujSpr('ch', CHMURA, x, y, false);
@@ -3995,6 +4174,7 @@ function rysujTankowanie(){
     pr(300 - szer/2 + 4, 212, szer - 8, 4, '#f8d878');
   }
   rysujEfekty();
+  }
 
   // pasek baku ze zieloną strefą
   const px = W - 46, py = 44, ph = 170;
@@ -4005,22 +4185,28 @@ function rysujTankowanie(){
   const h = Math.round(ph * Math.min(1, k.ile/100));
   pr(px, py + ph - h, 22, h, k.ile >= TANK_ZIELONA ? '#58d854' : '#f8d878');
   pr(px, py, 22, 1, '#b8f818');
-  ctx.drawImage(spr('ik_benzyna', IKONY.benzyna), px+3, py+ph+4, 16, 16);
+  ctx.drawImage(spr(k.autobus ? 'ik_bilet' : 'ik_benzyna', k.autobus ? IKONY.bilet : IKONY.benzyna),
+                px+3, py+ph+4, 16, 16);
 
   pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
-  napisL('TANKUJEMY AUTO', 4, 10, '#fffeff', null, 1);
-  napisL('BAK: ' + Math.round(k.ile) + '%', 150, 10, k.ile >= TANK_ZIELONA ? '#58d854' : '#f8d878', null, 1);
-  if(k.rozlane > 0) napisL('ROZLANE: ' + Math.round(k.rozlane) + ' KROPEL', 250, 10, '#d82800', null, 1);
+  napisL(k.autobus ? 'KASUJEMY BILET' : 'TANKUJEMY AUTO', 4, 10, '#fffeff', null, 1);
+  napisL((k.autobus ? 'BILET: ' : 'BAK: ') + Math.round(k.ile) + '%', 150, 10,
+         k.ile >= TANK_ZIELONA ? '#58d854' : '#f8d878', null, 1);
+  if(k.rozlane > 0)
+    napisL(k.autobus ? ('GNIECIONY: ' + Math.round(k.rozlane))
+                     : ('ROZLANE: ' + Math.round(k.rozlane) + ' KROPEL'), 250, 10, '#d82800', null, 1);
 
   if(k.start > 0){
     ramka(W/2-160, 200, 320, 56, '#0000bc');
-    napis('TRZYMAJ  ^  I TANKUJ', W/2, 218, '#f8d878', '#000000', 1.8);
+    napis(k.autobus ? 'TRZYMAJ  ^  I WSUWAJ BILET' : 'TRZYMAJ  ^  I TANKUJ', W/2, 218, '#f8d878', '#000000', 1.8);
     napis('PUŚĆ W ZIELONYM POLU!', W/2, 242, '#fffeff', '#000000', 1.4);
   } else if(k.koniecT > 0){
     ctx.globalAlpha = 0.6; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
-    napis(k.rozlane > 0 ? 'OJ, ROZLANE!' : 'ZATANKOWANE!', W/2, 100, '#f8d878', '#000000', 3);
-    napis('BAK: ' + Math.round(k.ile) + '%', W/2, 136, '#fffeff', '#000000', 2);
-    napis(k.rozlane > 0 ? 'NASTĘPNY RAZ PUŚĆ WCZEŚNIEJ' : 'ANI KROPLI OBOK! BRAWO!',
+    napis(k.rozlane > 0 ? (k.autobus ? 'OJ, ZGNIECIONY!' : 'OJ, ROZLANE!')
+                        : (k.autobus ? 'SKASOWANY!' : 'ZATANKOWANE!'), W/2, 100, '#f8d878', '#000000', 3);
+    napis((k.autobus ? 'BILET: ' : 'BAK: ') + Math.round(k.ile) + '%', W/2, 136, '#fffeff', '#000000', 2);
+    napis(k.rozlane > 0 ? 'NASTĘPNY RAZ PUŚĆ WCZEŚNIEJ'
+                        : (k.autobus ? 'RÓWNIUTKO! BRAWO!' : 'ANI KROPLI OBOK! BRAWO!'),
           W/2, 166, k.rozlane > 0 ? '#fc9838' : '#58d854', '#000000', 1.4);
   } else if(k.ile >= TANK_ZIELONA){
     napis('PUŚĆ  ^  TERAZ!', W/2, 258, '#58d854', '#000000', 1.8);
@@ -4050,7 +4236,7 @@ function startDomu(){
   G.dom = { etap:'powitanie', t:0, x:0, v:0, ostatni:0, faza:0, mama:-120, mv:2.6 };
   G.czastki = []; G.ekran = 'dom';
   graj(G.brud > 0 ? 'muz_jazda' : 'muz_koniec');
-  mow(najlepszyGlos(G.brud > 0 ? 'dom_brudny' : 'dom_czysty'));
+  mow(glosB(G.brud > 0 ? 'dom_brudny' : 'dom_czysty'));
 }
 function aktualizujDom(){
   const d = G.dom;
@@ -4066,7 +4252,7 @@ function aktualizujDom(){
     d.mv = 2.6 + Math.min(1.7, d.t/240);          // mama w końcu zawsze dogania
     d.mama += d.mv;
     if(d.mama >= d.x - 4){
-      d.etap = 'mycie'; d.t = 0; sfx('sfx_bum'); cisza(); mow(najlepszyGlos('dom_lapie'));
+      d.etap = 'mycie'; d.t = 0; sfx('sfx_bum'); cisza(); mow(glosB('dom_lapie'));
     }
   } else if(d.etap === 'mycie'){
     G.brud = Math.max(0, G.brud - 1/200);
@@ -4103,7 +4289,7 @@ function rysujDom(){
     rysujFranka(bx, 166, 1, d.faza, false, false);
     rysujEfekty();
     pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
-    napisL('MAMA CIĘ GONI!', 4, 10, '#fffeff', null, 1);
+    napisL(RODZICE[bohater().domownik].podpis + ' CIĘ GONI!', 4, 10, '#fffeff', null, 1);
     if(Math.floor(G.t/60)%2 === 0){
       const tekst = 'ALE BRUDAS!';
       const tw = szerTekstu(tekst, 1);
@@ -4129,7 +4315,9 @@ function rysujDom(){
     rysujDebug(); return;
   }
   if(d.etap === 'powitanie'){
-    const tekst = G.brud > 0 ? 'ALE BRUDAS! IDZIEMY SIĘ MYĆ!' : 'FAJNIE, ŻE WRÓCILIŚCIE, CHŁOPAKI!';
+    const tekst = G.brud > 0 ? 'ALE BRUDAS! IDZIEMY SIĘ MYĆ!'
+      : (bohater().domownik === 'mama' ? 'FAJNIE, ŻE WRÓCILIŚCIE, CHŁOPAKI!'
+                                       : 'FAJNIE, ŻE JUŻ JESTEŚCIE!');
     const tw = szerTekstu(tekst, 1);
     const bx = Math.min(W - tw/2 - 8, 300);
     pr(bx-tw/2-5, 112, tw+10, 20, '#000000');
@@ -4476,14 +4664,22 @@ const KSIAZKI = [
     }}
 ];
 function startKsiazki(){
-  G.ksiazka = { etap:'wybor', i:0, t:0, strona:0, ciemno:0 };
+  G.ksiazka = { etap:'ktoCzyta', czyta:'tata', i:0, t:0, strona:0, ciemno:0 };
   G.czastki = []; G.ekran = 'ksiazka';
-  graj('muz_menu'); cisza(); mow(najlepszyGlos('ksiazka_wybor'));
+  graj('muz_menu'); cisza(); mow(najlepszyGlos('ksiazka_kto'));
 }
+function drugiRodzic(kto){ return kto === 'mama' ? 'tata' : 'mama'; }
 function aktualizujKsiazke(){
   const b = G.ksiazka;
   b.t++;
-  if(b.etap === 'wybor'){
+  if(b.etap === 'ktoCzyta'){
+    if(nowy('ArrowLeft')  && b.czyta !== 'mama'){ b.czyta='mama'; sfx('sfx_zbierz'); }
+    if(nowy('ArrowRight') && b.czyta !== 'tata'){ b.czyta='tata'; sfx('sfx_zbierz'); }
+    if(nowy('ArrowUp')){
+      b.etap = 'wybor'; b.t = 0; sfx('sfx_sukces');
+      cisza(); mow(najlepszyGlos('ksiazka_czyta_' + b.czyta), najlepszyGlos('ksiazka_wybor'));
+    }
+  } else if(b.etap === 'wybor'){
     if(nowy('ArrowLeft')  && b.i > 0){ b.i--; sfx('sfx_zbierz'); }
     if(nowy('ArrowRight') && b.i < KSIAZKI.length-1){ b.i++; sfx('sfx_zbierz'); }
     if(nowy('ArrowUp')){
@@ -4495,7 +4691,8 @@ function aktualizujKsiazke(){
       b.strona++; b.t = 0; sfx('sfx_zbierz');
       if(b.strona >= 3){
         b.etap = 'przytulas'; b.strona = 0;
-        cisza(); mow(najlepszyGlos('ksiazka_przytulas'));
+        cisza(); mow(najlepszyGlos('ksiazka_przytulas_' + drugiRodzic(b.czyta),
+                                   'ksiazka_przytulas'));
       }
     }
   } else if(b.etap === 'przytulas'){
@@ -4530,6 +4727,27 @@ function pokojWieczorem(jasnosc){
 }
 function rysujKsiazke(){
   const b = G.ksiazka;
+  if(b.etap === 'ktoCzyta'){
+    pokojWieczorem(1);
+    ctx.globalAlpha = 0.72; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+    napis('KTO KŁADZIE CIĘ SPAĆ?', W/2, 28, '#f8d878', '#000000', 2.4);
+    ['mama','tata'].forEach((klucz, i) => {
+      const r = RODZICE[klucz], cx = i === 0 ? 132 : 348;
+      const wybrany = b.czyta === klucz;
+      ramka(cx-46, 58, 92, 92, wybrany ? '#a80020' : '#0000bc');
+      if(wybrany && Math.floor(G.t/8)%2===0) pr(cx-42, 62, 84, 84, '#f8d878');
+      if(!rysujPortret(r.portret, cx, 146, 84, 84)) rysujRodzica(cx-12, 84, 1, 0, r);
+      napis(r.podpis, cx, 170, wybrany ? '#f8d878' : '#bcbcbc', '#000000', 2);
+    });
+    if(Math.floor(G.t/12)%2===0){
+      napis('<', 26, 104, '#fffeff', '#000000', 3);
+      napis('>', 454, 104, '#fffeff', '#000000', 3);
+    }
+    ramka(W/2-176, 186, 352, 46, '#0000bc');
+    napis('<  >  WYBIERASZ,   ^  ZACZYNA', W/2, 202, '#fffeff', '#000000', 1.4);
+    napis('DRUGIE DOSTANIE PRZYTULASA', W/2, 222, '#c0dfff', null, 1.2);
+    rysujDebug(); return;
+  }
   if(b.etap === 'wybor'){
     pokojWieczorem(1);
     ctx.globalAlpha = 0.7; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
@@ -4548,7 +4766,7 @@ function rysujKsiazke(){
     }
     ramka(W/2-176, 176, 352, 46, '#0000bc');
     napis('<  >  WYBIERASZ,   ^  ZACZYNA', W/2, 192, '#fffeff', '#000000', 1.4);
-    napis('TATA POCZYTA CI DO SNU', W/2, 212, '#c0dfff', null, 1.2);
+    napis(RODZICE[b.czyta].podpis + ' POCZYTA CI DO SNU', W/2, 212, '#c0dfff', null, 1.2);
     rysujDebug(); return;
   }
 
@@ -4556,7 +4774,7 @@ function rysujKsiazke(){
   pokojWieczorem(b.etap === 'gaszenie' ? 1 - b.ciemno : 1);
 
   if(b.etap === 'czytanie'){
-    rysujTate(352, 150, -1, 0);
+    rysujRodzica(352, 150, -1, 0, RODZICE[b.czyta]);
     // otwarta książka w rękach taty
     pr(300,178,70,44,'#fffeff'); obrys(300,178,70,44);
     pr(334,178,3,44,'#883800');
@@ -4574,16 +4792,18 @@ function rysujKsiazke(){
     napis(ks.tytul, bx+52, 122, '#000000', null, 1);
 
     pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
-    napisL('TATA CZYTA: ' + ks.tytul, 4, 10, '#fffeff', null, 1);
+    napisL(RODZICE[b.czyta].podpis + ' CZYTA: ' + ks.tytul, 4, 10, '#fffeff', null, 1);
     ramka(W/2-160, 236, 320, 24, '#0000bc');
     napis(ks.zdanie, W/2, 248, '#f8d878', null, 1);
     napis('STRONA ' + (b.strona+1) + ' Z 3   -   ^  DALEJ', W/2, 152, '#fffeff', '#000000', 1.2);
   } else if(b.etap === 'przytulas'){
-    rysujMame(352, 150, -1, 0);
+    const drugi = RODZICE[drugiRodzic(b.czyta)];
+    rysujRodzica(352, 150, -1, 0, drugi);
     rysujEfekty();
     ramka(W/2-140, 40, 280, 46, '#a80020');
-    napis('PRZYTULAS DLA MAMY!', W/2, 62, '#f8d878', '#000000', 2);
-    napis('DOBRANOC, MAMO!', W/2, 118, '#fffeff', '#000000', 1.6);
+    napis('PRZYTULAS DLA ' + (drugi.podpis === 'MAMA' ? 'MAMY' : 'TATY') + '!',
+          W/2, 62, '#f8d878', '#000000', 2);
+    napis('DOBRANOC, ' + drugi.wolacz + '!', W/2, 118, '#fffeff', '#000000', 1.6);
     napis('^  DALEJ', W/2, 258, '#fffeff', '#000000', 1.4);
   } else {
     ctx.globalAlpha = b.ciemno * 0.92; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
@@ -4753,7 +4973,7 @@ function rysujWybor(){
     if(mruga) pr(cx-42, 66, 84, 84, '#f8d878');
     if(!rysujPortret(b.portret, cx, 150, 84, 84)) pr(cx-40, 76, 80, 74, '#fe8170');
     napis(b.imie, cx, 172, wybrany ? '#f8d878' : '#bcbcbc', '#000000', 2);
-    napis(klucz === 'pola' ? 'Z MAMĄ LUB TATĄ' : ('Z ' + b.opiekun), cx, 194, '#c0dfff', '#000000', 1);
+    napis('Z MAMĄ LUB TATĄ', cx, 194, '#c0dfff', '#000000', 1);
   });
   if(Math.floor(G.t/12)%2===0){
     napis('<', 26, 108, '#fffeff', '#000000', 3);
@@ -4772,21 +4992,23 @@ function rysujWyborOpiekuna(){
   for(let i=0;i<W;i+=6) pr(i,207,3,4,'#b8f818');
   napis('Z KIM DO PRZEDSZKOLA?', 240, 26, '#f8d878', '#000000', 2.6);
 
-  [['mama','portret_ola','MAMA OLA'], ['tata','portret_adam','TATA ADAM']].forEach((o, i) => {
-    const [klucz, portret, podpis] = o;
+  const warianty = OPIEKUNOWIE[G.kto];
+  ['mama','tata'].forEach((klucz, i) => {
+    const o = warianty[klucz];
     const cx = i === 0 ? 132 : 348;
-    const wybrany = G.opiekunPoli === klucz;
+    const wybrany = G.opiekun === klucz;
     const mruga = wybrany && Math.floor(G.t/8)%2===0;
-    ramka(cx-46, 62, 92, 92, wybrany ? '#a80020' : '#0000bc');
-    if(mruga) pr(cx-42, 66, 84, 84, '#f8d878');
-    if(!rysujPortret(portret, cx, 150, 84, 84)) pr(cx-40, 76, 80, 74, '#fe8170');
-    napis(podpis, cx, 174, wybrany ? '#f8d878' : '#bcbcbc', '#000000', 1.6);
+    ramka(cx-46, 54, 92, 92, wybrany ? '#a80020' : '#0000bc');
+    if(mruga) pr(cx-42, 58, 84, 84, '#f8d878');
+    if(!rysujPortret(o.portretOp, cx, 142, 84, 84)) pr(cx-40, 68, 80, 74, '#fe8170');
+    napis(o.podpisWyboru, cx, 162, wybrany ? '#f8d878' : '#bcbcbc', '#000000', 1.6);
+    napis(o.podpisPojazdu, cx, 180, wybrany ? '#58d854' : '#4f4f4f', '#000000', 1.2);
   });
   if(Math.floor(G.t/12)%2===0){
-    napis('<', 26, 108, '#fffeff', '#000000', 3);
-    napis('>', 454, 108, '#fffeff', '#000000', 3);
+    napis('<', 26, 100, '#fffeff', '#000000', 3);
+    napis('>', 454, 100, '#fffeff', '#000000', 3);
   }
-  napis('POLA IDZIE DZIŚ Z...', 240, 196, '#c0dfff', '#000000', 1.2);
+  napis(BOHATEROWIE[G.kto].imie + ' IDZIE DZIŚ Z...', 240, 199, '#c0dfff', '#000000', 1.2);
   if(Math.floor(G.t/20)%2===0) napis('NACIŚNIJ  ^  ŻEBY ZACZĄĆ', 240, 236, '#f8d878', '#000000', 2);
 }
 function rysujIntro(){
@@ -4822,8 +5044,8 @@ function rysujKarte(){
   const p = POZ()[G.poziom];
   ramka(60, 80, 360, 110, '#000000');
   napis('POZIOM '+(G.poziom+1), W/2, 104, '#bcbcbc', null, 1.4);
-  napis(p.nazwa.toUpperCase(), W/2, 132, '#f8d878', '#000000', 2.4);
-  napis(zOpiekunem(p.podtytul.toUpperCase()), W/2, 162, '#3cbcfc', null, 1.3);
+  napis(nazwaEtapu(p).toUpperCase(), W/2, 132, '#f8d878', '#000000', 2.4);
+  napis(podtytulEtapu(p).toUpperCase(), W/2, 162, '#3cbcfc', null, 1.3);
   if(G.kartaT>60 && Math.floor(G.t/20)%2===0) napis('NACIŚNIJ  ^', W/2, 220, '#fffeff', '#000000', 1.6);
   rysujDebug();
 }
@@ -4842,7 +5064,8 @@ function rysujKoniec(){
   const boh = bohater();
   if(!rysujPortret(boh.portret, 74, 190+b, 88, 86)) rysujFranka(50, 134+b, 1, 0, false, false);
   if(!rysujPortret(boh.portretOp, 174, 190+b, 76, 92)) rysujTate(140, 120+b, 1, 0);
-  if(G.kto === 'franek' && !rysujPortret('portret_magda', 274, 190+b, 76, 92)) rysujMame(240, 120+b, -1, 0);
+  if(G.kto === 'franek' && !rysujPortret(RODZICE[boh.domownik].portret, 274, 190+b, 76, 92))
+    rysujMame(240, 120+b, -1, 0);
 
   napis('BRAWO ' + bohater().imie + '!', W/2, 200, '#f8d878', '#000000', 3);
   napis(bohater().koniecOpis, W/2, 226, '#fffeff', '#000000', 1);
@@ -4879,19 +5102,22 @@ function krok(){
   odswiezPrzyciski();
   switch(G.ekran){
     case 'wybor':
-      if(nowy('ArrowLeft') && G.kto !== 'franek'){ G.kto='franek'; sfx('sfx_zbierz'); }
-      if(nowy('ArrowRight') && G.kto !== 'pola'){ G.kto='pola'; sfx('sfx_zbierz'); }
+      // zmiana bohatera zeruje etap – Franek ma ich 27, Pola 12
+      if(nowy('ArrowLeft') && G.kto !== 'franek'){ G.kto='franek'; G.poziom=0; sfx('sfx_zbierz'); }
+      if(nowy('ArrowRight') && G.kto !== 'pola'){ G.kto='pola'; G.poziom=0; sfx('sfx_zbierz'); }
       if(nowy('ArrowUp')){
         sfx('sfx_sukces');
-        if(G.kto === 'pola'){ G.ekran='opiekunP'; mow(najlepszyGlos('p_wybor_opiekuna')); }
-        else { G.ekran='intro'; mow(bohater().glosStart); }
+        G.opiekun = DOMYSLNY_OPIEKUN[G.kto];
+        ustawOpiekuna(G.opiekun);
+        G.ekran = 'opiekun';
+        mow(najlepszyGlos(bohater().glosWyborOpiekuna));
       }
       czyscNowe(); break;
-    case 'opiekunP':
-      if(nowy('ArrowLeft')  && G.opiekunPoli !== 'mama'){ G.opiekunPoli='mama'; sfx('sfx_zbierz'); }
-      if(nowy('ArrowRight') && G.opiekunPoli !== 'tata'){ G.opiekunPoli='tata'; sfx('sfx_zbierz'); }
+    case 'opiekun':
+      if(nowy('ArrowLeft')  && G.opiekun !== 'mama'){ G.opiekun='mama'; sfx('sfx_zbierz'); }
+      if(nowy('ArrowRight') && G.opiekun !== 'tata'){ G.opiekun='tata'; sfx('sfx_zbierz'); }
       if(nowy('ArrowUp')){
-        sfx('sfx_sukces'); ustawOpiekunaPoli(G.opiekunPoli);
+        sfx('sfx_sukces'); ustawOpiekuna(G.opiekun);
         G.ekran='intro'; mow(bohater().glosStart);
       }
       czyscNowe(); break;
@@ -4935,7 +5161,7 @@ function rysuj(){
   switch(G.ekran){
     case 'wybor': rysujWybor(); break;
     case 'intro': rysujIntro(); break;
-    case 'opiekunP': rysujWyborOpiekuna(); break;
+    case 'opiekun': rysujWyborOpiekuna(); break;
     case 'karta': rysujKarte(); break;
     case 'gra': rysujGre(); break;
     case 'swiatlo': rysujSwiatlo(); break;
