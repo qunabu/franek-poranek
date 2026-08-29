@@ -345,6 +345,16 @@ function graj(klucz){
 }
 const KLUCZE_MUZ = ['muz_menu','muz_gra','muz_jazda','muz_koniec'];
 const KLUCZE_MOWA = [
+  // wieczór Franka w domu: zabawa, Igor, kolacja, kąpiel, książka i sen
+  'f_poziom20','f_poziom21','f_poziom22','f_poziom23','f_poziom24','f_poziom25',
+  'f_poziom26','f_poziom27','f_koniec3',
+  'zad_tory','zad_lego','zad_rebusy','zad_plot','zad_ryba','zad_frytki','zad_kolacja',
+  'zad_pizama','kolacja_mniam',
+  'igor_pilka','igor_autka','igor_chowany','igor_koniec',
+  'kapiel_jak','kapiel_szyja','kapiel_glowa','kapiel_rece','kapiel_nogi','kapiel_pupa',
+  'kapiel_stopy','kapiel_czysta','kapiel_recznik','kapiel_koniec',
+  'ksiazka_wybor','ksiazka_muminki','ksiazka_kocia','ksiazka_pirat','ksiazka_autka',
+  'ksiazka_przytulas','ksiazka_dobranoc','sen_jak','sen_koniec',
   // Pola idzie do przedszkola z mamą albo z tatą Adamem
   'p_wybor_opiekuna','pt_przytulas','pt_zad_przytulas','pt_pomachaj','pt_szybciej','pt_szybciej2',
   'pt2_poziom8','pt2_poziom10','pt2_poziom11','pt2_poziom12',
@@ -592,7 +602,42 @@ benzyna:[
 "................",".......kkk......","......kkykk.....","....kkkkkkkk....",
 "....krrrrrrk....","....krwwwwrk....","....krwRRwrk....","....krwwwwrk....",
 "....krrrrrrk....","....krrrrrrk....","....krrrrrrk....","....kkkkkkkk....",
-"................","................","................","................"]
+"................","................","................","................"],
+tory:[
+"................","................","......kkkkk.....",".....kkrrrkk....",
+"....krrrrrrrk...","....krrrrrrrk...","...kkkkkkkkkkk..","...krrrrrrrrrk..",
+"...krwwrrrwwrk..","...krwwrrrwwrk..","...kkkkkkkkkkk..","....k.k...k.k...",
+"kkkkkkkkkkkkkkkk","ssssssssssssssss","n.n.n.n.n.n.n.n.","kkkkkkkkkkkkkkkk"],
+lego:[
+"................","................","................","..kk..kk..kk....",
+"..kk..kk..kk....",".kkkkkkkkkkkk...",".krrrrrrrrrrk...",".krrrrrrrrrrk...",
+".krrrrrrrrrrk...",".krrrrrrrrrrk...",".kkkkkkkkkkkk...","...kk..kk..kk...",
+"...kbbbbbbbbk...","...kbbbbbbbbk...","...kkkkkkkkkk...","................"],
+rebusy:[
+"................","..kkkkkkkkkkkk..","..kwwwwwwwwwwk..","..kwrrwwggwwwk..",
+"..kwrrwwggwwwk..","..kwwwwwwwwwwk..","..kwwwkkkkwwwk..","..kwwwwwwwwwwk..",
+"..kwwbbwwbbwwk..","..kwwbbwwbbwwk..","..kwwwwwwwwwwk..","..kwkkkwwkkkwk..",
+"..kwwwwwwwwwwk..","..kkkkkkkkkkkk..","................","................"],
+ryba:[
+"................","................","................",".......kkk......",
+"....kkkkjjkk....","..kkjjjjjjjjkk..",".kjjojjjjjjjjk..","kjjjjjjjjjjjjkk.",
+".kjjjjjjjjjjjk..","..kkjjjjjjjjkk..","....kkkkjjkk....",".......kkk......",
+"................","................","................","................"],
+frytki:[
+"................","......y...y.....",".....ky..kyk....","....kyyk.kyk....",
+"...kykykykyyk...","...kykykykyyk...","..kkkkkkkkkkkk..","..krrrrrrrrrrk..",
+"..krwwrrrrwwrk..","..krrrrrrrrrrk..","...krrrrrrrrk...","....kkkkkkkk....",
+"................","................","................","................"],
+kolacja:[
+"................","................","......yy........",".....kyyk..kk...",
+"....kyykykkjjk..","....kykykjjjjk..","..kkkkkkkkkkkkk.",".kwwwwwwwwwwwwwk",
+".kwwwwwwwwwwwwwk","..kwwwwwwwwwwwk.","...kkkkkkkkkkk..","................",
+"................","................","................","................"],
+pizama:[
+"................","................","...kk....kk.....","..kzzkkkkzzk....",
+".kzzzzzzzzzzk...",".kwwwwwwwwwwk...",".kkkzzzzzzkkk...","...kwwwwwwk.....",
+"...kzzzzzzk.....","...kwwwwwwk.....","...kzzzzzzk.....","...kwwwwwwk.....",
+"...kkkkkkkk.....","................","................","................"]
 };
 const NAZWY = {
   majtki:'majtki', spodnie:'spodnie', skarpetki:'skarpetki', koszulka:'koszulkę',
@@ -601,7 +646,9 @@ const NAZWY = {
   kapcie:'kapcie', mis:'misia', grzebien:'grzebień', karma:'karmę dla rybki',
   rybka:'rybkę', legginsy:'legginsy', bluza:'bluzę',
   czapka:'czapkę', kurtka:'kurtkę', buty:'buty', przytulas:'opiekuna',
-  igor:'Igora', benzyna:'pistolet'
+  igor:'Igora', benzyna:'pistolet',
+  tory:'tory z kolejką', lego:'klocki lego', rebusy:'gazetkę z rebusami',
+  ryba:'rybkę w panierce', frytki:'frytki', kolacja:'talerz', pizama:'piżamkę'
 };
 function rysujIkone(typ, x, y, odbij){
   const w = IKONY[typ] || IKONY.miska;
@@ -635,8 +682,8 @@ function rysujFranka(px, py, kier, faza, wPowietrzu, opada){
 
   ctx.globalAlpha = 0.25; pr(x+3, y+49, 16, 2, '#000000'); ctx.globalAlpha = 1;
 
-  const barwaNogi  = st.spodnie ? u.spodnie  : u.pizama;
-  const barwaNogiC = st.spodnie ? u.spodnieC : u.pizamaPas;
+  const barwaNogi  = st.spodnie ? u.spodnie  : (st.recznik ? SKORA   : u.pizama);
+  const barwaNogiC = st.spodnie ? u.spodnieC : (st.recznik ? SKORA_C : u.pizamaPas);
   const barwaStopy  = st.buty ? '#2b2b33' : (st.skarpetki ? '#fffeff' : SKORA);
   const barwaStopyC = st.buty ? '#000000' : (st.skarpetki ? '#bcbcbc' : SKORA_C);
   function noga(dx, dl, tyl){
@@ -652,7 +699,8 @@ function rysujFranka(px, py, kier, faza, wPowietrzu, opada){
   if(wPowietrzu){ noga(-5, 6, true); noga(4, 6, false); }
   else { noga(k.b, k.dl, true); noga(k.a, k.dl, false); }
 
-  const rekaw = st.kurtka ? u.kurtkaJasna : (st.koszulka ? u.rekawGora : u.pizama);
+  const rekaw = st.kurtka ? u.kurtkaJasna
+              : (st.koszulka ? u.rekawGora : (st.recznik ? SKORA : u.pizama));
   const hus = wPowietrzu ? 0 : -k.a;
   const dy = wPowietrzu ? -7 : Math.round(hus/2);
   pr(x+1,  ty+2+dy, 3, 8, rekaw);   pr(x+1,  ty+10+dy, 3, 3, SKORA);
@@ -666,6 +714,12 @@ function rysujFranka(px, py, kier, faza, wPowietrzu, opada){
     pr(x+4, ty, 14, 14, u.gora);
     pr(x+4, ty, 14, 1, u.goraJasna);
     for(const [ox,oy] of [[2,3],[8,2],[5,8],[10,9]]) pr(x+4+ox, ty+oy, 3, 3, u.wzor);
+  } else if(st.recznik){
+    pr(x+4, ty, 14, 14, '#fffeff');                 // ręcznik owinięty po kąpieli
+    pr(x+4, ty+3, 14, 2, '#fe6ecc');
+    pr(x+4, ty+9, 14, 2, '#3cbcfc');
+    pr(x+9, ty, 4, 14, '#e4e594');
+    pr(x+4, ty+14, 14, 3, '#fffeff');
   } else {
     pr(x+4, ty, 14, 14, u.pizama);
     for(let j=1;j<14;j+=3) pr(x+4, ty+j, 14, 1, u.pizamaPas);
@@ -929,6 +983,23 @@ function rysujPlatforme(p){
       blok(x,y,w,h,'#e45c10','#ac7c00','#503000'); obrys(x,y,w,h);
       obrys(x+2,y+2,w-4,h-4);
       break;
+    case 'sciankaW':
+      // ścianka do wspinania: sklejka z kolorowymi chwytami
+      pr(x,y,w,h,'#ac7c00'); obrys(x,y,w,h);
+      pr(x,y,w,4,'#e45c10'); pr(x+2,y+1,w-4,2,'#f7d8a5');
+      for(let j=12;j<h-6;j+=24) for(let i=6;i<w-8;i+=20){
+        const kol = ['#d82800','#0058f8','#58d854','#f8d878','#fe6ecc','#7527fe'][((x+i+j)>>2)%6];
+        pr(x+i, y+j, 8, 6, kol); obrys(x+i, y+j, 8, 6);
+      }
+      break;
+    case 'murek':
+      pr(x,y,w,h,'#bcbcbc'); pr(x,y,w,2,'#fffeff'); obrys(x,y,w,h);
+      for(let i=0;i<w;i+=14) pr(x+i,y+2,1,h-2,'#4f4f4f');
+      break;
+    case 'dywan':
+      pr(x,y,w,h,'#a80020'); pr(x,y,w,2,'#d82800'); obrys(x,y,w,h);
+      for(let i=4;i<w-4;i+=12) pr(x+i,y+3,6,h-6,'#f8d878');
+      break;
     default:
       blok(x,y,w,h,'#e45c10','#ac7c00','#503000'); obrys(x,y,w,h);
   }
@@ -1127,6 +1198,34 @@ const TLA = {
     ctx.restore();
     pr(0,214,W,H-214,'#bcbcbc'); pr(0,214,W,3,'#fffeff');   // chodnik
   },
+  ogrod(cam,t){
+    pr(0,0,W,H,'#5c94fc');
+    slonce(352,20,34);
+    ctx.save(); ctx.translate(-Math.round(cam*0.3),0);
+    for(const [x,y] of [[80,44],[300,26],[520,50],[760,32]]) rysujSpr('ch',CHMURA,x,y,false);
+    ctx.restore();
+    ctx.save(); ctx.translate(-Math.round(cam*0.7),0);
+    for(const x of [120,600]) drzewo(x, 150);
+    ctx.restore();
+    ctx.save(); ctx.translate(-Math.round(cam),0);
+    // gruba mata pod ścianką – jak na prawdziwej ściance wspinaczkowej
+    pr(226,228,500,8,'#0058f8'); pr(226,228,500,2,'#3cbcfc'); obrys(226,228,500,8);
+    // płot sąsiada – w środku jest przejście (rysowane osobno jako „drzwi")
+    for(let x=740; x<1010; x+=14){
+      if(x > 776 && x < 856) continue;
+      pr(x,166,9,72,'#e4e594'); obrys(x,166,9,72);
+    }
+    // domek Igora zza płotu
+    pr(880,96,180,80,'#b3f3cc'); obrys(880,96,180,80);
+    ctx.fillStyle='#a80020';
+    ctx.beginPath(); ctx.moveTo(866,98); ctx.lineTo(970,50); ctx.lineTo(1074,98); ctx.closePath(); ctx.fill();
+    pr(906,116,34,26,'#64b0ff'); obrys(906,116,34,26);
+    pr(996,116,34,26,'#64b0ff'); obrys(996,116,34,26);
+    for(const x of [180,660]) rysujSpr('kr',KRZAK,x,222,false);
+    // trawa
+    pr(0,232,1200,4,'#58d854');
+    ctx.restore();
+  },
   podworko(cam,t){
     pr(0,0,W,H,'#5c94fc');
     slonce(398,18,38);
@@ -1282,7 +1381,88 @@ const POZIOMY_FRANEK = [
     drzwi:{x:800,y:160,w:55,h:75,tekst:'Do domu!'}
   },
   { typ:'dom', nazwa:'Jesteśmy w domu', podtytul:'Mama czeka w drzwiach',
-    glos:'f_poziom19' }
+    glos:'f_poziom19' },
+
+  /* ---------- wieczór w domu ---------- */
+  { nazwa:'Zabawa w domu', podtytul:'Tory, lego i rebusy', tlo:'salon', szer:1000,
+    glos:'f_poziom20', start:{x:40,y:170}, ubranie:'wieczor',
+    platformy:[
+      {x:0,y:235,w:1000,h:35,styl:'podloga'},
+      {x:150,y:228,w:180,h:7,styl:'dywan'},
+      {x:380,y:200,w:90,h:35,styl:'szafka'},
+      {x:520,y:168,w:95,h:9,styl:'polka',przenikalna:true},
+      {x:660,y:200,w:80,h:35,styl:'pufa'},
+      {x:790,y:175,w:120,h:11,styl:'stol',przenikalna:true}
+    ],
+    zadania:[
+      {typ:'tory',   x:230, y:216},
+      {typ:'lego',   x:565, y:156},
+      {typ:'rebusy', x:845, y:162}
+    ],
+    drzwi:{x:930,y:165,w:50,h:70,tekst:'Do ogródka!'}
+  },
+  { nazwa:'Ścianka i płot', podtytul:'Wspinaj się do Igora', tlo:'ogrod', szer:1000,
+    glos:'f_poziom21', start:{x:30,y:170},
+    platformy:[
+      {x:0,y:235,w:1000,h:35,styl:'ziemia'},
+      {x:120,y:212,w:60,h:23,styl:'skrzynka'},
+      {x:240,y:206,w:58,h:29,styl:'sciankaW'},
+      {x:298,y:176,w:58,h:59,styl:'sciankaW'},
+      {x:356,y:146,w:58,h:89,styl:'sciankaW'},
+      {x:414,y:126,w:58,h:109,styl:'sciankaW'},
+      {x:472,y:106,w:78,h:129,styl:'sciankaW'},
+      {x:550,y:136,w:52,h:99,styl:'sciankaW'},
+      {x:602,y:168,w:52,h:67,styl:'sciankaW'},
+      {x:654,y:198,w:52,h:37,styl:'sciankaW'}
+    ],
+    zadania:[],
+    drzwi:{x:790,y:166,w:56,h:70,tekst:'Do Igora!',plot:true,glos:'zad_plot',
+           opis:'Wspinaj się i przejdź przez płot!'}
+  },
+  { typ:'igorek', nazwa:'Zabawa z Igorem', podtytul:'Piłka, autka i chowanego',
+    glos:'f_poziom22' },
+  { nazwa:'Kolacja', podtytul:'Fish and chips!', tlo:'kuchnia', szer:1000,
+    glos:'f_poziom23', start:{x:100,y:170},
+    platformy:[
+      {x:0,y:235,w:1000,h:35,styl:'podloga'},
+      {x:0,y:150,w:70,h:85,styl:'lodowka'},
+      {x:140,y:180,w:170,h:12,styl:'blat',przenikalna:true},
+      {x:360,y:200,w:80,h:35,styl:'pufa'},
+      {x:480,y:190,w:160,h:11,styl:'stol',przenikalna:true},
+      {x:690,y:200,w:80,h:35,styl:'szafka'},
+      {x:790,y:178,w:140,h:12,styl:'blat',przenikalna:true}
+    ],
+    zadania:[
+      {typ:'ryba',   x:225, y:167},
+      {typ:'frytki', x:855, y:165},
+      {typ:'kolacja',x:560, y:177, zadanie:'Zjedz kolację!', glos:'zad_kolacja'}
+    ],
+    drzwi:{x:940,y:165,w:50,h:70,tekst:'Do łazienki!'}
+  },
+  { typ:'kapiel', nazwa:'Kąpiel', podtytul:'Umyj się cały, po kolei',
+    glos:'f_poziom24' },
+  { nazwa:'Ząbki i piżamka', podtytul:'Jeszcze raz szorujemy', tlo:'lazienka', szer:800,
+    glos:'f_poziom25', start:{x:30,y:170},
+    platformy:[
+      {x:0,y:235,w:800,h:35,styl:'kafle'},
+      {x:60,y:190,w:145,h:45,styl:'wanna'},
+      {x:250,y:200,w:90,h:35,styl:'szafka'},
+      {x:360,y:170,w:90,h:9,styl:'polka',przenikalna:true},
+      {x:475,y:185,w:95,h:50,styl:'umywalka'},
+      {x:610,y:195,w:80,h:40,styl:'komoda'}
+    ],
+    zadania:[
+      {typ:'pasta',x:295,y:188},
+      {typ:'szczoteczka',x:405,y:158},
+      {typ:'zeby',x:522,y:171, zadanie:'Idź do umywalki!', glos:'zad_zeby'},
+      {typ:'pizama',x:650,y:180, zadanie:'Ubierz piżamkę!', glos:'zad_pizama'}
+    ],
+    drzwi:{x:720,y:165,w:50,h:70,tekst:'Do łóżka!'}
+  },
+  { typ:'ksiazka', nazwa:'Książka na dobranoc', podtytul:'Wybierz, co czyta tata',
+    glos:'f_poziom26' },
+  { typ:'sen', nazwa:'Sen o kotkach', podtytul:'Kotki rzucają śnieżkami',
+    glos:'f_poziom27' }
 ];
 
 /* ---------- poziomy Poli (tyle samo etapów co u Franka) ---------- */
@@ -1426,8 +1606,8 @@ const BOHATEROWIE = {
     przedrostki:[], podmienOpiekuna:false, wariantOp:'tata', imieOp:'TATA',
     glowa:'glowa_franek', portret:'portret_franek', glowaW:24, glowaH:22, glowaDy:0,
     glowaOp:'glowa_tata', portretOp:'portret_tata',
-    glosStart:'start', glosKoniec:'f_koniec2', glosKoniecZapas:'koniec',
-    koniecDom:'DOM', koniecOpis:'UMYTY, PRZEBRANY, PO CAŁYM DNIU!',
+    glosStart:'start', glosKoniec:'f_koniec3', glosKoniecZapas:'f_koniec2',
+    koniecDom:'DOM', koniecOpis:'CAŁY DZIEŃ, KĄPIEL, KSIĄŻKA I SEN O KOTKACH!',
     ubior:{ pizama:'#dfe6ff', pizamaPas:'#9fb4e8', spodnie:'#a80020', spodnieC:'#6e0040',
             gora:'#64b0ff', goraJasna:'#c0dfff', wzor:'#fc9838',
             kurtka:'#00a800', kurtkaJasna:'#58d854', kurtkaZamek:'#b8f818',
@@ -1496,7 +1676,9 @@ const G = {
   tata:{x:0,y:0}, mycie:null, jazda:null, wyscig:null, okno:null, ostatnieZadanie:-1,
   swiatlo:null, wstawanie:null, siku:null, debug:0,
   brud:0, kolko:null, dzien:null, lapanie:null, tank:null, dom:null, opiekunPoli:'mama',
-  stroj:{spodnie:false, skarpetki:false, koszulka:false, czapka:false, kurtka:false, buty:false}
+  igorek:null, kapiel:null, ksiazka:null, sen:null,
+  stroj:{spodnie:false, skarpetki:false, koszulka:false, czapka:false, kurtka:false,
+         buty:false, recznik:false}
 };
 function nowaGra(){
   G.brud = 0;
@@ -1517,11 +1699,16 @@ const STARTY_MINIGIER = {
   dzien: () => startDnia(),
   lapanie: () => startLapania(),
   tankowanie: () => startTankowania(),
-  dom: () => startDomu()
+  dom: () => startDomu(),
+  igorek: () => startZabawyUIgora(),
+  kapiel: () => startKapieli(),
+  ksiazka: () => startKsiazki(),
+  sen: () => startSnu()
 };
 function startPoziomu(i){
   G.poziom = i;
   const p = POZ()[i];
+  if(p.ubranie === 'wieczor') ubierzNaWieczor();
   if(p.typ){ STARTY_MINIGIER[p.typ](); return; }
   G.gracz = nowyGracz(p.start.x, p.start.y);
   G.kamera = 0; G.zrobione = 0; G.ekwipunek = [];
@@ -1574,6 +1761,7 @@ function debugEtap(kierunek){
   G.mycie = null; G.jazda = null; G.wyscig = null; G.okno = null;
   G.swiatlo = null; G.wstawanie = null; G.siku = null;
   G.kolko = null; G.dzien = null; G.lapanie = null; G.tank = null; G.dom = null;
+  G.igorek = null; G.kapiel = null; G.ksiazka = null; G.sen = null;
   G.czastki = []; G.overlay = null;
   G.debug = 150;
   startPoziomu(i);
@@ -1827,7 +2015,9 @@ function aktualizujGre(){
       sfx('sfx_zbierz');
       iskry(z.x, z.y, ['#f8d878','#fffeff','#58d854','#3cbcfc']);
       const brawo = 'brawo' + (1 + ((Math.random()*4)|0));
+      if(z.typ === 'pizama') przebierzWPizame();
       if(z.typ === 'sniadanie'){ G.overlay = {typ:'jedzenie', t:150}; mow('jedzenie'); }
+      else if(z.typ === 'kolacja'){ G.overlay = {typ:'kolacja', t:170}; mow('kolacja_mniam'); }
       else if(z.typ === 'igor'){
         G.overlay = {typ:'czesc', t:170};
         sfx('sfx_sukces'); mow('czesc_igor');
@@ -1855,7 +2045,8 @@ function aktualizujGre(){
   czyscNowe();
 }
 function tekstZadania(p, idx){
-  if(idx >= p.zadania.length) return 'Idź do ' + (p.drzwi.auto ? 'samochodu' : 'drzwi') + '!';
+  if(idx >= p.zadania.length)
+    return zOpiekunem(p.drzwi.opis || ('Idź do ' + (p.drzwi.auto ? 'samochodu' : 'drzwi') + '!'));
   const z = p.zadania[idx];
   return zOpiekunem(z.zadanie || ('Znajdź ' + NAZWY[z.typ] + '!'));
 }
@@ -1864,6 +2055,7 @@ function tekstZadania(p, idx){
 function rysujDrzwi(d, otwarte, t){
   if(d.auto){ rysujSamochod(d.x, d.y, otwarte, t); return; }
   if(d.okno){ rysujOkno(d, otwarte, t); return; }
+  if(d.plot){ rysujPrzejscie(d, otwarte, t); return; }
   const x=Math.round(d.x), y=Math.round(d.y), w=Math.round(d.w), h=Math.round(d.h);
   if(otwarte && Math.floor(t/8)%2===0) pr(x-2,y-2,w+4,h+4,'#f8d878');
   blok(x,y,w,h,otwarte?'#f8d878':'#ac7c00', otwarte?'#e45c10':'#883800','#503000');
@@ -1871,6 +2063,18 @@ function rysujDrzwi(d, otwarte, t){
   obrys(x+4,y+5,w-8,h-10);
   pr(x+w-10,y+Math.round(h/2),3,3,'#f8d878');
   if(otwarte) strzalka(x+Math.round(w/2), y-14, t);
+}
+/* dziura w płocie do sąsiada – dwie sztachety odsunięte na boki */
+function rysujPrzejscie(d, swieci, t){
+  const x=Math.round(d.x), y=Math.round(d.y), w=Math.round(d.w), h=Math.round(d.h);
+  if(swieci && Math.floor(t/8)%2===0) pr(x-3,y-3,w+6,h+6,'#f8d878');
+  pr(x,y,w,h,'#5c94fc');                                  // przez dziurę widać niebo
+  pr(x,y+h-14,w,14,'#00a800'); pr(x,y+h-14,w,2,'#58d854');
+  for(const sx of [x-11, x+w+2]){                         // odsunięte sztachety
+    pr(sx,y-2,9,h+4,'#e4e594'); obrys(sx,y-2,9,h+4);
+  }
+  pr(x-2,y-6,w+4,4,'#ac7c00'); obrys(x-2,y-6,w+4,4);
+  if(swieci) strzalka(x+Math.round(w/2), y-18, t);
 }
 function rysujOkno(d, swieci, t){
   const x=Math.round(d.x), y=Math.round(d.y), w=Math.round(d.w), h=Math.round(d.h);
@@ -1961,6 +2165,7 @@ function rysujGre(){
   if(G.overlay && G.overlay.typ === 'jedzenie') rysujJedzenie(G.overlay);
   if(G.overlay && G.overlay.typ === 'przytulas') rysujPrzytulas(G.overlay);
   if(G.overlay && G.overlay.typ === 'czesc') rysujCzesc(G.overlay);
+  if(G.overlay && G.overlay.typ === 'kolacja') rysujKolacje(G.overlay);
   if(G.infoT > 0){
     ramka(W/2-110, 232, 220, 24, '#a80020');
     napis(G.info, W/2, 244, '#f8d878', '#000000', 1);
@@ -1978,6 +2183,18 @@ function rysujJedzenie(o){
   ctx.drawImage(spr(pusta ? 'ik_miska' : 'ik_sniadanie', pusta ? IKONY.miska : IKONY.sniadanie), 0, 0);
   ctx.restore();
   napis(pusta ? 'ZJEDZONE!' : 'PYSZNE ŁÓDECZKI!', W/2, 172, '#fffeff', '#000000', 2);
+}
+function rysujKolacje(o){
+  const post = 1 - o.t/170;
+  ctx.globalAlpha = 0.75; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+  ramka(W/2-110, 54, 220, 142, '#a80020');
+  napis('FISH AND CHIPS!', W/2, 76, '#f8d878', '#000000', 2);
+  const pusty = post > 0.6;
+  ctx.save();
+  ctx.translate(W/2-32, 96); ctx.scale(4,4);
+  ctx.drawImage(spr(pusty ? 'ik_miska' : 'ik_kolacja', pusty ? IKONY.miska : IKONY.kolacja), 0, 0);
+  ctx.restore();
+  napis(pusty ? 'ZJEDZONE!' : 'RYBKA I FRYTKI!', W/2, 178, '#fffeff', '#000000', 2);
 }
 function rysujPrzytulas(o){
   const post = 1 - o.t/200;
@@ -2024,12 +2241,11 @@ function rysujHUD(p){
   const tw = szerTekstu(zad, 2);
   ramka(W/2-tw/2-8, 24, tw+16, 28, '#a80020');
   napis(zad, W/2, 38, '#f8d878', '#000000', 2);
-  const n = p.zadania.filter(z=>z.typ!=='zeby').length;
-  for(let i=0;i<n;i++){
-    const x = W - 14 - (n-1-i)*20, y = 10;
-    const mam = G.ekwipunek.includes(p.zadania[i].typ);
-    ctx.globalAlpha = mam ? 1 : 0.25;
-    ctx.drawImage(spr('ik_'+p.zadania[i].typ, IKONY[p.zadania[i].typ]), x-8, y-8);
+  const lista = p.zadania.filter(z => z.typ !== 'zeby');
+  for(let i=0;i<lista.length;i++){
+    const x = W - 14 - (lista.length-1-i)*20, y = 10;
+    ctx.globalAlpha = G.ekwipunek.includes(lista[i].typ) ? 1 : 0.25;
+    ctx.drawImage(spr('ik_'+lista[i].typ, IKONY[lista[i].typ]), x-8, y-8);
     ctx.globalAlpha = 1;
   }
 }
@@ -3821,7 +4037,15 @@ function rysujTankowanie(){
 function przebierzWPizame(){
   G.stroj.czapka = false; G.stroj.kurtka = false; G.stroj.buty = false;
   G.stroj.koszulka = false; G.stroj.spodnie = false; G.stroj.skarpetki = false;
+  G.stroj.recznik = false;
 }
+/* po powrocie do domu Franek biega w domowych ciuszkach – dopiero kąpiel
+   zdejmuje wszystko, a piżamka wraca przed spaniem */
+function ubierzNaWieczor(){
+  przebierzWPizame();
+  G.stroj.koszulka = true; G.stroj.spodnie = true; G.stroj.skarpetki = true;
+}
+function owinWRecznik(){ przebierzWPizame(); G.stroj.recznik = true; }
 function startDomu(){
   G.dom = { etap:'powitanie', t:0, x:0, v:0, ostatni:0, faza:0, mama:-120, mv:2.6 };
   G.czastki = []; G.ekran = 'dom';
@@ -3918,6 +4142,583 @@ function rysujDom(){
     napis(G.brud > 0 ? 'DOBRANOC!' : 'CAŁY DZIEŃ ZA TOBĄ!', W/2, 64, '#f8d878', '#000000', 2.2);
     napis('UMYTY, PRZEBRANY, W DOMU!', W/2, 92, '#fffeff', '#000000', 1.4);
     napis('^  DALEJ', W/2, 258, '#fffeff', '#000000', 1.4);
+  }
+  rysujDebug();
+}
+
+/* ==================== MINIGRA: ZABAWA U IGORA ====================
+   Trzy scenki w ogródku sąsiada. Po każdej Franek jest brudniejszy – i dlatego
+   po kolacji czeka go kąpiel. */
+/* ogródek po drugiej stronie płotu – tu Franek jest już u Igora */
+function ogrodekIgora(t){
+  pr(0,0,W,H,'#5c94fc');
+  slonce(44,22,30);
+  for(const [x,y] of [[150,38],[300,24],[420,48]]) rysujSpr('ch', CHMURA, x, y, false);
+  // płot, zza którego Franek właśnie przyszedł
+  for(let x=-6; x<62; x+=14){ pr(x,138,9,68,'#e4e594'); obrys(x,138,9,68); }
+  // domek Igora
+  pr(300,86,180,118,'#b3f3cc'); obrys(300,86,180,118);
+  ctx.fillStyle='#a80020';
+  ctx.beginPath(); ctx.moveTo(286,88); ctx.lineTo(390,40); ctx.lineTo(494,88); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle='#000000'; ctx.lineWidth=1; ctx.stroke();
+  pr(326,106,34,26,'#64b0ff'); obrys(326,106,34,26);
+  pr(416,106,34,26,'#64b0ff'); obrys(416,106,34,26);
+  pr(360,150,44,54,'#503000'); obrys(360,150,44,54); pr(394,178,3,3,'#f8d878');
+  drzewo(120, 150);
+  // trawnik
+  pr(0,204,W,H-204,'#00a800'); pr(0,204,W,6,'#58d854');
+  for(let i=0;i<W;i+=12) pr(i,201,2,4,'#58d854');
+}
+const SCENY_IGOR = [
+  { tytul:'PIŁKA W OGRÓDKU', glos:'igor_pilka', rysuj(t){
+      ogrodekIgora(t);
+      const p = (t % 120) / 120;                       // piłka lata tam i z powrotem
+      const px = 240 + Math.sin(p*Math.PI*2)*90;
+      const py = 200 - Math.abs(Math.sin(p*Math.PI*4))*70;
+      rysujFranka(96, 186, 1, t*0.08, false, false);
+      rysujDziecko(340, 186, -1, t*0.08, DZIECI[2]);
+      kolo(px, py, 9, '#f8d878'); kolo(px, py, 5, '#d82800');
+      if(t % 40 === 0) iskry(px, py, ['#fffeff','#f8d878'], 5);
+    }},
+  { tytul:'AUTKA PO TRAWIE', glos:'igor_autka', rysuj(t){
+      ogrodekIgora(t);
+      rysujFranka(70, 186, 1, 0, false, false);
+      rysujDziecko(370, 186, -1, 0, DZIECI[2]);
+      for(const [x0,kol,dz] of [[110,'#d82800',0],[110,'#0058f8',60]]){
+        const x = x0 + ((t*1.6 + dz) % 200);
+        pr(x, 218, 34, 10, kol); obrys(x, 218, 34, 10);
+        pr(x+8, 210, 18, 8, '#64b0ff'); obrys(x+8, 210, 18, 8);
+        kolo(x+7, 229, 4, '#000000'); kolo(x+27, 229, 4, '#000000');
+        if(t % 10 === 0) iskry(x, 232, ['#58d854','#00a800'], 3);
+      }
+    }},
+  { tytul:'CHOWANEGO ZA KRZAKIEM', glos:'igor_chowany', rysuj(t){
+      ogrodekIgora(t);
+      const schowany = (t % 150) < 90;
+      rysujFranka(80, 186, 1, t*0.05, false, false);
+      if(!schowany) rysujDziecko(250, 186, -1, 0, DZIECI[2]);
+      else glowaDziecka(256, 190, DZIECI[2], false);   // zza krzaka wystaje sama głowa
+      rysujSpr('kr', KRZAK, 238, 206, false);
+      napis(schowany ? 'GDZIE JEST IGOR?' : 'JESTEŚ!', 240, 74, '#f8d878', '#000000', 1.8);
+    }}
+];
+function startZabawyUIgora(){
+  G.igorek = { i:0, t:0, koniecT:0 };
+  G.czastki = []; G.ekran = 'igorek';
+  graj('muz_gra'); mow(najlepszyGlos(SCENY_IGOR[0].glos));
+}
+function aktualizujZabaweUIgora(){
+  const z = G.igorek;
+  if(z.koniecT > 0){
+    z.koniecT--;
+    if(z.koniecT === 0) dalejPoPoziomie();
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  z.t++;
+  if(z.t > 300 || (z.t > 40 && nowy('ArrowUp'))){
+    G.brud = Math.min(1, G.brud + 0.3);                // po ogródku zawsze jest się brudnym
+    if(z.i + 1 < SCENY_IGOR.length){
+      z.i++; z.t = 0; sfx('sfx_zbierz'); mow(najlepszyGlos(SCENY_IGOR[z.i].glos));
+    } else {
+      z.koniecT = 220; sfx('sfx_sukces'); cisza(); mow(najlepszyGlos('igor_koniec'));
+    }
+  }
+  aktualizujEfekty(); czyscNowe();
+}
+function rysujZabaweUIgora(){
+  const z = G.igorek, s = SCENY_IGOR[z.i];
+  s.rysuj(z.t);
+  rysujEfekty();
+  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+  napisL('U IGORA ZA PŁOTEM', 4, 10, '#fffeff', null, 1);
+  const tw = szerTekstu(s.tytul, 1.8);
+  pr(W/2-tw/2-6, 26, tw+12, 20, '#000000');
+  napis(s.tytul, W/2, 36, '#f8d878', null, 1.8);
+  if(z.koniecT > 0){
+    ctx.globalAlpha = 0.6; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+    napis('PA PA, IGOR!', W/2, 110, '#f8d878', '#000000', 3);
+    napis('MAMA WOŁA NA KOLACJĘ!', W/2, 145, '#fffeff', '#000000', 1.6);
+  } else {
+    napis('^  DALEJ', W/2, 258, '#fffeff', '#000000', 1.4);
+  }
+  rysujDebug();
+}
+
+/* ==================== MINIGRA: KĄPIEL ====================
+   Myjemy się cały, część po części, w tej samej kolejności co naprawdę:
+   szyja, głowa, ręce, nogi, pupa, stopy – a na koniec wycieramy ręcznikiem.
+   Szoruje się tak samo jak ząbki: ◀ ▶ na zmianę, bo liczy się zmiana kierunku. */
+const CZESCI_CIALA = [
+  {id:'szyja', nazwa:'SZYJA',  glos:'kapiel_szyja', x:226, y:92,  w:28, h:16},
+  {id:'glowa', nazwa:'GŁOWA',  glos:'kapiel_glowa', x:212, y:48,  w:56, h:48},
+  {id:'rece',  nazwa:'RĘCE',   glos:'kapiel_rece',  x:192, y:106, w:96, h:52},
+  {id:'nogi',  nazwa:'NOGI',   glos:'kapiel_nogi',  x:212, y:170, w:56, h:44},
+  {id:'pupa',  nazwa:'PUPA',   glos:'kapiel_pupa',  x:210, y:148, w:60, h:26},
+  {id:'stopy', nazwa:'STOPY',  glos:'kapiel_stopy', x:206, y:208, w:68, h:18}
+];
+function startKapieli(){
+  const brud = CZESCI_CIALA.map((c, i) => {
+    const plamy = [];
+    for(let p=0;p<6;p++)
+      plamy.push({ x: 4 + ((i*17 + p*29) % Math.max(1, c.w-12)),
+                   y: 3 + ((i*11 + p*13) % Math.max(1, c.h-8)),
+                   r: 2 + (p % 3) });
+    return { ile:1, plamy };
+  });
+  G.kapiel = { etap:'mycie', i:0, poz:0.5, ostatnia:0.5, kier:0, bonus:0,
+               brud, mokro:1, czas:90*60, koniecT:0, dzwiekT:0, blysk:0 };
+  G.czastki = []; G.ekran = 'kapiel';
+  graj('muz_gra');
+  cisza(); mow(najlepszyGlos('kapiel_jak'), najlepszyGlos(CZESCI_CIALA[0].glos));
+}
+function strefaKapieli(k){ return CZESCI_CIALA[k.i]; }
+function zmienCzesc(k, nowa){
+  if(nowa < 0 || nowa >= CZESCI_CIALA.length || nowa === k.i) return;
+  k.i = nowa; k.blysk = 30; k.poz = 0.5;
+  dopowiedz(CZESCI_CIALA[nowa].glos);
+}
+/* ▲ ▼ przeskakują tylko na te części, które są jeszcze brudne – dzięki temu
+   nie da się utknąć na wyszorowanej już nóżce */
+function nastepnaBrudna(k, kierunek){
+  for(let d=1; d<=CZESCI_CIALA.length; d++){
+    const i = k.i + kierunek*d;
+    if(i < 0 || i >= CZESCI_CIALA.length) continue;
+    if(k.brud[i].ile > 0) return i;
+  }
+  return k.i;
+}
+function aktualizujKapiel(){
+  const k = G.kapiel;
+  if(k.koniecT > 0){
+    k.koniecT--;
+    if(k.koniecT === 0){ G.brud = 0; owinWRecznik(); dalejPoPoziomie(); }
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(k.blysk > 0) k.blysk--;
+  k.czas--;
+
+  if(k.etap === 'mycie'){
+    if(nowy('ArrowUp'))   zmienCzesc(k, nastepnaBrudna(k, -1));
+    if(nowy('ArrowDown')) zmienCzesc(k, nastepnaBrudna(k, +1));
+  }
+
+  k.ostatnia = k.poz;
+  let ruch = 0;
+  if(klaw.ArrowLeft) ruch -= 1;
+  if(klaw.ArrowRight) ruch += 1;
+  k.poz = Math.max(0, Math.min(1, k.poz + ruch*0.03));
+  if(ruch !== 0 && ruch !== k.kier){          // zmiana kierunku = jedno pociągnięcie
+    k.kier = ruch; k.bonus = 40; sfx('sfx_skok');
+  }
+  if(k.bonus > 0) k.bonus--;
+
+  const przesuniecie = Math.abs(k.poz - k.ostatnia);
+  const szoruje = przesuniecie > 0.004 && k.bonus > 0;
+  const c = strefaKapieli(k);
+
+  if(przesuniecie > 0.004){
+    if(k.dzwiekT-- <= 0){ ton(200 + Math.random()*180, 0.05, 'sawtooth', 0.02); k.dzwiekT = 6; }
+    const gx = c.x + k.poz*(c.w-16) + 8, gy = c.y + c.h/2;
+    if(k.etap === 'mycie'){
+      const z = k.brud[k.i], przed = z.ile;
+      z.ile = Math.max(0, z.ile - (szoruje ? 0.007 : 0.0012));
+      if(Math.random() < (szoruje ? 0.7 : 0.2))
+        G.czastki.push({x:gx + (Math.random()-0.5)*14, y:gy + (Math.random()-0.5)*14,
+                        vx:(Math.random()-0.5)*1.2, vy:-0.6-Math.random(),
+                        zyc:24+Math.random()*16, kol:'#fffeff', r:1+Math.random()*2});
+      if(przed > 0 && z.ile === 0){
+        sfx('sfx_zbierz');
+        const nastepna = k.brud.findIndex(b => b.ile > 0);
+        if(nastepna >= 0){ dopowiedz('kapiel_czysta'); zmienCzesc(k, nastepna); }
+      }
+    } else {
+      k.mokro = Math.max(0, k.mokro - (szoruje ? 0.005 : 0.0009));
+    }
+  }
+  // gdyby dziecko utknęło – po dwóch minutach kąpiel kończy się sama
+  if(k.czas <= 0){
+    if(k.etap === 'mycie') k.brud.forEach(b => b.ile = 0);
+    else k.mokro = 0;
+  }
+
+  if(k.etap === 'mycie' && k.brud.every(b => b.ile <= 0)){
+    k.etap = 'recznik'; k.poz = 0.5; k.kier = 0; k.bonus = 0; k.czas = 60*60;
+    sfx('sfx_sukces'); cisza(); mow(najlepszyGlos('kapiel_recznik'));
+    iskry(240, 140, ['#fffeff','#3cbcfc','#f8d878'], 30);
+  } else if(k.etap === 'recznik' && k.mokro <= 0){
+    k.etap = 'gotowe'; k.koniecT = 180;
+    sfx('sfx_sukces'); cisza(); mow(najlepszyGlos('kapiel_koniec'));
+    iskry(240, 140, ['#fffeff','#f8d878','#fe6ecc'], 34);
+  }
+  aktualizujEfekty(); czyscNowe();
+}
+/* Franek stoi pod prysznicem – rysowany z przodu, żeby było widać każdą część. */
+function rysujCialoDoMycia(){
+  const u = bohater().ubior;
+  pr(196,110,18,48,SKORA); obrys(196,110,18,48);        // lewa ręka
+  pr(266,110,18,48,SKORA); obrys(266,110,18,48);        // prawa ręka
+  pr(214,104,52,52,SKORA); obrys(214,104,52,52);        // tułów
+  pr(214,152,52,22,'#0058f8'); obrys(214,152,52,22);    // majtki
+  pr(218,172,20,40,SKORA); obrys(218,172,20,40);        // lewa noga
+  pr(242,172,20,40,SKORA); obrys(242,172,20,40);        // prawa noga
+  pr(210,210,28,14,SKORA); obrys(210,210,28,14);        // lewa stopa
+  pr(242,210,28,14,SKORA); obrys(242,210,28,14);        // prawa stopa
+  pr(230,92,20,14,SKORA);  obrys(230,92,20,14);         // szyja
+  const gl = obraz(bohater().glowa);
+  if(gl && gl.naturalWidth) ctx.drawImage(gl, 216, 50, 48, 44);
+  else { pr(216,50,48,44,SKORA); obrys(216,50,48,44); }
+}
+function rysujKapiel(){
+  const k = G.kapiel;
+  TLA.lazienka(0, G.t);
+  // prysznic i mata
+  pr(300,26,8,44,'#bcbcbc'); pr(262,66,50,8,'#bcbcbc'); obrys(262,66,50,8);
+  for(let i=0;i<10;i++){
+    const f = (G.t*2 + i*22) % 160;
+    pr(268 + i*4, 74 + f, 2, 6, '#3cbcfc');
+  }
+  pr(186,226,110,10,'#fe6ecc'); obrys(186,226,110,10);
+
+  rysujCialoDoMycia();
+
+  // brud na jeszcze nieumytych częściach
+  if(k.etap === 'mycie'){
+    for(let i=0;i<CZESCI_CIALA.length;i++){
+      const c = CZESCI_CIALA[i], z = k.brud[i];
+      if(z.ile <= 0) continue;
+      ctx.globalAlpha = Math.min(1, z.ile);
+      for(const p of z.plamy) kolo(c.x + p.x + 4, c.y + p.y + 4, p.r, '#883800');
+      ctx.globalAlpha = 1;
+    }
+  } else if(k.etap === 'recznik'){
+    ctx.globalAlpha = Math.min(1, k.mokro);              // krople wody
+    for(let i=0;i<14;i++){
+      const x = 200 + ((i*37) % 80), y = 60 + ((i*53) % 160);
+      pr(x, y, 2, 4, '#3cbcfc');
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // ramka aktywnej części
+  if(k.etap !== 'gotowe'){
+    const c = k.etap === 'mycie' ? strefaKapieli(k) : {x:196,y:48,w:88,h:180};
+    if(Math.floor(G.t/8)%2 === 0 || k.blysk > 0){
+      ctx.strokeStyle = '#f8d878'; ctx.lineWidth = 1;
+      ctx.strokeRect(c.x-2.5, c.y-2.5, c.w+4, c.h+4);
+    }
+    // gąbka albo ręcznik jeżdżą po części
+    const gx = Math.round(c.x + k.poz*(c.w-20)), gy = Math.round(c.y + c.h/2 - 7);
+    if(k.etap === 'mycie'){
+      pr(gx, gy, 20, 14, '#f8d878'); obrys(gx, gy, 20, 14);
+      for(const [dx,dy] of [[3,3],[9,6],[14,3],[6,9]]) pr(gx+dx, gy+dy, 2, 2, '#ea9e22');
+    } else {
+      pr(gx-4, gy-4, 28, 22, '#fffeff'); obrys(gx-4, gy-4, 28, 22);
+      pr(gx-4, gy+2, 28, 3, '#fe6ecc'); pr(gx-4, gy+9, 28, 3, '#3cbcfc');
+    }
+  }
+  rysujEfekty();
+
+  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+  napisL('KĄPIEL', 4, 10, '#fffeff', null, 1);
+  // pasek: ile ciała już umyte
+  const umyte = k.etap === 'mycie'
+    ? k.brud.reduce((a,b) => a + (1-b.ile), 0) / CZESCI_CIALA.length
+    : 1;
+  pr(W-146, 6, 140, 10, '#000000'); pr(W-144, 8, 136, 6, '#0058f8');
+  pr(W-144, 8, Math.round(136*umyte), 6, '#58d854');
+
+  if(k.etap === 'gotowe'){
+    ramka(W/2-150, 96, 300, 62, '#0000bc');
+    napis('CZYSTY I SUCHY!', W/2, 118, '#f8d878', '#000000', 2.4);
+    napis('TERAZ ZĄBKI I PIŻAMKA', W/2, 144, '#fffeff', '#000000', 1.4);
+  } else {
+    const t = k.etap === 'mycie' ? strefaKapieli(k).nazwa : 'WYTRZYJ RĘCZNIKIEM';
+    const tw = szerTekstu(t, 2);
+    ramka(W/2-tw/2-8, 22, tw+16, 24, '#a80020');
+    napis(t, W/2, 34, '#f8d878', '#000000', 2);
+    napis('SZORUJ  <  >  NA ZMIANĘ', W/2, 258, '#fffeff', '#000000', 1.4);
+    if(k.etap === 'mycie') napis('^ v  ZMIENIA CZĘŚĆ', W/2, 244, '#c0dfff', '#000000', 1);
+  }
+  rysujDebug();
+}
+
+/* ==================== MINIGRA: KSIĄŻKA NA DOBRANOC ====================
+   Franek wybiera książkę, tata czyta, potem przytulas dla mamy i gasimy światło. */
+const KSIAZKI = [
+  { tytul:'MUMINKI', glos:'ksiazka_muminki', kol:'#0058f8', kol2:'#3cbcfc',
+    zdanie:'DOLINA MUMINKÓW ŚPI POD ŚNIEGIEM...', rysuj(x,y){
+      kolo(x+24, y+26, 15, '#fffeff');                       // biały pyszczek muminka
+      kolo(x+24, y+34, 11, '#fffeff');
+      pr(x+14, y+16, 6, 10, '#fffeff'); pr(x+28, y+16, 6, 10, '#fffeff');
+      pr(x+19, y+22, 3, 3, '#000000'); pr(x+27, y+22, 3, 3, '#000000');
+      pr(x+22, y+32, 5, 2, '#000000');
+    }},
+  { tytul:'KOCIA SZAJKA', glos:'ksiazka_kocia', kol:'#883800', kol2:'#fc9838',
+    zdanie:'KOCIA SZAJKA RUSZA NA WYPRAWĘ!', rysuj(x,y){
+      rysujSpr('kotek', KOTEK, x+8, y+16, false);
+      rysujSpr('kotek', KOTEK, x+22, y+28, true);
+    }},
+  { tytul:'PIRAT RABARBAR', glos:'ksiazka_pirat', kol:'#a80020', kol2:'#d82800',
+    zdanie:'PIRAT RABARBAR SZUKA SKARBU!', rysuj(x,y){
+      kolo(x+24, y+30, 13, '#fffeff');                       // trupia czaszka
+      pr(x+17, y+26, 5, 5, '#000000'); pr(x+27, y+26, 5, 5, '#000000');
+      pr(x+21, y+36, 7, 3, '#000000');
+      pr(x+8, y+14, 32, 6, '#000000'); pr(x+14, y+8, 20, 7, '#000000');   // kapelusz
+      pr(x+20, y+10, 4, 4, '#f8d878');
+    }},
+  { tytul:'ZYGZAK MCQUEEN', glos:'ksiazka_autka', kol:'#d82800', kol2:'#fc9838',
+    zdanie:'ZYGZAK MCQUEEN PĘDZI PO TORZE!', rysuj(x,y){
+      pr(x+6, y+28, 40, 12, '#d82800'); obrys(x+6, y+28, 40, 12);
+      pr(x+14, y+20, 22, 9, '#64b0ff'); obrys(x+14, y+20, 22, 9);
+      kolo(x+15, y+41, 5, '#000000'); kolo(x+37, y+41, 5, '#000000');
+      pr(x+8, y+32, 6, 3, '#f8d878'); pr(x+40, y+32, 6, 3, '#f8d878');
+      napis('95', x+26, y+35, '#f8d878', '#000000', 1);
+    }}
+];
+function startKsiazki(){
+  G.ksiazka = { etap:'wybor', i:0, t:0, strona:0, ciemno:0 };
+  G.czastki = []; G.ekran = 'ksiazka';
+  graj('muz_menu'); cisza(); mow(najlepszyGlos('ksiazka_wybor'));
+}
+function aktualizujKsiazke(){
+  const b = G.ksiazka;
+  b.t++;
+  if(b.etap === 'wybor'){
+    if(nowy('ArrowLeft')  && b.i > 0){ b.i--; sfx('sfx_zbierz'); }
+    if(nowy('ArrowRight') && b.i < KSIAZKI.length-1){ b.i++; sfx('sfx_zbierz'); }
+    if(nowy('ArrowUp')){
+      b.etap = 'czytanie'; b.t = 0; sfx('sfx_sukces');
+      graj('muz_koniec'); cisza(); mow(najlepszyGlos(KSIAZKI[b.i].glos));
+    }
+  } else if(b.etap === 'czytanie'){
+    if(b.t > 60 && (nowy('ArrowUp') || b.t > 300)){
+      b.strona++; b.t = 0; sfx('sfx_zbierz');
+      if(b.strona >= 3){
+        b.etap = 'przytulas'; b.strona = 0;
+        cisza(); mow(najlepszyGlos('ksiazka_przytulas'));
+      }
+    }
+  } else if(b.etap === 'przytulas'){
+    if(G.t % 12 === 0) serduszka(240, 160, 2);
+    if(b.t > 200 || (b.t > 60 && nowy('ArrowUp'))){
+      b.etap = 'gaszenie'; b.t = 0;
+      sfx('sfx_drzwi'); cisza(); mow(najlepszyGlos('ksiazka_dobranoc'));
+    }
+  } else {
+    b.ciemno = Math.min(1, b.ciemno + 0.008);
+    if(b.t > 200) dalejPoPoziomie();
+  }
+  aktualizujEfekty(); czyscNowe();
+}
+/* pokój wieczorem: łóżko z Frankiem, lampka nocna i tata na brzegu łóżka */
+function pokojWieczorem(jasnosc){
+  TLA.sypialnia(0, G.t);
+  ctx.globalAlpha = 0.55 * (1 - jasnosc*0.35); pr(0,0,W,H,'#0000bc'); ctx.globalAlpha = 1;
+  pr(96,196,230,40,'#b71e7b'); obrys(96,196,230,40);           // łóżko
+  pr(96,190,230,8,'#fe6ecc');
+  pr(92,150,8,86,'#ac7c00'); obrys(92,150,8,86);
+  pr(322,164,8,72,'#ac7c00'); obrys(322,164,8,72);
+  pr(104,182,54,14,'#fffeff'); obrys(104,182,54,14);           // poduszka
+  pr(158,186,160,10,'#fec4ea'); pr(158,190,160,2,'#fe6ecc');   // kołdra
+  const gl = obraz(bohater().glowa);
+  if(gl && gl.naturalWidth) ctx.drawImage(gl, 116, 162, 30, 27);
+  else pr(116,162,30,27,SKORA);
+  // lampka nocna
+  pr(410,204,34,32,'#ac7c00'); obrys(410,204,34,32);
+  pr(418,178,18,26,'#f8d878'); obrys(418,178,18,26);
+  ctx.globalAlpha = 0.35 * jasnosc; kolo(427, 190, 40, '#f8d878'); ctx.globalAlpha = 1;
+}
+function rysujKsiazke(){
+  const b = G.ksiazka;
+  if(b.etap === 'wybor'){
+    pokojWieczorem(1);
+    ctx.globalAlpha = 0.7; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+    napis('KTÓRĄ KSIĄŻKĘ CZYTAMY?', W/2, 26, '#f8d878', '#000000', 1.8);
+    for(let i=0;i<KSIAZKI.length;i++){
+      const ks = KSIAZKI[i], wybrana = i === b.i;
+      const x = 12 + i*118, y = 44 + (wybrana ? Math.round(Math.sin(G.t*0.12)*3) : 0);
+      if(wybrana){ pr(x-4, y-4, 104, 128, '#f8d878'); }
+      pr(x, y, 96, 120, ks.kol); obrys(x, y, 96, 120);
+      pr(x+4, y+4, 88, 112, ks.kol2); obrys(x+4, y+4, 88, 112);
+      pr(x+2, y, 5, 120, '#000000');                     // grzbiet
+      ctx.save(); ctx.translate(x+22, y+16); ks.rysuj(0, 0); ctx.restore();
+      const linie = ks.tytul.split(' ');
+      linie.forEach((w, j) => napis(w, x+48, y+86 + j*11, '#fffeff', '#000000', 1));
+      if(!wybrana){ ctx.globalAlpha = 0.45; pr(x, y, 96, 120, '#000000'); ctx.globalAlpha = 1; }
+    }
+    ramka(W/2-176, 176, 352, 46, '#0000bc');
+    napis('<  >  WYBIERASZ,   ^  ZACZYNA', W/2, 192, '#fffeff', '#000000', 1.4);
+    napis('TATA POCZYTA CI DO SNU', W/2, 212, '#c0dfff', null, 1.2);
+    rysujDebug(); return;
+  }
+
+  const ks = KSIAZKI[b.i];
+  pokojWieczorem(b.etap === 'gaszenie' ? 1 - b.ciemno : 1);
+
+  if(b.etap === 'czytanie'){
+    rysujTate(352, 150, -1, 0);
+    // otwarta książka w rękach taty
+    pr(300,178,70,44,'#fffeff'); obrys(300,178,70,44);
+    pr(334,178,3,44,'#883800');
+    pr(300,178,70,44,ks.kol); ctx.globalAlpha = 0.25; pr(300,178,70,44,'#fffeff'); ctx.globalAlpha = 1;
+    obrys(300,178,70,44); pr(334,178,3,44,'#883800');
+    for(let j=0;j<4;j++){
+      pr(306, 186 + j*9, 24, 2, '#fffeff');
+      pr(340, 186 + j*9, 24, 2, '#fffeff');
+    }
+    // to, co Franek widzi w wyobraźni – obrazek z wybranej książki
+    const bx = 150 + Math.round(Math.sin(G.t*0.05)*4);
+    pr(bx-6, 40, 116, 92, '#000000'); pr(bx-3, 43, 110, 86, ks.kol2);
+    ctx.save(); ctx.translate(bx+24, 52); ks.rysuj(0, 0); ctx.restore();
+    for(const [dx,dy,r] of [[-16,116,4],[-26,126,3],[-34,134,2]]) kolo(bx+dx, dy, r, '#fffeff');
+    napis(ks.tytul, bx+52, 122, '#000000', null, 1);
+
+    pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+    napisL('TATA CZYTA: ' + ks.tytul, 4, 10, '#fffeff', null, 1);
+    ramka(W/2-160, 236, 320, 24, '#0000bc');
+    napis(ks.zdanie, W/2, 248, '#f8d878', null, 1);
+    napis('STRONA ' + (b.strona+1) + ' Z 3   -   ^  DALEJ', W/2, 152, '#fffeff', '#000000', 1.2);
+  } else if(b.etap === 'przytulas'){
+    rysujMame(352, 150, -1, 0);
+    rysujEfekty();
+    ramka(W/2-140, 40, 280, 46, '#a80020');
+    napis('PRZYTULAS DLA MAMY!', W/2, 62, '#f8d878', '#000000', 2);
+    napis('DOBRANOC, MAMO!', W/2, 118, '#fffeff', '#000000', 1.6);
+    napis('^  DALEJ', W/2, 258, '#fffeff', '#000000', 1.4);
+  } else {
+    ctx.globalAlpha = b.ciemno * 0.92; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+    napis('GASIMY ŚWIATŁO...', W/2, 116, '#f8d878', '#000000', 2);
+    napis('DOBRANOC, FRANEK!', W/2, 146, '#fffeff', '#000000', 1.6);
+  }
+  rysujEfekty();
+  rysujDebug();
+}
+
+/* ==================== MINIGRA: SEN O KOTKACH ====================
+   Ostatni etap dnia. Franek śpi, a we śnie kotki rzucają się śnieżkami.
+   ▲ rzuca śnieżkę razem z nimi. */
+const KOTEK = [
+"................",
+"..kk........kk..",
+".kwwk......kwwk.",
+".kwwwkkkkkkwwwk.",
+".kwwwwwwwwwwwwk.",
+".kwkwwwwwwwwkwk.",
+".kwwwwkkwwwwwwk.",
+".kwwwwwwwwwwwwk.",
+"..kwwwwwwwwwwk..",
+"...kwwwwwwwwk...",
+"...kwk....kwk...",
+"...kk......kk..."];
+const KOTKI_SNU = [{x:172, y:172}, {x:268, y:164}, {x:372, y:174}];
+function startSnu(){
+  G.sen = { t:0, snieżki:[], rzuty:0, koniecT:0, platki:[] };
+  for(let i=0;i<60;i++)
+    G.sen.platki.push({x:Math.random()*W, y:Math.random()*H,
+                       v:0.3+Math.random()*0.8, r:1+Math.random()*2,
+                       f:Math.random()*Math.PI*2});
+  G.czastki = []; G.ekran = 'sen';
+  graj('muz_koniec'); cisza(); mow(najlepszyGlos('sen_jak'));
+}
+function rzucSnieżke(s, od, doK){
+  const a = KOTKI_SNU[od], b = KOTKI_SNU[doK];
+  s.snieżki.push({x:a.x+8, y:a.y, cx:b.x+8, cy:b.y+4, p:0, v:0.016+Math.random()*0.012,
+                  x0:a.x+8, y0:a.y});
+}
+function aktualizujSen(){
+  const s = G.sen;
+  s.t++;
+  for(const p of s.platki){
+    p.y += p.v; p.f += 0.03;
+    if(p.y > H){ p.y = -4; p.x = Math.random()*W; }
+  }
+  if(s.t % 70 === 0 && s.koniecT === 0){
+    const od = (Math.random()*KOTKI_SNU.length)|0;
+    let doK = (od + 1 + ((Math.random()*2)|0)) % KOTKI_SNU.length;
+    rzucSnieżke(s, od, doK);
+  }
+  if(s.koniecT === 0 && nowy('ArrowUp')){
+    s.rzuty++; sfx('sfx_skok');
+    rzucSnieżke(s, 0, 1 + (s.rzuty % 2));
+  }
+  for(const k of s.snieżki){
+    k.p += k.v;
+    k.x = k.x0 + (k.cx - k.x0)*k.p;
+    k.y = k.y0 + (k.cy - k.y0)*k.p - Math.sin(k.p*Math.PI)*46;
+    if(k.p >= 1 && !k.trafiona){
+      k.trafiona = true;
+      iskry(k.cx, k.cy, ['#fffeff','#c0dfff'], 12);
+      sfx('sfx_bum');
+    }
+  }
+  s.snieżki = s.snieżki.filter(k => k.p < 1.2);
+  if(s.koniecT === 0 && (s.t > 620 || s.rzuty >= 5)){
+    s.koniecT = 220; cisza(); mow(najlepszyGlos('sen_koniec'));
+  }
+  if(s.koniecT > 0){
+    s.koniecT--;
+    if(s.koniecT === 0) dalejPoPoziomie();
+  }
+  aktualizujEfekty(); czyscNowe();
+}
+function rysujSen(){
+  const s = G.sen;
+  // nocne niebo z gwiazdkami
+  pr(0,0,W,H,'#0b0c3c');
+  for(let i=0;i<40;i++){
+    const x = (i*97) % W, y = (i*53) % 150;
+    if((Math.floor(G.t/20) + i) % 5 !== 0) pr(x, y, 2, 2, '#fffeff');
+  }
+  kolo(410, 40, 18, '#f8d878'); kolo(400, 34, 15, '#0b0c3c');   // księżyc
+  // zaśnieżony pagórek
+  pr(0,196,W,H-196,'#fffeff');
+  for(let i=0;i<W;i+=24) kolo(i, 198, 14, '#fffeff');
+  pr(0,206,W,H-206,'#e4f2ff');
+  for(const [x,h] of [[60,20],[190,26],[330,18],[430,24]]){    // choinki
+    ctx.fillStyle = '#007800';
+    ctx.beginPath(); ctx.moveTo(x, 196-h*2); ctx.lineTo(x-h, 200); ctx.lineTo(x+h, 200);
+    ctx.closePath(); ctx.fill();
+    pr(x-2, 200, 4, 8, '#503000');
+  }
+  // kotki – rysowane w podwójnej skali, żeby było je dobrze widać
+  for(let i=0;i<KOTKI_SNU.length;i++){
+    const k = KOTKI_SNU[i];
+    const skok = Math.round(Math.abs(Math.sin((G.t + i*30)*0.06))*5);
+    ctx.save(); ctx.translate(k.x, k.y - skok); ctx.scale(2,2);
+    rysujSpr('kotek', KOTEK, 0, 0, i === 1);
+    pr(4, 5, 2, 2, '#3cbcfc'); pr(10, 5, 2, 2, '#3cbcfc');   // oczka
+    pr(7, 7, 2, 1, '#fe6ecc');                               // pyszczek
+    ctx.restore();
+  }
+  // śnieżki w locie
+  for(const k of s.snieżki) if(!k.trafiona){
+    kolo(k.x, k.y, 5, '#64b0ff'); kolo(k.x, k.y, 4, '#fffeff');
+    kolo(k.x - (k.cx-k.x0)*0.03, k.y + 3, 2, '#c0dfff');       // smużka za śnieżką
+  }
+  // padający śnieg
+  for(const p of s.platki) kolo(p.x + Math.sin(p.f)*4, p.y, p.r, '#fffeff');
+  rysujEfekty();
+
+  // Franek śpi w rogu – to wszystko dzieje mu się w głowie
+  pr(0,212,152,58,'#3a2a6a'); obrys(0,212,152,58);
+  pr(8,226,130,32,'#b71e7b'); obrys(8,226,130,32);
+  pr(14,220,44,12,'#fffeff'); obrys(14,220,44,12);
+  const gl = obraz(bohater().glowa);
+  if(gl && gl.naturalWidth) ctx.drawImage(gl, 20, 202, 28, 25); else pr(20,202,28,25,SKORA);
+  pr(58,222,78,8,'#fec4ea');
+  for(let i=0;i<3;i++){
+    const f = (G.t*0.7 + i*30) % 90;
+    napis('Z', 60 + f*0.4, 200 - f*0.5, '#fffeff', '#000000', 1 + i*0.4);
+  }
+
+  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+  napisL('SEN O KOTKACH', 4, 10, '#fffeff', null, 1);
+  if(s.koniecT > 0){
+    ctx.globalAlpha = 0.55; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+    napis('ŚPIJ SŁODKO, FRANEK!', W/2, 116, '#f8d878', '#000000', 2.4);
+    napis('KOTKI RZUCAJĄ ŚNIEŻKAMI CAŁĄ NOC', W/2, 146, '#fffeff', '#000000', 1.2);
+  } else {
+    napis('^  RZUĆ ŚNIEŻKĄ', W/2, 258, '#fffeff', '#000000', 1.4);
   }
   rysujDebug();
 }
@@ -4063,7 +4864,7 @@ function petla(ts){
 }
 let ostatniEkranPrzyciskow = null;
 const ETAPY_DWA_KCIUKI = ['mycie','wyscig','wyscig_okno','swiatlo','wstawanie','siku',
-                          'lapanie','dom'];
+                          'lapanie','dom','kapiel'];
 function odswiezPrzyciski(){
   if(G.ekran === ostatniEkranPrzyciskow) return;
   ostatniEkranPrzyciskow = G.ekran;
@@ -4071,7 +4872,7 @@ function odswiezPrzyciski(){
   document.body.classList.toggle('wMenu', G.ekran === 'wybor' || G.ekran === 'intro');
   // etapy, w których ◀ i ▶ idą do obu krawędzi – gra się dwoma kciukami
   document.body.classList.toggle('dwaKciuki', ETAPY_DWA_KCIUKI.includes(G.ekran));
-  document.body.classList.toggle('strefy', G.ekran === 'mycie');
+  document.body.classList.toggle('strefy', G.ekran === 'mycie' || G.ekran === 'kapiel');
 }
 function krok(){
   G.t++;
@@ -4115,6 +4916,10 @@ function krok(){
     case 'lapanie': aktualizujLapanie(); break;
     case 'tankowanie': aktualizujTankowanie(); break;
     case 'dom': aktualizujDom(); break;
+    case 'igorek': aktualizujZabaweUIgora(); break;
+    case 'kapiel': aktualizujKapiel(); break;
+    case 'ksiazka': aktualizujKsiazke(); break;
+    case 'sen': aktualizujSen(); break;
     case 'koniec':
       if(G.t % 5 === 0 && G.czastki.length < 120)
         G.czastki.push({x:Math.random()*W, y:-6, vx:(Math.random()-0.5)*1, vy:0.6+Math.random()*1.4,
@@ -4145,6 +4950,10 @@ function rysuj(){
     case 'lapanie': rysujLapanie(); break;
     case 'tankowanie': rysujTankowanie(); break;
     case 'dom': rysujDom(); break;
+    case 'igorek': rysujZabaweUIgora(); break;
+    case 'kapiel': rysujKapiel(); break;
+    case 'ksiazka': rysujKsiazke(); break;
+    case 'sen': rysujSen(); break;
     case 'koniec': rysujKoniec(); break;
   }
 }

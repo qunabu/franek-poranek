@@ -2,7 +2,8 @@
 
 Ośmiobitowa gra 2D dla 5–6 latków. Na pierwszym ekranie wybierasz, kim grasz:
 **Frankiem** albo **Polą**. Franek przechodzi **cały dzień** – od ciemnego pokoju
-rano, przez przedszkole, po wieczorne mycie w domu. Pola ma **tyle samo etapów
+rano, przez przedszkole i zabawę u sąsiada, po kolację, kąpiel, książkę
+na dobranoc i sen o kotkach. Pola ma **tyle samo etapów
 poranka** i dodatkowo wybiera, **z kim idzie do przedszkola: z mamą Olą czy
 z tatą Adamem**. **Sterowanie: same strzałki.**
 
@@ -17,7 +18,7 @@ jest wypowiadane na głos po polsku.
 |---|---|
 | ◀ ▶ | chodzenie (w aucie: wolniej / szybciej; w minigrach: sterowanie) |
 | ▲ | skok (w aucie: pas wyżej), a także „zacznij / dalej" i „naciśnij" |
-| ▼ | w aucie: pas niżej, przy myciu ząbków: następna strefa |
+| ▼ | w aucie: pas niżej, przy myciu ząbków i w kąpieli: następna strefa |
 | **P** / **O** | **DEBUG**: następny / poprzedni etap (do podglądania planszy) |
 
 W etapach z pogonią (tata przed myciem, mama w domu) i w wyścigach naciska się
@@ -25,11 +26,11 @@ W etapach z pogonią (tata przed myciem, mama w domu) i w wyścigach naciska si�
 ◀ ▶ obchodzą krąg, a ▲ mówi „cześć". Przy tankowaniu ▲ trzyma pistolet.
 
 Na telefonie i tablecie pojawiają się przyciski dotykowe. W etapach, w których
-naciska się ◀ i ▶ na zmianę (światło, wstawanie, siku, mycie ząbków, oba wyścigi,
-obie pogonie),
+naciska się ◀ i ▶ na zmianę (światło, wstawanie, siku, mycie ząbków, kąpiel,
+oba wyścigi, obie pogonie),
 **◀ ląduje przy lewej krawędzi, a ▶ przy prawej** — telefon trzyma się wtedy jak
 pada i gra się **dwoma kciukami**. ▲ (a przy ząbkach też ▼) siedzi na środku pod
-spodem. W platformówce jest po staremu: chodzenie pod lewym kciukiem, skok pod prawym. Telefon trzymany
+spodem (przy kąpieli tak samo jak przy ząbkach). W platformówce jest po staremu: chodzenie pod lewym kciukiem, skok pod prawym. Telefon trzymany
 pionowo prosi o obrócenie na poziomo. Na ekranie wyboru wystarczy **dotknąć
 portretu** — to od razu wybiera postać, zaczyna grę i **włącza pełny ekran**.
 Na pozostałych ekranach menu też wystarczy dotknąć/kliknąć.
@@ -38,7 +39,7 @@ Przedmioty zbiera się samym dotknięciem. Świecąca rzecz ze strzałką to ta,
 po którą trzeba iść teraz. **Nie da się przegrać** — po spadnięciu Franek
 wraca w bezpieczne miejsce.
 
-## Poziomy Franka (19)
+## Poziomy Franka (27)
 
 1. **Ciemno!** — w pokoju jest noc, Franek leży w łóżku i wyciąga rączkę do
    ściany. ◀ ▶ przesuwają rączkę, ▲ naciska. Trzeba trafić w **kontakt**, a nie
@@ -85,6 +86,28 @@ wraca w bezpieczne miejsce.
     wróciliście, chłopaki", **brudnego** wita „ale brudas!" i goni go po domu
     (◀ ▶ na zmianę) – w końcu zawsze złapie, więc kończy się myciem
     i przebraniem w piżamkę
+20. **Zabawa w domu** — salon i trzy rzeczy po kolei: **tory z kolejką**,
+    **klocki lego** i **rebusy z gazetki**. Franek przebiera się na wieczór
+    w domowe ciuszki
+21. **Ścianka i płot** — do sąsiada nie ma drogi na skróty: najpierw
+    **ścianka do wspinania** (kolorowe chwyty, wchodzi się skokami coraz wyżej),
+    potem zejście po drugiej stronie i **przejście w płocie** do Igora
+22. **Zabawa z Igorem** — trzy scenki w ogródku sąsiada: piłka, autka po trawie
+    i chowanego za krzakiem. Po nich Franek jest porządnie brudny
+23. **Kolacja** — **fish and chips**: rybka w panierce → frytki → talerz.
+    Na koniec „mniam, mniam!"
+24. **Kąpiel** — myjemy się **cały, część po części**, w tej samej kolejności co
+    naprawdę: **szyja → głowa → ręce → nogi → pupa → stopy**. Gąbka jeździ po
+    ciele, ◀ ▶ na zmianę zmywa brud (▲ ▼ przeskakują na inną, jeszcze brudną
+    część). Na koniec **wycieranie ręcznikiem** — i Franek chodzi w ręczniku
+25. **Ząbki i piżamka** — pasta → szczoteczka → **znów dwie minuty szorowania**
+    → piżamka z komody
+26. **Książka na dobranoc** — Franek **wybiera książkę** (◀ ▶): **Muminki**,
+    **Kocia szajka**, **Pirat Rabarbar** albo **Zygzak McQueen**. Tata czyta trzy
+    strony (nad łóżkiem widać, co Franek sobie wyobraża), potem **przytulas dla
+    mamy** i **gasimy światło**
+27. **Sen o kotkach** — zaśnieżona dolina, choinki i księżyc, a **kotki rzucają
+    się śnieżkami**. ▲ rzuca śnieżkę razem z nimi. Franek śpi w rogu ekranu
 
 ## Poziomy Poli (12)
 
@@ -118,7 +141,7 @@ Franek **ubiera się na oczach gracza** — każda zebrana rzecz pojawia się na
   (macOS Vision wycina sylwetkę, potem redukcja do kilkudziesięciu pikseli).
 - Postacie mają 4-klatkowy cykl chodu i osobną klatkę skoku.
 - **Narrator, efekty i muzyka wygenerowane przez ElevenLabs** (`audio/*.mp3`):
-  ponad 170 kwestii narratora po polsku, 6 efektów chiptune i 4 utwory.
+  ponad 200 kwestii narratora po polsku, 6 efektów chiptune i 4 utwory.
   Kwestie w rodzaju żeńskim i te z opiekunem mają własne pliki: dla Poli
   szukany jest najpierw `p_...` (z mamą) albo `pt_...` (z tatą Adamem),
   a gdy takiego pliku nie ma, gra mówi wersję wspólną.
