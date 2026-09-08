@@ -17,10 +17,15 @@
 <style>
   html,body{margin:0;padding:0;height:100%;background:#0b0c14;overflow:hidden;
     font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-user-select:none;user-select:none;}
-  #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;}
+  /* Poświata siedzi na tle #wrap, a nie na kanwie: rozmyty box-shadow na
+     elemencie, którego treść zmienia się 60 razy na sekundę, Safari na iOS
+     rasteryzuje od nowa w KAŻDEJ ramce – i to w rozdzielczości ekranu.
+     Tło #wrap jest nieruchome, więc maluje się raz. */
+  #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(ellipse at center, #0b0c14 45%, #000000 100%);}
   canvas{width:min(100vw, calc(100vh * 16 / 9));height:auto;aspect-ratio:16/9;
     image-rendering:pixelated;image-rendering:crisp-edges;
-    box-shadow:0 0 0 4px #1a1c2c, 0 0 60px rgba(0,0,0,.8);touch-action:none;display:block;}
+    box-shadow:0 0 0 4px #1a1c2c;touch-action:none;display:block;}
   canvas:focus{outline:3px solid #f8d878;outline-offset:6px;}
   /* Przyciski dotykowe leżą na sztywnych pozycjach, bo w niektórych etapach
      ◀ i ▶ rozjeżdżają się do obu krawędzi – wtedy gra się dwoma kciukami. */
@@ -28,7 +33,9 @@
     --bw:78px; --pad:18px; --luz:12px;}
   #dotyk button{position:absolute;bottom:calc(var(--pad) - 4px);pointer-events:auto;
     width:var(--bw);height:var(--bw);border-radius:10px;border:3px solid #fffeff;
-    font-size:32px;color:#fffeff;background:rgba(0,0,0,.45);font-family:monospace;}
+    font-size:32px;color:#fffeff;background:rgba(0,0,0,.45);font-family:monospace;
+    /* bez tego iOS przy szybkim stukaniu czeka, czy to nie zoom na dwuklik */
+    touch-action:manipulation;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;}
   #dotyk button:active{background:rgba(248,216,120,.6);}
   body.dotyk #dotyk{display:block;}
   /* domyślnie: chodzenie po lewej pod jednym kciukiem, skok po prawej */
@@ -162,21 +169,48 @@ addEventListener('keydown', e => {
   if (e.key === 'o' || e.key === 'O') debugEtap(-1);
 });
 addEventListener('keyup', e => { if (KLAWISZE.includes(e.key)) { e.preventDefault(); klaw[e.key]=false; } });
-addEventListener('blur', () => KLAWISZE.forEach(k => klaw[k]=false));
+function puscKlawisze(){ KLAWISZE.forEach(k => { klaw[k]=false; klaw[k+'_nowy']=false; }); }
+addEventListener('blur', puscKlawisze);
+// iOS nie odpala „blur" niezawodnie – po schowaniu gry klawisz zostawał wciśnięty
+addEventListener('visibilitychange', () => { if(document.hidden) puscKlawisze(); });
+addEventListener('pagehide', puscKlawisze);
 function nowy(k){ if(klaw[k+'_nowy']){ klaw[k+'_nowy']=false; return true; } return false; }
 function czyscNowe(){ KLAWISZE.forEach(k => klaw[k+'_nowy']=false); }
 
 if ('ontouchstart' in window) {
   document.body.classList.add('dotyk');
+  /* Który palec trzyma który przycisk. Puszczenie łapiemy na OKNIE, a nie na
+     przycisku: przy zmianie etapu odswiezPrzyciski() chowa ▼ albo przerzuca
+     ◀ ▶ na drugą krawędź, a wtedy iOS nie wyśle już touchend do przycisku,
+     który zniknął pod palcem – i klawisz zostawał wciśnięty na zawsze. */
+  const palce = new Map();               // identifier -> klawisz
+  const wcisnij = k => { if(!klaw[k]) klaw[k+'_nowy']=true; klaw[k]=true; };
+  const jeszczeTrzyma = k => { for(const v of palce.values()) if(v === k) return true; return false; };
   document.querySelectorAll('#dotyk button').forEach(b => {
     const k = b.dataset.k;
-    const on = e => { e.preventDefault(); if(!klaw[k]) klaw[k+'_nowy']=true; klaw[k]=true; odblokujDzwiek();
-                      if(k === 'ArrowUp') pelnyEkranPrzyWyborze(); };
-    const off = e => { e.preventDefault(); klaw[k]=false; };
-    b.addEventListener('touchstart', on, {passive:false}); b.addEventListener('touchend', off);
-    b.addEventListener('touchcancel', off); b.addEventListener('mousedown', on);
-    b.addEventListener('mouseup', off); b.addEventListener('mouseleave', off);
+    const start = () => { wcisnij(k); odblokujDzwiek();
+                          if(k === 'ArrowUp') pelnyEkranPrzyWyborze(); };
+    b.addEventListener('touchstart', e => {
+      e.preventDefault();                // przy okazji zabija zoom na dwuklik
+      const zm = e.changedTouches;
+      for(let i=0;i<zm.length;i++) palce.set(zm[i].identifier, k);
+      start();
+    }, {passive:false});
+    b.addEventListener('mousedown', e => { e.preventDefault(); start(); });
+    b.addEventListener('mouseup', () => { klaw[k]=false; });
+    b.addEventListener('mouseleave', () => { klaw[k]=false; });
   });
+  const koniecDotyku = e => {
+    const zm = e.changedTouches;
+    for(let i=0;i<zm.length;i++){
+      const k = palce.get(zm[i].identifier);
+      if(k === undefined) continue;
+      palce.delete(zm[i].identifier);
+      if(!jeszczeTrzyma(k)) klaw[k]=false;
+    }
+  };
+  addEventListener('touchend', koniecDotyku, {passive:true});
+  addEventListener('touchcancel', koniecDotyku, {passive:true});
 }
 function klikniecieWPlansze(e){
   odblokujDzwiek(); cv.focus();
@@ -263,6 +297,7 @@ function odblokujDzwiek(){
   if(!AC){ try{ AC = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
   if(AC && AC.state === 'suspended') AC.resume();
   dzwiekOdblokowany = true;
+  wczytajProbki();
 }
 function ton(f, dl, typ='square', gl=0.06, op=0){
   if(!AC || !dzwiekWlaczony) return;
@@ -283,19 +318,47 @@ const ZAPAS = {                       // awaryjne chiptune'y
   sfx_drzwi(){ [660,880,1047].forEach((f,i)=>ton(f,0.14,'square',0.05,i*0.08)); }
 };
 const KLUCZE_SFX = ['sfx_skok','sfx_zbierz','sfx_sukces','sfx_zle','sfx_bum','sfx_drzwi'];
+
+/* Efekty lecą przez WebAudio: każdy plik dekodujemy RAZ do pamięci i potem
+   odtwarzamy z bufora. Wcześniej każde naciśnięcie strzałki robiło
+   `cloneNode()` na elemencie <audio>, czyli nowy element medialny i nowe
+   pobranie pliku. W etapach ze stukaniem ◀ ▶ to 6-10 elementów na sekundę –
+   Safari na iPhonie trzyma dla każdego osobny dekoder, zwalnia je z
+   opóźnieniem i po kilkunastu sekundach gra przystawała. */
+const probki = {};                    // klucz -> AudioBuffer
+const stanProbki = {};                // klucz -> 'laduje' | 'ok' | 'nie'
+function wczytajProbke(klucz){
+  if(!AC || stanProbki[klucz]) return;
+  const src = zrodlo(klucz);
+  if(!src){ stanProbki[klucz] = 'nie'; return; }
+  stanProbki[klucz] = 'laduje';
+  fetch(src)
+    .then(o => o.ok ? o.arrayBuffer() : Promise.reject(o.status))
+    .then(dane => new Promise((ok, zle) => {
+      // Safari długo nie miało wersji decodeAudioData na obietnicach
+      const p = AC.decodeAudioData(dane, ok, zle);
+      if(p && p.then) p.then(ok, zle);
+    }))
+    .then(buf => { probki[klucz] = buf; stanProbki[klucz] = 'ok'; })
+    .catch(() => { stanProbki[klucz] = 'nie'; });
+}
+function wczytajProbki(){ KLUCZE_SFX.forEach(wczytajProbke); }
 function sfx(klucz){
   if(!dzwiekWlaczony) return;
-  const wzor = bufory[klucz];
-  const zapas = () => { if(ZAPAS[klucz]) ZAPAS[klucz](); };
-  if(!wzor || gotowe[klucz] === false){ zapas(); return; }
-  const k = wzor.cloneNode();
-  k.volume = GLOSNOSC_EFEKTOW;
-  const p = k.play();
-  if(p && p.catch) p.catch(zapas);       // plik jeszcze się ładuje -> piszczyk z WebAudio
+  const buf = probki[klucz];
+  if(AC && buf){
+    const z = AC.createBufferSource(), g = AC.createGain();
+    z.buffer = buf; g.gain.value = GLOSNOSC_EFEKTOW;
+    z.connect(g); g.connect(AC.destination);
+    z.start();
+    return;                            // węzeł zwalnia się sam po odtworzeniu
+  }
+  wczytajProbke(klucz);                // jeszcze się dekoduje – dociągnij i piszcz
+  if(ZAPAS[klucz]) ZAPAS[klucz]();
 }
 
 /* --- narrator (Franek nie umie czytać, więc wszystko jest mówione) --- */
-let mowaTeraz = null, kolejkaMowy = [];
+let mowaTeraz = null, kolejkaMowy = [], mowaNr = 0;
 function mow(...klucze){
   if(!dzwiekWlaczony) return;
   kolejkaMowy = klucze.filter(Boolean);
@@ -306,22 +369,33 @@ function dopowiedz(klucz){
   kolejkaMowy.push(klucz);
   if(!mowaTeraz) nastepnaMowa(false);
 }
+/* Narrator gada zawsze pojedynczo, więc odtwarzamy wprost element-wzorzec
+   (przewinięty na początek) zamiast klonować go za każdym razem – klon to na
+   iOS kolejny element medialny i kolejne pobranie tego samego pliku.
+   `mowaNr` pilnuje, żeby zdarzenie z przerwanej kwestii nie ruszyło kolejki. */
 function nastepnaMowa(przerwij){
-  if(przerwij && mowaTeraz){ try{ mowaTeraz.pause(); mowaTeraz.currentTime = 0; }catch(e){} mowaTeraz = null; }
+  if(przerwij && mowaTeraz){
+    mowaNr++;
+    try{ mowaTeraz.pause(); mowaTeraz.currentTime = 0; }catch(e){}
+    mowaTeraz = null;
+  }
   if(mowaTeraz) return;
   const k = kolejkaMowy.shift();
   if(!k) return;
-  const wzor = bufory[k];
-  if(!wzor || gotowe[k] === false){ nastepnaMowa(false); return; }
-  const a = wzor.cloneNode();
+  const a = bufory[k];
+  if(!a || gotowe[k] === false){ nastepnaMowa(false); return; }
+  const nr = ++mowaNr;
+  const dalej = () => { if(nr !== mowaNr) return; mowaTeraz = null; nastepnaMowa(false); };
   a.volume = GLOSNOSC_NARRATORA;
-  a.addEventListener('ended', () => { mowaTeraz = null; nastepnaMowa(false); });
-  a.addEventListener('error', () => { mowaTeraz = null; nastepnaMowa(false); });
+  try{ a.currentTime = 0; }catch(e){}
+  a.onended = dalej; a.onerror = dalej;   // pola, nie addEventListener – nie narastają
   mowaTeraz = a;
-  a.play().catch(() => { mowaTeraz = null; nastepnaMowa(false); });
+  const p = a.play();
+  if(p && p.catch) p.catch(dalej);
 }
 function cisza(){
   kolejkaMowy = [];
+  mowaNr++;
   if(mowaTeraz){ try{ mowaTeraz.pause(); }catch(e){} mowaTeraz = null; }
 }
 
@@ -369,6 +443,9 @@ const KLUCZE_MOWA = [
   'ksiazka_przytulas','ksiazka_dobranoc','sen_jak','sen_koniec',
   // Pola idzie do przedszkola z mamą albo z tatą Adamem
   'p_wybor_opiekuna','pt_przytulas','pt_zad_przytulas','pt_pomachaj','pt_szybciej','pt_szybciej2',
+  // Pola jedzie rowerem, a opiekun biegnie za nią i woła „nie tak szybko!"
+  'p_rower_jak','pt_rower_jak','p_nie_tak_szybko','p_nie_tak_szybko2',
+  'pt_nie_tak_szybko','pt_nie_tak_szybko2',
   'pt2_poziom8','pt2_poziom10','pt2_poziom11','pt2_poziom12',
   // dalszy ciąg dnia Franka: przedszkole, powrót do domu i wieczór
   'f_poziom13','f_poziom14','f_poziom15','f_poziom16','f_poziom17','f_poziom18','f_poziom19',
@@ -400,8 +477,8 @@ const KLUCZE_MOWA = [
   'zeby_gora_tyl','zeby_minuta','zeby_pol','zeby_strefa_ok','zle'];
 
 KLUCZE_MUZ.forEach(k => wczytajAudio(k, GLOSNOSC_MUZYKI, true));
-KLUCZE_SFX.forEach(k => wczytajAudio(k, GLOSNOSC_EFEKTOW, false));
 KLUCZE_MOWA.forEach(k => wczytajAudio(k, GLOSNOSC_NARRATORA, false));
+// efekty nie potrzebują elementów <audio> – siedzą w pamięci jako próbki WebAudio
 
 document.getElementById('glosnik').addEventListener('click', e => {
   e.stopPropagation();
@@ -768,7 +845,7 @@ function rysujFranka(px, py, kier, faza, wPowietrzu, opada){
 
 /* Wszyscy dorośli mają to samo ciało – różni ich głowa ze zdjęcia, ubranie
    i (u mam) długie włosy wystające spod głowy. */
-function rysujRodzica(px, py, kier, faza, r){
+function rysujRodzica(px, py, kier, faza, r, obrysuj){
   const x = Math.round(px), y = Math.round(py);
   const u = r.ubior;
   ctx.save();
@@ -781,6 +858,10 @@ function rysujRodzica(px, py, kier, faza, r){
 
   pr(x+9+k.b, ty+18, 6, 13, u.nogiC); pr(x+8+k.b, ty+31, 8, 4, u.butC);
   pr(x+9+k.a, ty+18, 6, 13, u.nogi);  pr(x+8+k.a, ty+31, 8, 4, u.but);
+  if(obrysuj){
+    obrys(x+9+k.b, ty+18, 6, 13); obrys(x+8+k.b, ty+31, 8, 4);
+    obrys(x+9+k.a, ty+18, 6, 13); obrys(x+8+k.a, ty+31, 8, 4);
+  }
 
   const hus = -k.a;
   pr(x+1,  ty+4+Math.round(hus/2), 3, 12, u.gora); pr(x+1,  ty+16+Math.round(hus/2), 3, 3, SKORA);
@@ -789,6 +870,11 @@ function rysujRodzica(px, py, kier, faza, r){
   pr(x+4, ty, 16, 18, u.gora);
   pr(x+4, ty, 16, 1, u.goraJasna);
   pr(x+4, ty+16, 16, 2, u.goraCien);
+  if(obrysuj){
+    obrys(x+4, ty, 16, 18);
+    obrys(x+1,  ty+4+Math.round(hus/2), 3, 12);
+    obrys(x+20, ty+4-Math.round(hus/2), 3, 12);
+  }
 
   if(r.wlosy){ pr(x+1, gy+16, 4, 14, r.wlosy); pr(x+19, gy+16, 4, 14, r.wlosy); }
   const gl = obraz(r.glowa);
@@ -807,9 +893,10 @@ const RODZICE = {
                   nogi:'#fe8170', nogiC:'#d82800', but:'#2b2b33', butC:'#000000' } }
 };
 /* opiekun, z którym bohater idzie do przedszkola */
-function rysujTate(px, py, kier, faza){
+function rysujTate(px, py, kier, faza, obrysuj){
   const b = bohater();
-  rysujRodzica(px, py, kier, faza, {glowa:b.glowaOp, ubior:b.opiekunUbior, wlosy:b.opiekunWlosy});
+  rysujRodzica(px, py, kier, faza,
+               {glowa:b.glowaOp, ubior:b.opiekunUbior, wlosy:b.opiekunWlosy}, obrysuj);
 }
 /* rodzic, który został w domu i czeka w drzwiach */
 function rysujMame(px, py, kier, faza){
@@ -1593,10 +1680,10 @@ const POZIOMY_POLA = [
     zadania:[
       {typ:'czapka',x:632,y:175},{typ:'kurtka',x:316,y:163},{typ:'buty',x:495,y:195}
     ],
-    drzwi:{x:780,y:160,w:55,h:75,tekst:'Do auta!'}
+    drzwi:{x:780,y:160,w:55,h:75,tekst:'Na rower!'}
   },
-  { typ:'jazda', nazwa:'Jedziemy do przedszkola!', podtytul:'▲▼ pas, ▶ szybciej',
-    glos:'p2_poziom9', glosZapas:'poziom6' },
+  { typ:'jazda', nazwa:'Rowerem do przedszkola!', podtytul:'▲▼ ścieżka, ◀ ▶ pedałuj',
+    glos:'p2_poziom9', glosZapas:'poziom6', glosJak:'rower_jak' },
   { typ:'wyscig', nazwa:'Wyścig do furtki!', podtytul:'Naciskaj ◀ ▶ na zmianę',
     glos:'p2_poziom10', glosTaty:'pt2_poziom10', glosZapas:'poziom7' },
   { nazwa:'Szatnia', podtytul:'Rozbierz się i przytul mamę', tlo:'szatnia', szer:820,
@@ -1644,9 +1731,10 @@ const BOHATEROWIE = {
   pola: {
     imie:'POLA', opiekun:'MAMĄ', wolacz:'MAMO', opiekunM:'MAMA',
     wstalem:'WSTAŁAM!', poWstaniu:'GDZIE SĄ KAPCIE?', sypialnia:'sypialniaP',
-    krzykWAucie:'SZYBCIEJ MAMA, SPÓŹNIMY SIĘ!', doWidzenia:'DO WIDZENIA, MAMO!',
+    krzykWAucie:'SZYBCIEJ MAMA, SPÓŹNIMY SIĘ!', krzykZaRowerem:'POLA, NIE TAK SZYBKO!',
+    doWidzenia:'DO WIDZENIA, MAMO!',
     przedrostki:['p_'], podmienNa:null, wariantOp:'mama', imieOp:'OLA',
-    domownik:'mama', pojazd:'auto', pojazdPowrot:'auto', opiekunWlosy:null,
+    domownik:'mama', pojazd:'rower', pojazdPowrot:'rower', opiekunWlosy:null,
     glowa:'glowa_pola', portret:'portret_pola', glowaW:24, glowaH:24, glowaDy:-2,
     glowaOp:'glowa_ola', portretOp:'portret_ola',
     glosWyborOpiekuna:'p_wybor_opiekuna',
@@ -1666,19 +1754,21 @@ const BOHATEROWIE = {
 const OPIEKUNOWIE_POLI = {
   mama: {
     opiekun:'MAMĄ', wolacz:'MAMO', opiekunM:'MAMA', imieOp:'OLA', wariantOp:'mama',
-    podpisWyboru:'MAMA OLA', podpisPojazdu:'AUTEM',
+    podpisWyboru:'MAMA OLA', podpisPojazdu:'ROWEREM',
     glowaOp:'glowa_ola', portretOp:'portret_ola', opiekunWlosy:null,
     doWidzenia:'DO WIDZENIA, MAMO!', krzykWAucie:'SZYBCIEJ MAMA, SPÓŹNIMY SIĘ!',
-    przedrostki:['p_'], podmienNa:null, pojazd:'auto', pojazdPowrot:'auto', domownik:'mama',
+    krzykZaRowerem:'POLA, NIE TAK SZYBKO!',
+    przedrostki:['p_'], podmienNa:null, pojazd:'rower', pojazdPowrot:'rower', domownik:'mama',
     opiekunUbior:{ gora:'#22357a', goraJasna:'#3a4a8b', goraCien:'#0000bc',
                    nogi:'#2b2b33', nogiC:'#000000', but:'#4f4f4f', butC:'#000000' }
   },
   tata: {
     opiekun:'TATĄ', wolacz:'TATO', opiekunM:'TATA', imieOp:'ADAM', wariantOp:'tata',
-    podpisWyboru:'TATA ADAM', podpisPojazdu:'AUTEM',
+    podpisWyboru:'TATA ADAM', podpisPojazdu:'ROWEREM',
     glowaOp:'glowa_adam', portretOp:'portret_adam', opiekunWlosy:null,
     doWidzenia:'DO WIDZENIA, TATO!', krzykWAucie:'SZYBCIEJ TATA, JEDZIEMY!',
-    przedrostki:['pt_','p_'], podmienNa:'tata', pojazd:'auto', pojazdPowrot:'auto', domownik:'mama',
+    krzykZaRowerem:'POLA, NIE TAK SZYBKO!',
+    przedrostki:['pt_','p_'], podmienNa:'tata', pojazd:'rower', pojazdPowrot:'rower', domownik:'mama',
     opiekunUbior:{ gora:'#4f4f4f', goraJasna:'#adadad', goraCien:'#2b2b33',
                    nogi:'#2b2b33', nogiC:'#000000', but:'#000000', butC:'#000000' }
   }
@@ -1979,36 +2069,47 @@ function glif(zn){
   if(z) return {rzedy: CZC[z[0]], gora:z[1], dol:z[2]};
   return {rzedy: CZC['?'], gora:null, dol:null};
 }
-const pamiecTekstu = new Map();
-function tekstNaKanwie(t, kol){
-  const klucz = t + ' ' + kol;
-  if(pamiecTekstu.has(klucz)) return pamiecTekstu.get(klucz);
-  const znaki = [...t];
-  const c = document.createElement('canvas');
-  c.width = Math.max(1, znaki.length * 6); c.height = 9;
+/* Kanwa na POJEDYNCZY znak, nie na cały napis. Wcześniej cache siedział pod
+   kluczem „tekst + kolor", więc napisy z licznikiem (procenty, zegary)
+   tworzyły nową kanwę w KAŻDEJ ramce – z cieniem dwie – czyli ponad sto kanw
+   na sekundę, aż cache dobijał 400 i czyścił się do zera. Safari na iOS
+   najgorzej znosi właśnie masowe tworzenie kanw i to ono krztusiło grę.
+   Znaków jest kilkadziesiąt, a kolorów kilkanaście, więc teraz cache po
+   chwili przestaje rosnąć. */
+const pamiecGlifow = new Map();
+function glifNaKanwie(zn, kol){
+  const klucz = zn + ' ' + kol;
+  let c = pamiecGlifow.get(klucz);
+  if(c) return c;
+  c = document.createElement('canvas');
+  c.width = 5; c.height = 9;
   const x = c.getContext('2d');
   x.fillStyle = kol;
-  znaki.forEach((zn, i) => {
-    const g = glif(zn), ox = i*6;
-    if(g.gora) for(let k=0;k<5;k++) if(g.gora[k]==='#') x.fillRect(ox+k, 0, 1, 1);
-    for(let j=0;j<7;j++) for(let k=0;k<5;k++)
-      if(g.rzedy[j][k]==='#') x.fillRect(ox+k, 1+j, 1, 1);
-    if(g.dol) for(let k=0;k<5;k++) if(g.dol[k]==='#') x.fillRect(ox+k, 8, 1, 1);
-  });
-  if(pamiecTekstu.size > 400) pamiecTekstu.clear();
-  pamiecTekstu.set(klucz, c);
+  const g = glif(zn);
+  if(g.gora) for(let k=0;k<5;k++) if(g.gora[k]==='#') x.fillRect(k, 0, 1, 1);
+  for(let j=0;j<7;j++) for(let k=0;k<5;k++)
+    if(g.rzedy[j][k]==='#') x.fillRect(k, 1+j, 1, 1);
+  if(g.dol) for(let k=0;k<5;k++) if(g.dol[k]==='#') x.fillRect(k, 8, 1, 1);
+  pamiecGlifow.set(klucz, c);
   return c;
 }
 function szerTekstu(t, skala){ return [...t].length * 6 * (skala||1); }
+function rysujZnaki(znaki, px, py, kol, skala){
+  const sw = 5*skala, sh = 9*skala, krok = 6*skala;
+  for(let i=0;i<znaki.length;i++){
+    if(znaki[i] === ' ') continue;                 // spacja to pusty glif
+    ctx.drawImage(glifNaKanwie(znaki[i], kol), px + i*krok, py, sw, sh);
+  }
+}
 function rysujTekst(t, x, y, kol, cien, skala, wyr){
   skala = Math.max(1, Math.round(skala || 1));
-  const c = tekstNaKanwie(t, kol);
-  const w = c.width*skala, h = c.height*skala;
+  const znaki = [...t];
+  const w = znaki.length*6*skala, h = 9*skala;
   let px = Math.round(x), py = Math.round(y - h/2);
   if(wyr === 'center') px = Math.round(x - w/2);
   ctx.imageSmoothingEnabled = false;
-  if(cien) ctx.drawImage(tekstNaKanwie(t, cien), px+skala, py+skala, w, h);
-  ctx.drawImage(c, px, py, w, h);
+  if(cien) rysujZnaki(znaki, px+skala, py+skala, cien, skala);
+  rysujZnaki(znaki, px, py, kol, skala);
 }
 function napis(t, x, y, kol, cien, skala){ rysujTekst(t, x, y, kol, cien, skala, 'center'); }
 function napisL(t, x, y, kol, cien, skala){ rysujTekst(t, x, y, kol, cien, skala, 'left'); }
@@ -2124,7 +2225,8 @@ function aktualizujGre(){
 }
 function tekstZadania(p, idx){
   if(idx >= p.zadania.length){
-    const pojazd = bohater().pojazd === 'taxi' ? 'taksówki' : 'samochodu';
+    const poj = bohater().pojazd;
+    const pojazd = poj === 'taxi' ? 'taksówki' : (poj === 'rower' ? 'roweru' : 'samochodu');
     return zOpiekunem(p.drzwi.opis || ('Idź do ' + (p.drzwi.auto ? pojazd : 'drzwi') + '!'));
   }
   const z = p.zadania[idx];
@@ -3180,12 +3282,15 @@ function startJazdy(){
   const pojazd = p.powrot ? (b.pojazdPowrot || 'auto') : (b.pojazd || 'auto');
   // autobus nie tankuje – wysiada się na przystanku
   const cel = (p.cel === 'stacja' && pojazd === 'autobus') ? 'przystanek' : (p.cel || 'przedszkole');
-  G.jazda = { pas:1, y:PASY[1], predkosc:2.5, dystans:0, przeszkody:[], nastepna:200,
-    stlucz:0, trzes:0, ups:0, koniecT:0, wolnoT:0, krzykT:0, dymek:0, pojazd,
+  const rower = pojazd === 'rower';
+  G.jazda = { pas:1, y:PASY[1], predkosc:rower ? 1.2 : 2.5, dystans:0, przeszkody:[], nastepna:200,
+    stlucz:0, trzes:0, ups:0, koniecT:0, wolnoT:0, krzykT:0, dymek:0, pojazd, rower,
+    ostatniPedal:0, obrotKola:0, fazaOp:0, szybkoT:0, odstepOp:60,
     dlugosc: p.dlugosc || DROGA_DO_PRZEDSZKOLA,
     cel,
     tytul: cel === 'przystanek' ? 'JEDZIEMY NA PRZYSTANEK'
-                                : (p.tytul || 'JEDZIEMY DO PRZEDSZKOLA'),
+                                : (p.tytul || (rower ? 'ROWEREM DO PRZEDSZKOLA'
+                                                     : 'JEDZIEMY DO PRZEDSZKOLA')),
     radio: !!p.radio, radioT:0, radioI:0 };
   G.czastki = []; G.ekran = 'jazda';
   graj('muz_jazda'); mow(najlepszyGlos(glosB(p.glosJak), p.glosJak, 'jazda'));
@@ -3202,19 +3307,42 @@ function aktualizujJazde(){
   if(nowy('ArrowDown') && j.pas<2){ j.pas++; ton(500,0.06,'square',0.03); }
   j.y += (PASY[j.pas] - j.y) * 0.18;
 
-  let docelowa = 2.5;
-  if(klaw.ArrowRight) docelowa = 4.5;
-  if(klaw.ArrowLeft) docelowa = 1.1;
-  if(j.stlucz>0){ docelowa = 0.8; j.stlucz--; }
-  j.predkosc += (docelowa - j.predkosc) * 0.06;
+  if(j.rower){
+    // rower jedzie tylko tak szybko, jak Pola pedałuje: ◀ ▶ na zmianę
+    if(nowy('ArrowLeft')  && j.ostatniPedal !== -1){ j.predkosc += 0.5; j.ostatniPedal = -1; sfx('sfx_skok'); }
+    if(nowy('ArrowRight') && j.ostatniPedal !==  1){ j.predkosc += 0.5; j.ostatniPedal =  1; sfx('sfx_skok'); }
+    if(klaw.ArrowLeft || klaw.ArrowRight) j.predkosc += 0.008;
+    j.predkosc -= 0.022;                                  // rower sam zwalnia
+    if(j.stlucz > 0){ j.predkosc = Math.min(j.predkosc, 0.9); j.stlucz--; }
+    j.predkosc = Math.max(0.4, Math.min(5.2, j.predkosc));
+    j.obrotKola += j.predkosc * 0.09;
+    j.fazaOp += j.predkosc * 0.24;
+    // im szybciej Pola pedałuje, tym bardziej opiekun zostaje w tyle
+    j.odstepOp += (56 + j.predkosc * 6 - j.odstepOp) * 0.05;
+  } else {
+    let docelowa = 2.5;
+    if(klaw.ArrowRight) docelowa = 4.5;
+    if(klaw.ArrowLeft) docelowa = 1.1;
+    if(j.stlucz>0){ docelowa = 0.8; j.stlucz--; }
+    j.predkosc += (docelowa - j.predkosc) * 0.06;
+  }
   j.dystans += j.predkosc;
-  // jedziemy ślamazarnie? Franek popędza tatę
   if(j.krzykT > 0) j.krzykT--;
   if(j.dymek > 0) j.dymek--;
-  j.wolnoT = (j.predkosc < 3 && j.stlucz === 0 && j.koniecT === 0) ? j.wolnoT + 1 : 0;
-  if(j.wolnoT > 150 && j.krzykT === 0){
-    mow(glosB(Math.random() < 0.5 ? 'szybciej' : 'szybciej2'));
-    j.krzykT = 540; j.dymek = 130; j.wolnoT = 0;
+  if(j.rower){
+    // mama albo tata biegnie z tyłu i woła: Pola, nie tak szybko!
+    j.szybkoT = (j.predkosc > 3.4 && j.stlucz === 0 && j.koniecT === 0) ? j.szybkoT + 1 : 0;
+    if(j.szybkoT > 70 && j.krzykT === 0){
+      mow(glosB(Math.random() < 0.5 ? 'nie_tak_szybko' : 'nie_tak_szybko2'));
+      j.krzykT = 420; j.dymek = 150; j.szybkoT = 0;
+    }
+  } else {
+    // jedziemy ślamazarnie? Franek popędza tatę
+    j.wolnoT = (j.predkosc < 3 && j.stlucz === 0 && j.koniecT === 0) ? j.wolnoT + 1 : 0;
+    if(j.wolnoT > 150 && j.krzykT === 0){
+      mow(glosB(Math.random() < 0.5 ? 'szybciej' : 'szybciej2'));
+      j.krzykT = 540; j.dymek = 130; j.wolnoT = 0;
+    }
   }
   if(j.trzes>0) j.trzes--;
   if(j.ups>0) j.ups--;
@@ -3269,12 +3397,85 @@ function twarzWOknie(nazwa, x, y, w, h){
   const dh = Math.max(1, Math.round(im.naturalHeight*s));
   ctx.drawImage(im, Math.round(x + (w-dw)/2), Math.round(y + h - dh), dw, dh);
 }
+/* koło rowerowe: opona, obręcz i szprychy, które kręcą się razem z jazdą */
+function rysujKoloRoweru(cx, cy, r, obrot){
+  ctx.strokeStyle='#000000'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
+  ctx.strokeStyle='#bcbcbc'; ctx.lineWidth=1;
+  for(let i=0;i<4;i++){
+    const a = obrot + i*Math.PI/4, dx = Math.cos(a)*(r-2), dy = Math.sin(a)*(r-2);
+    ctx.beginPath(); ctx.moveTo(cx-dx, cy-dy); ctx.lineTo(cx+dx, cy+dy); ctx.stroke();
+  }
+  pr(cx-2, cy-2, 4, 4, '#4f4f4f');
+}
+function rurka(x1,y1,x2,y2,kol,gr){
+  ctx.strokeStyle=kol; ctx.lineWidth=gr; ctx.lineCap='butt';
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+}
+/* Pola jedzie do przedszkola rowerem – nogi kręcą się razem z korbą */
+function rysujRowerPoli(x, y, t){
+  const j = G.jazda, b = bohater(), u = b.ubior;
+  const obrot = j ? j.obrotKola : t*0.1;
+  ctx.globalAlpha=0.25; pr(x-28,y+20,56,4,'#000000'); ctx.globalAlpha=1;
+
+  const tylX = x-18, przodX = x+18, hubY = y+11;
+  const korbaX = x-1, korbaY = y+12;
+  const siodloX = x-14, siodloY = y-4;
+  const kierX = x+13,  kierY = y-9;
+
+  rysujKoloRoweru(tylX, hubY, 11, obrot);
+  rysujKoloRoweru(przodX, hubY, 11, obrot);
+
+  // rama w kolorze czapki Poli – jasna, żeby nogi w spodniach było widać
+  rurka(tylX, hubY, korbaX, korbaY, u.czapka, 3);
+  rurka(korbaX, korbaY, siodloX, siodloY, u.czapka, 3);
+  rurka(siodloX, siodloY, tylX, hubY, u.czapka, 3);
+  rurka(siodloX, siodloY, kierX, kierY, u.czapkaDodatek, 3);
+  rurka(korbaX, korbaY, kierX, kierY, u.czapka, 3);
+  rurka(kierX, kierY, przodX, hubY, '#bcbcbc', 3);
+  pr(siodloX-4, siodloY-5, 11, 4, '#2b2b33'); obrys(siodloX-4, siodloY-5, 11, 4);
+  pr(kierX-5, kierY-3, 13, 3, '#2b2b33');                    // kierownica
+  pr(kierX+7, kierY-4, 4, 5, u.czapka);                      // rączka
+  pr(x+21, y-6, 12, 10, '#ac7c00'); obrys(x+21, y-6, 12, 10);  // koszyk
+  for(let i=1;i<4;i++) pr(x+21, y-6+i*3, 12, 1, '#883800');
+  pr(x+24, y-10, 6, 5, u.czapkaDodatek);                     // miś w koszyku
+  pr(x+23, y-11, 2, 2, u.czapkaDodatek); pr(x+29, y-11, 2, 2, u.czapkaDodatek);
+
+  // nogi kręcące korbą
+  const bx = korbaX, by = korbaY;
+  for(const [faza, kolN, kolS] of [[Math.PI, u.spodnieC, '#000000'], [0, u.spodnie, '#2b2b33']]){
+    const a = obrot + faza;
+    const sx = bx + Math.cos(a)*6, sy = by + Math.sin(a)*6;
+    const biodroX = x-10, biodroY = y-3;
+    const kolanoX = (biodroX+sx)/2 + 6, kolanoY = (biodroY+sy)/2 - 1;
+    rurka(biodroX, biodroY, kolanoX, kolanoY, kolN, 4);
+    rurka(kolanoX, kolanoY, sx, sy, kolN, 3);
+    pr(Math.round(sx)-3, Math.round(sy)-1, 7, 3, kolS);
+  }
+
+  // tułów w kurtce, pochylony do kierownicy
+  pr(x-16, y-19, 13, 16, u.kurtka);
+  pr(x-16, y-19, 13, 1, u.kurtkaJasna);
+  pr(x-11, y-19, 2, 16, u.kurtkaZamek);
+  obrys(x-16, y-19, 13, 16);
+  rurka(x-5, y-16, kierX-1, kierY-2, u.kurtkaJasna, 3);      // ramię do kierownicy
+  pr(kierX-4, kierY-5, 4, 4, SKORA);
+
+  // głowa ze zdjęcia i różowy kask
+  const gl = obraz(b.glowa);
+  if(gl) ctx.drawImage(gl, x-19, y-37, 18, 18);
+  else pr(x-19, y-37, 18, 18, SKORA);
+  pr(x-20, y-40, 20, 5, u.czapka); pr(x-20, y-40, 20, 2, '#fffeff');
+  pr(x-21, y-36, 4, 2, u.czapka);
+  pr(x-19, y-35, 2, 6, u.czapka);                            // pasek kasku
+}
 function rysujAutoFranka(x,y,t){
   x=Math.round(x); y=Math.round(y);
   const podskok = Math.floor(Math.sin(t*0.5)*1);
   y += podskok;
   const b = bohater();
   const pojazd = (G.jazda && G.jazda.pojazd) || b.pojazd || 'auto';
+  if(pojazd === 'rower'){ rysujRowerPoli(x, y, t); return; }
   ctx.globalAlpha=0.25; pr(x-32,y+20,64,4,'#000000'); ctx.globalAlpha=1;
 
   if(pojazd === 'autobus'){
@@ -3386,6 +3587,7 @@ function rysujJazde(){
   ctx.save();
   if(j.trzes>0) ctx.translate(Math.round((Math.random()-0.5)*4), Math.round((Math.random()-0.5)*4));
   for(const o of j.przeszkody) rysujPrzeszkode(o);
+  if(j.rower) rysujTate(Math.round(100 - j.odstepOp), Math.round(j.y) - 36, 1, j.fazaOp, true);
   rysujAutoFranka(100, j.y, G.t);
   ctx.restore();
   rysujEfekty();
@@ -3398,7 +3600,8 @@ function rysujJazde(){
   const ikonaCelu = j.cel === 'stacja' ? 'benzyna' : (j.cel === 'przystanek' ? 'bilet' : 'czapka');
   ctx.drawImage(spr('ik_'+ikonaCelu, IKONY[ikonaCelu]),
                 Math.round(W/2-96+176*post), 24, 16, 16);
-  napis('^ v  ZMIEŃ PAS      >  SZYBCIEJ', W/2, 258, '#fffeff', '#000000', 1);
+  napis(j.rower ? '^ v  ZMIEŃ ŚCIEŻKĘ      <  >  PEDAŁUJ NA ZMIANĘ'
+                : '^ v  ZMIEŃ PAS      >  SZYBCIEJ', W/2, 258, '#fffeff', '#000000', 1);
   if(j.radio && j.ups<=0 && j.dymek<=0){
     const tekst = KOCIA_SZAJKA[j.radioI];
     const tw = szerTekstu(tekst, 1);
@@ -3409,12 +3612,19 @@ function rysujJazde(){
   }
   if(j.ups>0) napis('UPS! OSTROŻNIE!', W/2, 90, '#fffeff', '#d82800', 2);
   if(j.dymek>0 && j.ups<=0){
-    const tekst = bohater().krzykWAucie;
+    const tekst = j.rower ? (bohater().krzykZaRowerem || 'NIE TAK SZYBKO!')
+                          : bohater().krzykWAucie;
     const tw = szerTekstu(tekst, 1);
-    const bx = 100, by = Math.round(j.y) - 44;
+    const bx = j.rower ? Math.max(tw/2 + 8, Math.round(112 - j.odstepOp))
+                       : 100;
+    const by = Math.round(j.y) - (j.rower ? 52 : 44);
+    // ogonek dymka celuje w tego, kto woła – przy rowerze w opiekuna z tyłu
+    const ox = j.rower
+      ? Math.max(bx-tw/2+2, Math.min(bx+tw/2-8, Math.round(112 - j.odstepOp)))
+      : bx;
     pr(bx-tw/2-5, by-9, tw+10, 18, '#000000');
     pr(bx-tw/2-3, by-7, tw+6, 14, '#fffeff');
-    pr(bx-3, by+7, 6, 5, '#000000'); pr(bx-2, by+7, 4, 4, '#fffeff');
+    pr(ox-3, by+7, 6, 5, '#000000'); pr(ox-2, by+7, 4, 4, '#fffeff');
     napis(tekst, bx, by, '#d82800', null, 1);
   }
   if(j.koniecT>0){

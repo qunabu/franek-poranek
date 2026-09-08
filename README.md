@@ -49,8 +49,9 @@ Gra pyta o dwie rzeczy i obie naprawdę zmieniają, co się dzieje na ekranie.
 | etap 17 | **Tankujemy!** – nie rozlej benzyny | **Kasujemy bilet!** – wsuń bilet w kasownik i nie zgnieć go |
 | w domu czeka | mama | tata |
 
-Pola tak samo wybiera mamę Olę albo tatę Adama (jak dotąd — u niej wybór zmienia
-głowę, ubranie i odmianę słów, ale nie pojazd).
+Pola tak samo wybiera mamę Olę albo tatę Adama. U niej wybór zmienia głowę,
+ubranie i odmianę słów, ale nie środek transportu — **Pola zawsze jedzie do
+przedszkola na rowerze**, a wybrany opiekun biegnie za nią.
 
 Wybór podmienia głowę opiekuna, jego ubranie, odmianę słów na ekranie
 („przytul tatę" / „przytul mamę") i kwestie narratora.
@@ -149,9 +150,12 @@ albo tata Adam. Wybór zmienia głowę i ubranie opiekuna, odmianę słów na ek
 5. **Rybka** — znajdź karmę i nakarm rybkę w akwarium
 6. **Ubieramy się** — majtki → legginsy → skarpetki → bluza
 7. **Śniadanko** — miska → płatki → mleko → łyżka
-8. **Wychodzimy!** — czapka → kurtka → buty, opiekun czeka
-9. **Jedziemy do przedszkola** — omijanie przeszkód, w oknach auta widać Polę
-   i opiekuna, a gdy auto się wlecze, Pola popędza („spóźnimy się!")
+8. **Wychodzimy!** — czapka → kurtka → buty, opiekun czeka przy rowerze
+9. **Rowerem do przedszkola** — Pola jedzie na rowerze i omija przeszkody.
+   ▲ ▼ zmienia ścieżkę, a rozpędza się ją **naprzemiennym stukaniem ◀ ▶**
+   (pedałowanie) — rower sam zwalnia, więc trzeba kręcić dalej. Mama albo tata
+   biegnie tuż za nią i im szybciej Pola pedałuje, tym bardziej zostaje w tyle
+   — wtedy woła: **„Pola, nie tak szybko!"**
 10. **Wyścig do furtki** — ◀ ▶ na zmianę, Pola zawsze wygrywa
 11. **Szatnia** — zdejmij buty, powieś kurtkę, zdejmij czapkę i **przytul
     mamę albo tatę** na do widzenia

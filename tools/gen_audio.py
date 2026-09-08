@@ -175,7 +175,7 @@ NARRACJA = {
     'p2_poziom6':  'Poziom szósty. Ubierz się po kolei.',
     'p2_poziom7':  'Poziom siódmy. Czas na śniadanko.',
     'p2_poziom8':  'Poziom ósmy. Czapka, kurtka, buty. Mama już czeka!',
-    'p2_poziom9':  'Poziom dziewiąty. Jedziemy do przedszkola! Spóźniamy się!',
+    'p2_poziom9':  'Poziom dziewiąty. Rowerem do przedszkola! Pedałuj strzałkami!',
     'p2_poziom10': 'Poziom dziesiąty. Wyścig z mamą do furtki przedszkola!',
     'p2_poziom11': 'Poziom jedenasty. Szatnia! Rozbierz się i przytul mamę.',
     'p2_poziom12': 'Ostatni poziom! Wyścig do okna. Zdąż pomachać mamie!',
@@ -188,6 +188,11 @@ NARRACJA = {
     'p_zad_przytulas': 'A teraz przytul mamę na do widzenia!',
     'p_szybciej':      'Szybciej mamo! Spóźnimy się!',
     'p_szybciej2':     'Mamo, jedź szybciej! Pędzimy!',
+    # Pola jedzie rowerem, a mama biegnie za nią
+    'p_rower_jak':       'Pola jedzie rowerem, a mama biegnie za nią! Naciskaj strzałki '
+                         'w lewo i w prawo na zmianę, żeby pedałować.',
+    'p_nie_tak_szybko':  'Pola, nie tak szybko! Poczekaj na mamę!',
+    'p_nie_tak_szybko2': 'Pola, nie tak szybko! Mama nie nadąża!',
 
     # --- dalszy ciąg dnia Franka: przedszkole, powrót, wieczór w domu ---
     'f_poziom13': 'Poziom trzynasty. Kółko powitalne! Przywitaj się z dziećmi.',
@@ -229,6 +234,10 @@ NARRACJA = {
     'pt_pomachaj':      'Pomachaj tacie przez okno! Pa pa!',
     'pt_szybciej':      'Szybciej tato! Spóźnimy się!',
     'pt_szybciej2':     'Tato, jedź szybciej! Pędzimy!',
+    'pt_rower_jak':       'Pola jedzie rowerem, a tata biegnie za nią! Naciskaj strzałki '
+                          'w lewo i w prawo na zmianę, żeby pedałować.',
+    'pt_nie_tak_szybko':  'Pola, nie tak szybko! Poczekaj na tatę!',
+    'pt_nie_tak_szybko2': 'Pola, nie tak szybko! Tata nie nadąża!',
     'pt2_poziom8':      'Poziom ósmy. Czapka, kurtka, buty. Tata już czeka!',
     'pt2_poziom10':     'Poziom dziesiąty. Wyścig z tatą do furtki przedszkola!',
     'pt2_poziom11':     'Poziom jedenasty. Szatnia! Rozbierz się i przytul tatę.',
