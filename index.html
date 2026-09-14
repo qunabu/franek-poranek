@@ -224,6 +224,15 @@ function klikniecieWPlansze(e){
     klaw['ArrowUp_nowy'] = true;
     return;
   }
+  // dotknięcie lewej albo prawej połowy wybiera sposób siku i od razu zaczyna
+  if (G.ekran === 'siku' && G.siku && G.siku.etap === 'wybor'){
+    const r = cv.getBoundingClientRect();
+    const punkt = (e && e.touches && e.touches[0]) ? e.touches[0] : e;
+    if (punkt && typeof punkt.clientX === 'number' && r.width)
+      G.siku.sposob = ((punkt.clientX - r.left) / r.width < 0.5) ? 0 : 1;
+    klaw['ArrowUp_nowy'] = true;
+    return;
+  }
   const wybieramyRodzica = G.ekran === 'opiekun' ||
     (G.ekran === 'ksiazka' && G.ksiazka && G.ksiazka.etap === 'ktoCzyta');
   if (wybieramyRodzica){
@@ -461,6 +470,9 @@ const KLUCZE_MOWA = [
   // nowe etapy: światło, wstawanie, siku – oraz przenumerowane poziomy Franka
   'poziom_swiatlo','poziom_wstawanie','poziom_siku','swiatlo_jak','swiatlo_ok','swiatlo_zle',
   'wstawanie_jak','wstawanie_ok','wstawanie_spij','siku_jak','siku_deska','siku_ok','siku_koniec',
+  // siku: wybór na stojąco/na siedząco, spłukiwanie i sprzątanie po nietrafionym
+  'siku_wybor','siku_siedzac','siku_splucz','siku_brudno','siku_sprzatanie','siku_wytrzyj',
+  'siku_podloga','siku_posprzatane',
   'f_poziom4','f_poziom5','f_poziom6','f_poziom7','f_poziom8','f_poziom9','f_poziom10',
   'f_poziom11','f_poziom12',
   'brawo1','brawo2','brawo3','brawo4','jazda','jedzenie','koniec','licz1',
@@ -1350,7 +1362,7 @@ const TLA = {
 const POZIOMY_FRANEK = [
   { typ:'swiatlo',   nazwa:'Ciemno!',           podtytul:'Zapal światło w pokoju', glos:'poziom_swiatlo' },
   { typ:'wstawanie', nazwa:'Wstawaj, Franek!',  podtytul:'Wygrzeb się z łóżka',    glos:'poziom_wstawanie' },
-  { typ:'siku',      nazwa:'Siku do kibelka',   podtytul:'Nie obsikaj deski!',     glos:'poziom_siku' },
+  { typ:'siku',      nazwa:'Siku do kibelka',   podtytul:'Na stojąco czy na siedząco?', glos:'poziom_siku' },
   { nazwa:'Ubieramy się', podtytul:'Ubierz się po kolei', tlo:'sypialnia', szer:950,
     glos:'f_poziom4', glosZapas:'poziom1',
     start:{x:60,y:140},
@@ -2735,19 +2747,31 @@ function rysujWstawanie(){
 }
 
 /* ==================== MINIGRA: SIKU DO KIBELKA ====================
-   Steruje się strumieniem: ◀ bliżej, ▶ dalej. Trzeba trafiać do wody
-   w środku muszli i nie obsikać deski ani podłogi. Im pęcherz pustszy,
-   tym mniejsze ciśnienie – strumień sam się skraca, więc trzeba dodawać ▶. */
+   Najpierw wybór: na stojąco (trzeba celować strumieniem) albo na siedząco
+   (nic się nie obsika, bo wszystko leci prosto do środka).
+   Na stojąco steruje się strumieniem: ◀ bliżej, ▶ dalej. Trzeba trafiać do
+   wody w środku muszli i nie obsikać deski ani podłogi. Im pęcherz pustszy,
+   tym mniejsze ciśnienie – strumień sam się skraca, więc trzeba dodawać ▶.
+   Po siku spłukujemy (^), a jak coś się obsikało, to trzeba po sobie posprzątać:
+   wytrzeć deskę papierem i umyć podłogę mopem – ◀ ▶ tam i z powrotem,
+   dokładnie tak samo jak przy myciu ząbków. */
 const SIKU_SEK = 13;                       // ile sekund leci siku
 const SIKU_OD = 258;                       // skąd startuje strumień
 const MUSZLA = {x:294, w:86, rim:166, wodaOd:318, wodaDo:356};
+const SIKU_SPOSOBY = [
+  {id:'stojac',  nazwa:'NA STOJĄCO',  opis:'TRZEBA CELOWAĆ',      glos:'siku_jak'},
+  {id:'siedzac', nazwa:'NA SIEDZĄCO', opis:'NIC SIĘ NIE OBSIKA',  glos:'siku_siedzac'}
+];
 function startSiku(){
-  G.siku = { kat:0.42, pecherz:1, trafione:0, klatki:0, deska:0, kaluza:0,
-             koniecT:0, ups:0, mowilOUps:0, splok:0 };
+  G.siku = { etap:'wybor', sposob:0, kat:0.42, pecherz:1, trafione:0, klatki:0,
+             deska:0, kaluza:0, koniecT:0, ups:0, mowilOUps:0, splok:0,
+             splukane:false, sprzatal:false, sp:null, t:0 };
   G.czastki = []; G.ekran = 'siku';
   graj('muz_gra');
-  mow(najlepszyGlos('siku_jak'));
+  mow(najlepszyGlos('siku_wybor', 'siku_jak'));
 }
+function sposobSiku(s){ return SIKU_SPOSOBY[s.sposob].id; }
+function sikuCzysto(s){ return s.deska < 0.05 && s.kaluza < 0.05; }
 function zasiegSiku(s){
   const cisnienie = 0.7 + 0.3*s.pecherz;
   return (30 + s.kat*132) * cisnienie + Math.sin(G.t*0.06)*3;
@@ -2759,51 +2783,189 @@ function strefaSiku(lx){
   if(lx <= MUSZLA.x + MUSZLA.w) return 'deska';
   return 'sciana';
 }
+
+/* --- wybór: na stojąco czy na siedząco --- */
+function aktualizujSikuWybor(s){
+  if(nowy('ArrowLeft')  && s.sposob > 0){ s.sposob--; sfx('sfx_zbierz'); }
+  if(nowy('ArrowRight') && s.sposob < SIKU_SPOSOBY.length-1){ s.sposob++; sfx('sfx_zbierz'); }
+  if(nowy('ArrowUp')){
+    s.etap = 'siku'; s.t = 0; sfx('sfx_sukces');
+    cisza(); mow(najlepszyGlos(SIKU_SPOSOBY[s.sposob].glos, 'siku_jak'));
+  }
+}
+
+/* --- sprzątanie po nietrafionym siku: deska papierem, podłoga mopem --- */
+function zacznijSprzatanie(s){
+  const strefy = [];
+  if(s.deska >= 0.05){
+    const plamy = [], ile = Math.max(3, Math.min(10, Math.round(2 + s.deska*9)));
+    for(let i=0;i<ile;i++){
+      let px = MUSZLA.x + 5 + ((i*23) % (MUSZLA.w - 14));
+      if(px > MUSZLA.wodaOd-8 && px < MUSZLA.wodaDo+4)     // nad wodą deski nie ma
+        px = px < (MUSZLA.wodaOd+MUSZLA.wodaDo)/2 ? MUSZLA.wodaOd-10 : MUSZLA.wodaDo+6;
+      plamy.push({x:px, y:MUSZLA.rim - 1 + (i%3), ile:1});
+    }
+    strefy.push({id:'deska', nazwa:'WYTRZYJ DESKĘ', narzedzie:'papier', glos:'siku_wytrzyj',
+                 x0:MUSZLA.x+4, x1:MUSZLA.x+MUSZLA.w-4, y:MUSZLA.rim-11, plamy});
+  }
+  if(s.kaluza >= 0.05){
+    const szer = Math.round(22 + s.kaluza*70);
+    const plamy = [], ile = Math.max(3, Math.min(10, Math.round(2 + s.kaluza*9)));
+    for(let i=0;i<ile;i++)
+      plamy.push({x: MUSZLA.x + 8 - szer + ((i*29) % Math.max(4, szer-8)),
+                  y: 241 + (i%3)*3, ile:1});
+    strefy.push({id:'podloga', nazwa:'UMYJ PODŁOGĘ', narzedzie:'mop', glos:'siku_podloga',
+                 x0:MUSZLA.x + 6 - szer, x1:MUSZLA.x + 12, y:236, plamy});
+  }
+  s.etap = 'sprzatanie'; s.sprzatal = true;
+  s.sp = { strefy, i:0, poz:0.5, ostatnia:0.5, kier:0, bonus:0,
+           pociagniecia:0, dzwiekT:0, koniecT:0, czas:0 };
+  graj('muz_gra');
+  cisza(); mow(najlepszyGlos('siku_sprzatanie'));
+  dopowiedz(najlepszyGlos(strefy[0].glos));
+}
+function strefaBrud(strefa){
+  let suma = 0;
+  for(const p of strefa.plamy) suma += p.ile;
+  return suma / strefa.plamy.length;
+}
+function aktualizujSprzatanie(s){
+  const sp = s.sp;
+  if(sp.koniecT > 0){
+    sp.koniecT--;
+    if(sp.koniecT === 0){
+      s.etap = 'koniec'; s.koniecT = 210;
+      dopowiedz(najlepszyGlos('siku_koniec'));
+    }
+    return;
+  }
+  const strefa = sp.strefy[sp.i];
+  sp.czas++;
+  sp.ostatnia = sp.poz;
+  let ruch = 0;
+  if(klaw.ArrowLeft)  ruch -= 1;
+  if(klaw.ArrowRight) ruch += 1;
+  sp.poz = Math.max(0, Math.min(1, sp.poz + ruch*0.03));
+
+  // tak jak przy ząbkach: liczy się ruch tam i z powrotem, nie samo trzymanie
+  if(ruch !== 0 && ruch !== sp.kier){
+    sp.kier = ruch; sp.bonus = 40; sp.pociagniecia++; sfx('sfx_skok');
+  }
+  if(sp.bonus > 0) sp.bonus--;
+
+  const przesuniecie = Math.abs(sp.poz - sp.ostatnia);
+  const szoruje = przesuniecie > 0.004 && sp.bonus > 0;
+  if(przesuniecie > 0.004){
+    const cx = strefa.x0 + (strefa.x1 - strefa.x0)*sp.poz;
+    for(const p of strefa.plamy){
+      if(p.ile <= 0 || Math.abs(p.x - cx) > 15) continue;
+      const przed = p.ile;
+      p.ile = Math.max(0, p.ile - (szoruje ? 0.055 : 0.007));
+      if(przed > 0 && p.ile === 0){ sfx('sfx_zbierz'); iskry(p.x, p.y, ['#fffeff','#3cbcfc'], 8); }
+    }
+    if(sp.dzwiekT-- <= 0){ ton(220 + Math.random()*180, 0.04, 'sawtooth', 0.018); sp.dzwiekT = 6; }
+    if(szoruje && Math.random() < 0.5)
+      G.czastki.push({x:cx + (Math.random()-0.5)*14, y:strefa.y + 10,
+                      vx:(Math.random()-0.5)*1.2, vy:-0.5-Math.random(),
+                      zyc:20+Math.random()*14, kol:'#fffeff', r:1+Math.random()*2});
+  }
+  // Po pół minuty w jednej strefie brud sam zaczyna schodzić – żeby maluch
+  // nigdy nie utknął na zawsze przy jednej plamce.
+  if(sp.czas > 1800) for(const p of strefa.plamy) p.ile = Math.max(0, p.ile - 0.002);
+
+  // to, co zostało na desce i podłodze, widać też na rysunku muszli
+  const zostalo = strefaBrud(strefa);
+  if(strefa.id === 'deska') s.deska = zostalo * 0.9;
+  else s.kaluza = zostalo * 0.9;
+
+  if(zostalo <= 0){
+    if(sp.i + 1 < sp.strefy.length){
+      sp.i++; sp.poz = 0.5; sp.kier = 0; sp.bonus = 0; sp.czas = 0;
+      sfx('sfx_sukces'); dopowiedz(najlepszyGlos(sp.strefy[sp.i].glos));
+    } else {
+      sp.koniecT = 160; s.deska = 0; s.kaluza = 0;
+      sfx('sfx_sukces'); iskry(W/2, 150, ['#fffeff','#3cbcfc','#f8d878'], 30);
+      cisza(); mow(najlepszyGlos('siku_posprzatane'));
+    }
+  }
+}
+
 function aktualizujSiku(){
   const s = G.siku;
-  if(s.koniecT > 0){
+  s.t++;
+  if(s.etap === 'wybor'){
+    aktualizujSikuWybor(s); aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(s.etap === 'sprzatanie'){
+    aktualizujSprzatanie(s); aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(s.etap === 'splok'){
+    s.splok++;
+    if(!s.splukane){
+      if(nowy('ArrowUp') || s.splok > 320){
+        s.splukane = true; s.splok = 0; sfx('sfx_drzwi');
+        cisza(); mow(najlepszyGlos(sikuCzysto(s) ? 'siku_ok' : 'siku_brudno', 'siku_koniec'));
+      }
+    } else if(s.splok > 150){
+      if(sikuCzysto(s)){ s.etap = 'koniec'; s.koniecT = 210; }
+      else zacznijSprzatanie(s);
+    }
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(s.etap === 'koniec'){
     s.koniecT--; s.splok++;
     if(s.koniecT === 0) dalejPoPoziomie();
     aktualizujEfekty(); czyscNowe(); return;
   }
+
+  // właściwe siku
   if(s.ups > 0) s.ups--;
   if(s.mowilOUps > 0) s.mowilOUps--;
-
-  let ruch = 0;
-  if(klaw.ArrowLeft)  ruch -= 1;
-  if(klaw.ArrowRight) ruch += 1;
-  s.kat = Math.max(0, Math.min(1, s.kat + ruch*0.013));
-
-  const lx = SIKU_OD + zasiegSiku(s);
-  const gdzie = strefaSiku(lx);
   s.klatki++;
-  if(gdzie === 'woda'){
+
+  if(sposobSiku(s) === 'siedzac'){
+    // na siedząco wszystko leci prosto do wody – nie ma czym celować
     s.trafione++;
-    if(G.t % 4 === 0) G.czastki.push({x:lx+(Math.random()-0.5)*8, y:184, vx:(Math.random()-0.5)*1.2,
-                                      vy:-0.9-Math.random(), zyc:20, kol:'#3cbcfc', r:1+Math.random()*2});
+    if(G.t % 4 === 0)
+      G.czastki.push({x:MUSZLA.wodaOd + 4 + Math.random()*(MUSZLA.wodaDo-MUSZLA.wodaOd-8),
+                      y:MUSZLA.rim+18, vx:(Math.random()-0.5)*1.0, vy:-0.7-Math.random(),
+                      zyc:18, kol:'#3cbcfc', r:1+Math.random()*2});
     if(G.t % 9 === 0) ton(300 + Math.random()*200, 0.05, 'triangle', 0.015);
   } else {
-    if(gdzie === 'podloga'){ s.kaluza = Math.min(1, s.kaluza + 0.014); }
-    else { s.deska = Math.min(1, s.deska + 0.014); }
-    if(s.ups <= 0){
-      s.ups = 70; sfx('sfx_zle');
-      if(s.mowilOUps <= 0){ s.mowilOUps = 240; dopowiedz(najlepszyGlos('siku_deska')); }
+    let ruch = 0;
+    if(klaw.ArrowLeft)  ruch -= 1;
+    if(klaw.ArrowRight) ruch += 1;
+    s.kat = Math.max(0, Math.min(1, s.kat + ruch*0.013));
+
+    const lx = SIKU_OD + zasiegSiku(s);
+    const gdzie = strefaSiku(lx);
+    if(gdzie === 'woda'){
+      s.trafione++;
+      if(G.t % 4 === 0) G.czastki.push({x:lx+(Math.random()-0.5)*8, y:184, vx:(Math.random()-0.5)*1.2,
+                                        vy:-0.9-Math.random(), zyc:20, kol:'#3cbcfc', r:1+Math.random()*2});
+      if(G.t % 9 === 0) ton(300 + Math.random()*200, 0.05, 'triangle', 0.015);
+    } else {
+      if(gdzie === 'podloga'){ s.kaluza = Math.min(1, s.kaluza + 0.014); }
+      else { s.deska = Math.min(1, s.deska + 0.014); }
+      if(s.ups <= 0){
+        s.ups = 70; sfx('sfx_zle');
+        if(s.mowilOUps <= 0){ s.mowilOUps = 240; dopowiedz(najlepszyGlos('siku_deska')); }
+      }
+      if(G.t % 3 === 0) G.czastki.push({x:lx+(Math.random()-0.5)*6, y:MUSZLA.rim-2,
+                                        vx:(Math.random()-0.5)*1.4, vy:-0.6-Math.random(),
+                                        zyc:24, kol:'#f8d878', r:1+Math.random()*2});
     }
-    if(G.t % 3 === 0) G.czastki.push({x:lx+(Math.random()-0.5)*6, y:MUSZLA.rim-2,
-                                      vx:(Math.random()-0.5)*1.4, vy:-0.6-Math.random(),
-                                      zyc:24, kol:'#f8d878', r:1+Math.random()*2});
   }
 
   s.pecherz -= 1/(60*SIKU_SEK);
-  if(s.pecherz <= 0 && s.koniecT === 0){
-    s.pecherz = 0; s.koniecT = 230; s.splok = 0;
-    sfx('sfx_drzwi'); cisza();
-    const czysto = s.deska < 0.05 && s.kaluza < 0.05;
-    mow(najlepszyGlos(czysto ? 'siku_ok' : 'siku_koniec'));
+  if(s.pecherz <= 0){
+    s.pecherz = 0; s.etap = 'splok'; s.splok = 0; s.splukane = false;
+    cisza(); mow(najlepszyGlos('siku_splucz'));
   }
   aktualizujEfekty(); czyscNowe();
 }
-function rysujMuszle(s){
+
+function rysujMuszle(s, bezBrudu){
   const m = MUSZLA;
   // spłuczka na ścianie
   pr(m.x+46, 96, 58, 56, '#000000');
@@ -2838,6 +3000,7 @@ function rysujMuszle(s){
     pr(od+1, m.rim-2, doo-od-2, 11, '#fffeff');
     pr(od+1, m.rim-1, doo-od-2, 3, '#e4e4ee');
   }
+  if(bezBrudu) return;                       // przy sprzątaniu brud rysują plamy
   if(s.deska > 0){
     for(let i=0;i<16;i++){
       const px = m.x + 2 + ((i*19) % (m.w-6));
@@ -2854,15 +3017,65 @@ function rysujMuszle(s){
     pr(m.x+10-szer, 242, szer, 2, '#f8d878');
     pr(m.x+10-szer, 247, szer, 2, '#ac7c00');
   }
-  // papier toaletowy na ścianie
+}
+function rysujPapierNaScianie(){
+  const m = MUSZLA;
   pr(m.x+128, 146, 4, 20, '#bcbcbc');
   kolo(m.x+142, 152, 13, '#000000');
   kolo(m.x+142, 152, 12, '#fffeff');
   kolo(m.x+142, 152, 4, '#bcbcbc');
   pr(m.x+153, 152, 9, 24, '#fffeff'); obrys(m.x+153, 152, 9, 24);
 }
-function rysujSiku(){
-  const s = G.siku;
+/* Bohater siedzący na desce: nóżki dyndają, bo do podłogi jeszcze daleko. */
+function rysujSiedzacego(){
+  const b = bohater(), u = b.ubior;
+  const x = MUSZLA.x + 3;                     // siedzi na przedniej części deski
+  const ty = MUSZLA.rim - 16;                 // tułów siedzi na desce
+  const kiw = Math.round(Math.sin(G.t*0.07)*2);
+  // nóżki dyndają z przodu muszli
+  for(const [dx, faza] of [[-2, 0], [10, Math.PI]]){
+    const hus = Math.round(Math.sin(G.t*0.09 + faza)*3);
+    pr(x+dx, MUSZLA.rim+6, 6, 18, u.pizama);
+    pr(x+dx, MUSZLA.rim+6, 6, 1, u.pizamaPas);
+    obrys(x+dx, MUSZLA.rim+6, 6, 18);
+    pr(x+dx-1+hus, MUSZLA.rim+24, 8, 5, SKORA);
+    obrys(x+dx-1+hus, MUSZLA.rim+24, 8, 5);
+  }
+  // rączki trzymają się deski
+  pr(x-4, ty+3, 3, 11, u.pizama); pr(x-4, ty+13, 3, 3, SKORA);
+  pr(x+15, ty+3, 3, 11, u.pizama); pr(x+15, ty+13, 3, 3, SKORA);
+  // tułów w piżamce
+  pr(x, ty, 14, 16, u.pizama);
+  for(let j=1;j<16;j+=3) pr(x, ty+j, 14, 1, u.pizamaPas);
+  obrys(x, ty, 14, 16);
+  // głowa ze zdjęcia
+  const gl = obraz(b.glowa), gw = b.glowaW, gh = b.glowaH;
+  if(gl) ctx.drawImage(gl, x + 7 - Math.round(gw/2), ty - gh + 2 + kiw, gw, gh);
+  else pr(x-4, ty-22+kiw, 22, 22, SKORA);
+}
+function rysujStrumien(s){
+  const ox = SIKU_OD, oy = 196;
+  const lx = ox + zasiegSiku(s);
+  // do wody strumień wpada głębiej, na deskę i podłogę zatrzymuje się wyżej
+  const st0 = strefaSiku(lx);
+  const ly = st0 === 'woda' ? MUSZLA.rim + 18 : (st0 === 'podloga' ? 244 : MUSZLA.rim - 2);
+  const luk = 22 + (lx-ox)*0.10;
+  const n = 20;
+  for(let i=0;i<=n;i++){
+    const u = i/n;
+    const x = ox + (lx-ox)*u;
+    const y = oy + (ly-oy)*u - luk*Math.sin(Math.PI*u);
+    const r = i > n-4 ? 3 : 2;
+    pr(x-1, y-1, r, r, i%2 ? '#f8d878' : '#e4e594');
+  }
+  // celownik na miejscu lądowania
+  const kol = st0 === 'woda' ? '#58d854' : '#d82800';
+  if(Math.floor(G.t/6)%2===0){
+    const cy = st0 === 'woda' ? MUSZLA.rim - 8 : ly - 4;
+    pr(lx-7, cy, 14, 2, kol); pr(lx-1, cy-6, 2, 6, kol);
+  }
+}
+function rysujLazienke(){
   // łazienka w kaflach
   pr(0,0,W,H,'#c0dfff');
   for(let j=0;j<11;j++) for(let i=0;i<24;i++){
@@ -2872,34 +3085,129 @@ function rysujSiku(){
   for(let i=0;i<W;i+=12) pr(i,216,1,H-216,'#9290ff');
   for(let j=226;j<H;j+=12) pr(0,j,W,1,'#9290ff');
   pr(0,210,W,4,'#fffeff');
-
-  rysujMuszle(s);
-  rysujFranka(226, 164, 1, 0, false, false);
-
-  // strumień – łuk od Franka do miejsca lądowania
-  if(s.koniecT === 0){
-    const ox = SIKU_OD, oy = 196;
-    const lx = ox + zasiegSiku(s);
-    // do wody strumień wpada głębiej, na deskę i podłogę zatrzymuje się wyżej
-    const st0 = strefaSiku(lx);
-    const ly = st0 === 'woda' ? MUSZLA.rim + 18 : (st0 === 'podloga' ? 244 : MUSZLA.rim - 2);
-    const luk = 22 + (lx-ox)*0.10;
-    const n = 20;
-    for(let i=0;i<=n;i++){
-      const u = i/n;
-      const x = ox + (lx-ox)*u;
-      const y = oy + (ly-oy)*u - luk*Math.sin(Math.PI*u);
-      const r = i > n-4 ? 3 : 2;
-      pr(x-1, y-1, r, r, i%2 ? '#f8d878' : '#e4e594');
+}
+/* mała muszla na obrazku wyboru – 30x36 */
+function mikroMuszla(x, y){
+  pr(x+6, y, 18, 10, '#fffeff'); obrys(x+6, y, 18, 10);      // spłuczka
+  pr(x, y+10, 30, 6, '#fffeff'); obrys(x, y+10, 30, 6);      // deska
+  pr(x+9, y+12, 12, 3, '#3cbcfc');                            // woda
+  pr(x+4, y+16, 22, 14, '#fffeff'); obrys(x+4, y+16, 22, 14);
+  pr(x+7, y+30, 16, 6, '#fffeff'); obrys(x+7, y+30, 16, 6);
+}
+function rysujSikuWybor(s){
+  ctx.globalAlpha = 0.72; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+  napis('JAK ROBIMY SIKU?', W/2, 26, '#f8d878', '#000000', 2.4);
+  SIKU_SPOSOBY.forEach((sp, i) => {
+    const cx = i === 0 ? 128 : 352, wybrany = s.sposob === i;
+    ramka(cx-92, 52, 184, 108, wybrany ? '#a80020' : '#0000bc');
+    if(wybrany && Math.floor(G.t/8)%2===0){          // mruga tylko ramka, żeby obrazek był widoczny
+      pr(cx-90, 54, 180, 4, '#f8d878'); pr(cx-90, 154, 180, 4, '#f8d878');
+      pr(cx-90, 54, 4, 104, '#f8d878'); pr(cx+86, 54, 4, 104, '#f8d878');
     }
-    // celownik na miejscu lądowania
-    const kol = st0 === 'woda' ? '#58d854' : '#d82800';
-    if(Math.floor(G.t/6)%2===0){
-      const cy = st0 === 'woda' ? MUSZLA.rim - 8 : ly - 4;
-      pr(lx-7, cy, 14, 2, kol); pr(lx-1, cy-6, 2, 6, kol);
+    if(sp.id === 'stojac'){
+      mikroMuszla(cx+22, 78);
+      // stojący bohater i łuk strumienia obok muszli
+      pr(cx-34, 84, 14, 22, '#5c94fc'); obrys(cx-34, 84, 14, 22);
+      pr(cx-34, 106, 5, 16, '#5c94fc'); pr(cx-25, 106, 5, 16, '#5c94fc');
+      kolo(cx-27, 78, 9, SKORA);
+      for(let j=0;j<=10;j++){                        // łuk strumienia prosto do muszli
+        const u = j/10, px = cx-18 + u*54, py = 96 - 12*Math.sin(Math.PI*u) - u*4;
+        pr(px, py, 2, 2, '#f8d878');
+      }
+    } else {
+      mikroMuszla(cx-14, 78);
+      // bohater siedzi na desce, nóżki dyndają
+      pr(cx-6, 74, 14, 16, '#5c94fc'); obrys(cx-6, 74, 14, 16);
+      kolo(cx+1, 68, 9, SKORA);
+      pr(cx-6, 90, 5, 14, '#5c94fc'); pr(cx+2, 90, 5, 14, '#5c94fc');
+      pr(cx-7, 104, 7, 4, SKORA); pr(cx+1, 104, 7, 4, SKORA);
     }
+    napis(sp.nazwa, cx, 130, wybrany ? '#f8d878' : '#fffeff', '#000000', 1.8);
+    napis(sp.opis,  cx, 150, wybrany ? '#fffeff' : '#bcbcbc', '#000000', 1.1);
+    if(!wybrany){ ctx.globalAlpha = 0.4; pr(cx-90, 54, 180, 104, '#000000'); ctx.globalAlpha = 1; }
+  });
+  if(Math.floor(G.t/12)%2===0){
+    napis('<', 20, 104, '#fffeff', '#000000', 3);
+    napis('>', 460, 104, '#fffeff', '#000000', 3);
   }
+  ramka(W/2-180, 182, 360, 48, '#0000bc');
+  napis('<  >  WYBIERASZ,   ^  ZACZYNA', W/2, 198, '#fffeff', '#000000', 1.4);
+  napis('OBSIKANĄ DESKĘ TRZEBA POTEM UMYĆ!', W/2, 218, '#fe8170', null, 1.2);
+}
+function rysujPlamySprzatania(s){
+  for(const strefa of s.sp.strefy) for(const p of strefa.plamy){
+    if(p.ile <= 0) continue;
+    const r = 2 + Math.round(p.ile*4);
+    pr(p.x - r/2, p.y - r/2, r, r, '#e4e594');
+    pr(p.x - r/2, p.y - r/2, r, 1, '#f8d878');
+    if(p.ile > 0.7) pr(p.x - r/2, p.y + r/2 - 1, r, 1, '#ac7c00');
+  }
+}
+function rysujNarzedzie(s){
+  const sp = s.sp, strefa = sp.strefy[sp.i];
+  const cx = Math.round(strefa.x0 + (strefa.x1 - strefa.x0)*sp.poz);
+  const drgania = sp.bonus > 0 ? Math.round(Math.sin(G.t*0.9)*2) : 0;
+  if(strefa.narzedzie === 'papier'){
+    // zmięty papier w rączce
+    pr(cx-9, strefa.y+drgania, 18, 12, '#fffeff'); obrys(cx-9, strefa.y+drgania, 18, 12);
+    pr(cx-9, strefa.y+3+drgania, 18, 2, '#c0dfff');
+    pr(cx-9, strefa.y+8+drgania, 18, 2, '#c0dfff');
+    pr(cx-6, strefa.y+5+drgania, 4, 3, '#e4e4ee');
+    pr(cx-3, strefa.y-10+drgania, 6, 10, SKORA); obrys(cx-3, strefa.y-10+drgania, 6, 10);
+  } else {
+    // mop: kij i frędzle
+    pr(cx-1, strefa.y-46+drgania, 4, 44, '#ac7c00'); obrys(cx-1, strefa.y-46+drgania, 4, 44);
+    pr(cx-11, strefa.y+drgania, 24, 5, '#0058f8'); obrys(cx-11, strefa.y+drgania, 24, 5);
+    for(let i=0;i<7;i++)
+      pr(cx-10+i*3, strefa.y+5+drgania, 2, 6 + (i%3)*2, i%2 ? '#3cbcfc' : '#c0dfff');
+  }
+}
+function rysujHudSprzatania(s){
+  const sp = s.sp, strefa = sp.strefy[sp.i];
+  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+  napisL('SPRZĄTAMY PO SOBIE', 4, 10, '#fffeff', null, 1);
+  const czysto = 1 - strefaBrud(strefa);
+  pr(300,4,150,12,'#000000'); pr(302,6,146,8,'#4f4f4f');
+  pr(302,6,Math.round(146*czysto),8,'#58d854');
+  napisL('CZYSTO', 258, 10, '#58d854', null, 1);
+
+  if(sp.koniecT > 0){
+    ctx.globalAlpha = 0.72; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+    ramka(W/2-134, 72, 268, 116, '#0000bc');
+    napis('POSPRZĄTANE!', W/2, 98, '#f8d878', '#000000', 2.6);
+    napis('DESKA I PODŁOGA CZYSTE', W/2, 130, '#58d854', '#000000', 1.4);
+    napis('NASTĘPNYM RAZEM CELUJ DO ŚRODKA', W/2, 158, '#c0dfff', '#000000', 1.1);
+    return;
+  }
+  ramka(W/2-104, 24, 208, 22, '#a80020');
+  napis(strefa.nazwa, W/2, 35, '#f8d878', '#000000', 1.6);
+  napis('<  >  TAM I Z POWROTEM', W/2, 258, '#fffeff', '#000000', 1.4);
+}
+
+function rysujSiku(){
+  const s = G.siku;
+  rysujLazienke();
+
+  if(s.etap === 'sprzatanie'){
+    rysujMuszle(s, true);
+    rysujPapierNaScianie();
+    rysujPlamySprzatania(s);
+    rysujFranka(226, 164, 1, 0, false, false);
+    rysujNarzedzie(s);
+    rysujEfekty();
+    rysujHudSprzatania(s);
+    rysujDebug(); return;
+  }
+
+  const siedzi = s.etap !== 'wybor' && sposobSiku(s) === 'siedzac';
+  rysujMuszle(s);
+  rysujPapierNaScianie();
+  if(siedzi) rysujSiedzacego();
+  else rysujFranka(226, 164, 1, 0, false, false);
+  if(s.etap === 'siku' && !siedzi) rysujStrumien(s);
   rysujEfekty();
+
+  if(s.etap === 'wybor'){ rysujSikuWybor(s); rysujDebug(); return; }
 
   // HUD
   pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
@@ -2912,19 +3220,39 @@ function rysujSiku(){
   ramka(W/2-92, 24, 184, 22, '#0000bc');
   napis('DO ŚRODKA: ' + Math.round(traf*100) + '%', W/2, 35, '#3cbcfc', '#000000', 1.4);
 
-  if(s.koniecT > 0){
+  if(s.etap === 'koniec'){
     ctx.globalAlpha = 0.75; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
-    const czysto = s.deska < 0.05 && s.kaluza < 0.05;
-    ramka(W/2-130, 60, 260, 140, czysto ? '#0000bc' : '#a80020');
-    napis('SPŁUKANE!', W/2, 84, '#f8d878', '#000000', 2.6);
-    napis('DO ŚRODKA W ' + Math.round(traf*100) + '%', W/2, 116, '#fffeff', '#000000', 1.6);
-    napis(czysto ? 'DESKA CZYSTA! BRAWO!' : 'DESKA DO WYTARCIA...', W/2, 146,
-          czysto ? '#58d854' : '#fe8170', '#000000', 1.4);
-    napis('UMYJ RĄCZKI!', W/2, 178, '#c0dfff', '#000000', 1.4);
+    const czysto = sikuCzysto(s);
+    ramka(W/2-130, 56, 260, 150, czysto ? '#0000bc' : '#a80020');
+    napis('SPŁUKANE!', W/2, 80, '#f8d878', '#000000', 2.6);
+    napis('DO ŚRODKA W ' + Math.round(traf*100) + '%', W/2, 112, '#fffeff', '#000000', 1.6);
+    napis(s.sprzatal ? 'POSPRZĄTANE PO SOBIE!'
+                     : (czysto ? 'DESKA CZYSTA! BRAWO!' : 'DESKA DO WYTARCIA...'),
+          W/2, 142, czysto ? '#58d854' : '#fe8170', '#000000', 1.4);
+    napis('UMYJ RĄCZKI!', W/2, 176, '#c0dfff', '#000000', 1.4);
     for(let i=0;i<6;i++){                                   // wirująca woda
       const a = G.t*0.16 + i;
-      pr(W/2 + Math.cos(a)*22, 216 + Math.sin(a)*6, 3, 3, '#3cbcfc');
+      pr(W/2 + Math.cos(a)*22, 222 + Math.sin(a)*6, 3, 3, '#3cbcfc');
     }
+  } else if(s.etap === 'splok'){
+    if(!s.splukane){
+      ramka(W/2-138, 54, 276, 50, '#0000bc');
+      napis('KONIEC SIKU!', W/2, 72, '#f8d878', '#000000', 2);
+      napis('NACIŚNIJ  ^  I SPŁUCZ', W/2, 94, '#fffeff', '#000000', 1.4);
+      napis('^  SPŁUCZ WODĘ', W/2, 258, '#fffeff', '#000000', 1.4);
+    } else {
+      const czysto = sikuCzysto(s);
+      ramka(W/2-138, 54, 276, 50, czysto ? '#0000bc' : '#a80020');
+      napis('SPŁUKANE!', W/2, 72, '#f8d878', '#000000', 2);
+      napis(czysto ? 'CZYSTO JAK MARZENIE!' : 'TERAZ TRZEBA POSPRZĄTAĆ...',
+            W/2, 94, czysto ? '#58d854' : '#fe8170', '#000000', 1.3);
+      for(let i=0;i<8;i++){                                 // wirująca woda w muszli
+        const a = G.t*0.22 + i*0.8;
+        pr(337 + Math.cos(a)*16, MUSZLA.rim+18 + Math.sin(a)*5, 3, 3, '#c0dfff');
+      }
+    }
+  } else if(sposobSiku(s) === 'siedzac'){
+    napis('SIEDZISZ SPOKOJNIE - NIC SIĘ NIE OBSIKA', W/2, 258, '#58d854', '#000000', 1.3);
   } else if(s.ups > 0){
     napis('UPS! OBOK!', W/2, 62, '#f8d878', '#a80020', 2.4);
     napis('CELUJ DO WODY:  <  BLIŻEJ    >  DALEJ', W/2, 258, '#fffeff', '#000000', 1.2);

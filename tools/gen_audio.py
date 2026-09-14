@@ -155,6 +155,20 @@ NARRACJA = {
     'siku_ok':          'Wszystko do środka i deska czysta! Brawo! Spłukujemy.',
     'siku_koniec':      'Spłukujemy. Teraz umyj rączki!',
 
+    # --- wybór sposobu siku i sprzątanie po nietrafionym strumieniu ---
+    'siku_wybor':       'Jak robimy siku? Strzałka w lewo, to na stojąco i trzeba '
+                        'celować. Strzałka w prawo, to na siedząco i nic się nie obsika. '
+                        'Strzałka w górę zaczyna.',
+    'siku_siedzac':     'Siadasz na desce i siedzisz spokojnie. Wszystko leci prosto '
+                        'do środka, więc nic się nie obsika.',
+    'siku_splucz':      'Koniec siku! Naciśnij strzałkę w górę i spłucz wodę.',
+    'siku_brudno':      'Ojej, obsikana deska i podłoga. Trzeba po sobie posprzątać.',
+    'siku_sprzatanie':  'Jak się obsika deskę albo podłogę, to potem trzeba to umyć. '
+                        'Naciskaj w lewo i w prawo na zmianę, żeby wycierać.',
+    'siku_wytrzyj':     'Weź papier i wytrzyj deskę. Tam i z powrotem!',
+    'siku_podloga':     'Teraz mop! Umyj kałużę na podłodze.',
+    'siku_posprzatane': 'Wszystko czyściutkie! Brawo! Następnym razem celuj do środka.',
+
     # --- przenumerowane zapowiedzi poziomów Franka (po dodaniu trzech etapów) ---
     'f_poziom4':  'Poziom czwarty. Ubierz się po kolei.',
     'f_poziom5':  'Poziom piąty. Zejdź po schodach i zrób sobie śniadanko.',

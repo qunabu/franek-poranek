@@ -74,10 +74,17 @@ wraca w bezpieczne miejsce.
    (ekran ciemnieje, lecą Z-tki) i pasek spada szybciej. Tata stoi w drzwiach
    i woła „wstawaj!". Po 20 sekundach sen odpuszcza, więc nawet powolne stukanie
    w końcu wystarczy — przegrać nie da się
-3. **Siku do kibelka** — ◀ celuje bliżej, ▶ dalej. Trzeba trafiać **do wody
-   w środku muszli** i nie obsikać **deski** ani podłogi. Pęcherz się opróżnia,
-   więc ciśnienie spada i strumień sam się skraca — trzeba dodawać ▶. Na koniec
-   spłuczka i wynik: w ilu procentach poszło do środka i czy deska została czysta
+3. **Siku do kibelka** — najpierw wybór ◀ ▶: **na stojąco** (trzeba celować)
+   albo **na siedząco** (nic się nie obsika, bo wszystko leci prosto do środka).
+   Na stojąco ◀ celuje bliżej, ▶ dalej — trzeba trafiać **do wody w środku
+   muszli** i nie obsikać **deski** ani podłogi. Pęcherz się opróżnia, więc
+   ciśnienie spada i strumień sam się skraca — trzeba dodawać ▶. Po siku ▲
+   spłukuje wodę. Jeśli deska albo podłoga są obsikane, dochodzi **sprzątanie**:
+   papierem wyciera się deskę, a mopem myje kałużę — ◀ ▶ tam i z powrotem, tak
+   samo jak przy myciu ząbków (samo trzymanie strzałki prawie nic nie daje).
+   Po pół minuty w jednej strefie brud sam zaczyna schodzić, żeby maluch nigdy
+   nie utknął. Na koniec wynik: w ilu procentach poszło do środka i czy
+   posprzątane
 4. **Ubieramy się** — majtki → spodnie → skarpetki → koszulka
 5. **Śniadanko** — schody na dół, potem miska → łódeczki → mleko → łyżka → jedzenie
 6. **Myjemy ząbki** — pasta → szczoteczka → minigra szorowania
