@@ -63,7 +63,7 @@ Przedmioty zbiera się samym dotknięciem. Świecąca rzecz ze strzałką to ta,
 po którą trzeba iść teraz. **Nie da się przegrać** — po spadnięciu Franek
 wraca w bezpieczne miejsce.
 
-## Poziomy Franka (27 + 6 bonusowych)
+## Poziomy Franka (27 + 18 bonusowych)
 
 Etapy **bonusowe** to zabawy wplecione między zwykłe poziomy. Nie mają numeru
 (na karcie i pasku pisze „BONUS"), więc numeracja pozostałych poziomów – i to,
@@ -98,8 +98,13 @@ co mówi narrator – zostaje bez zmian.
   i chrupią
 - 🎁 **Gra w grze** (bonus) — Franek dostaje tablet i gra w **Poranek Franka**:
   na ekraniku chodzi malutki Franek i zbiera trzy rzeczy (◀ ▶ chodzą, ▲ skacze)
+- 🎁 **Jaka dziś pogoda?** (bonus) — za oknem raz deszcz, raz śnieg, raz słońce.
+  Trzy zestawy na wieszaku: kalosze z parasolem, czapka z szalikiem, kaszkiet
+  z okularami. ◀ ▶ wybierają (narrator mówi, co to), ▲ zakłada
 6. **Myjemy ząbki** — pasta → szczoteczka → minigra szorowania
 7. **Wychodzimy!** — czapka → kurtka → buty
+- 🎁 **Zawiązujemy buty** (bonus) — sznurówka idzie przez cztery pary dziurek
+  (◀ ▶ na zmianę), a na końcu ▲ zaciąga kokardkę
 8. **Do samochodu!** — spacer z opiekunem do auta (z mamą: **do taksówki**)
 9. **Jedziemy do przedszkola** — omijanie przeszkód na ulicy; w oknach auta
    widać Franka i tatę, a gdy tata wlecze się wolno, Franek go popędza
@@ -115,12 +120,20 @@ co mówi narrator – zostaje bez zmian.
   narrator pyta „ile to jest dwa plus trzy?", ◀ ▶ przesuwają wybór (każda liczba
   jest wypowiadana), ▲ zatwierdza, a ▼ **liczy jabłuszka razem z dzieckiem**.
   Po pomyłce liczymy wspólnie od nowa. Pięć zadań
+- 🎁 **Kolory i kształty** (bonus) — raz pytamy o kolor, raz o kształt; trzy
+  figury do wyboru, a narrator mówi, na którą patrzysz. Pięć zadań
+- 🎁 **Rytm i klaskanie** (bonus) — pani klaszcze rytm strzałkami, dziecko
+  powtarza. Cztery rytmy, coraz dłuższe
 - 🎁 **Baba Jaga patrzy** (bonus) — klasyczne „raz, dwa, trzy". Kiedy Baba Jaga
   stoi tyłem i śpiewa, biegnie się (◀ ▶ na zmianę); gdy się odwróci, trzeba
   **stać jak posąg**, bo odsyła kawałek do tyłu. Z każdą rundą śpiewa szybciej
+- 🎁 **Zupka na obiad** (bonus) — najpierw za gorąca: trzymaj ▲ i dmuchaj, aż
+  przestanie parować. Potem sześć łyżek (◀ ▶ na zmianę) i pusty talerz
 14. **Cały dzień w przedszkolu** — pięć scenek (klocki, farby, obiadek,
     leżakowanie, plac zabaw), słoneczko wędruje po pasku dnia, a Franek
     **robi się coraz brudniejszy** – plamy widać na ubranku
+- 🎁 **Szukamy kurtki** (bonus) — w szatni wisi sześć kurtek. Najpierw gra
+  pokazuje twoją, potem trzeba ją znaleźć. Trzy rundy, za każdym razem inna
 15. **Tata cię łapie!** — tata pyta „idziemy się umyć?" i rusza w pogoń.
     ◀ ▶ na zmianę. **Kto ucieknie do furtki, nie musi się myć**; kogo tata
     dogoni, ten idzie myć rączki i buzię (i wraca do domu czysty)
@@ -141,6 +154,8 @@ co mówi narrator – zostaje bez zmian.
 20. **Zabawa w domu** — salon i trzy rzeczy po kolei: **tory z kolejką**,
     **klocki lego** i **rebusy z gazetki**. Franek przebiera się na wieczór
     w domowe ciuszki
+- 🎁 **Porządki w pokoju** (bonus) — klocki do pudełka, misie na półkę.
+  ◀ ▶ chodzą, ▲ podnosi i odkłada; źle odłożone wraca z komentarzem
 - 🎁 **Tory dla pociągu** (bonus) — prosty *rail maze*: tory leżą poprzekręcane,
   ◀ ▶ wybierają kawałek, ▲ go obraca. Gdy droga z dworca na dworzec jest cała,
   **pociąg rusza sam**
@@ -152,21 +167,32 @@ co mówi narrator – zostaje bez zmian.
     potem zejście po drugiej stronie i **przejście w płocie** do Igora
 22. **Zabawa z Igorem** — trzy scenki w ogródku sąsiada: piłka, autka po trawie
     i chowanego za krzakiem. Po nich Franek jest porządnie brudny
+- 🎁 **Nakrywamy do stołu** (bonus) — trzy miejsca, każde dostaje talerz, kubek
+  i widelec. ◀ ▶ wybierają miejsce, ▲ kładzie, narrator liczy nakrycia
 23. **Kolacja** — **fish and chips**: rybka w panierce → frytki → talerz.
     Na koniec „mniam, mniam!"
 24. **Kąpiel** — myjemy się **cały, część po części**, w tej samej kolejności co
     naprawdę: **szyja → głowa → ręce → nogi → pupa → stopy**. Gąbka jeździ po
     ciele, ◀ ▶ na zmianę zmywa brud (▲ ▼ przeskakują na inną, jeszcze brudną
     część). Na koniec **wycieranie ręcznikiem** — i Franek chodzi w ręczniku
+- 🎁 **Bańki mydlane** (bonus) — z wanny lecą bańki, ◀ ▶ przesuwają rączkę,
+  a bańka pęka od samego dotknięcia. Dwanaście baniek
 25. **Ząbki i piżamka** — pasta → szczoteczka → **znów dwie minuty szorowania**
     → piżamka z komody
+- 🎁 **Cienie na ścianie** (bonus) — lampka świeci na ścianę, a z rączek
+  wychodzi pies, zajączek i ptak (każdy mówi swoje: hau hau, kic kic, ćwir)
 26. **Książka na dobranoc** — najpierw Franek wybiera, **kto go kładzie spać**
     (◀ mama, ▶ tata), potem **wybiera książkę**: **Muminki**, **Kocia szajka**,
     **Pirat Rabarbar** albo **Zygzak McQueen**. Wybrany rodzic czyta trzy strony
     (nad łóżkiem widać, co Franek sobie wyobraża), **drugi dostaje przytulasa**
     i **gasimy światło**
+- 🎁 **Liczymy owieczki** (bonus) — owca podchodzi do płotu i czeka; ▲ i skacze,
+  a narrator liczy. Po dziesiątej owcy powieki same się zamykają
 27. **Sen o kotkach** — zaśnieżona dolina, choinki i księżyc, a **kotki rzucają
     się śnieżkami**. ▲ rzuca śnieżkę razem z nimi. Franek śpi w rogu ekranu
+- 🎁 **Kotki budują igloo** (bonus, ostatni etap dnia) — kotek macha łapką, gdy
+  czeka na śnieżkę; ▲ w dobrym momencie dokłada blok. Osiem bloków i igloo
+  gotowe — kotki idą spać do środka
 
 ## Poziomy Poli (12)
 

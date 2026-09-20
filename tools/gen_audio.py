@@ -409,6 +409,124 @@ NARRACJA = {
     'zad_marchewka':    'Weź marchewkę dla królika!',
     'zad_krolik':       'Nakarm królika!',
     'zwierzaki_koniec': 'Koty mruczą, królik chrupie marchewkę. Wszyscy najedzeni! Brawo Franek!',
+
+    # --- minigra: ubieranie na pogodę ---
+    'pog_poziom':  'Etap bonusowy! Zobacz, jaka jest pogoda, i ubierz się dobrze.',
+    'pog_jak':     'Popatrz przez okno, jaka jest pogoda. Strzałki w lewo i w prawo wybierają '
+                   'ubranko, strzałka w górę je zakłada.',
+    'pog_deszcz':  'Pada deszcz! Co zakładamy?',
+    'pog_snieg':   'Pada śnieg i jest mróz! Co zakładamy?',
+    'pog_slonce':  'Świeci słonko i jest ciepło! Co zakładamy?',
+    'pog_kalosze': 'Kalosze i parasol.',
+    'pog_czapka':  'Ciepła czapka i szalik.',
+    'pog_okulary': 'Kaszkiet i okulary przeciwsłoneczne.',
+    'pog_dobrze':  'Dokładnie tak! W tym będzie ci wygodnie. Brawo!',
+    'pog_zle':     'W tym byłoby ci niewygodnie. Popatrz jeszcze raz przez okno.',
+    'pog_koniec':  'Na każdą pogodę wiesz, co założyć! Brawo Franek!',
+
+    # --- minigra: zawiązywanie butów ---
+    'szn_poziom':   'Etap bonusowy! Uczymy się zawiązywać buty.',
+    'szn_jak':      'Przewlekaj sznurówkę przez dziurki. Naciskaj strzałki w lewo i w prawo '
+                    'na zmianę.',
+    'szn_kokardka': 'Wszystkie dziurki gotowe! Teraz kokardka. Naciskaj strzałkę w górę '
+                    'i zaciągaj.',
+    'szn_koniec':   'Sam zawiązałeś buty! Ale jesteś duży. Brawo Franek!',
+
+    # --- minigra: nakrywanie do stołu ---
+    'stol_poziom':   'Etap bonusowy! Nakrywamy do stołu.',
+    'stol_jak':      'Przy stole siedzą trzy osoby. Strzałki w lewo i w prawo wybierają '
+                     'miejsce, a strzałka w górę kładzie.',
+    'stol_talerze':  'Najpierw talerze. Każdy dostaje jeden.',
+    'stol_kubki':    'Teraz kubki. Znowu po jednym dla każdego.',
+    'stol_widelce':  'I jeszcze widelce. Ostatnia rzecz!',
+    'stol_juz_jest': 'Tutaj już to leży. Wybierz inne miejsce.',
+    'stol_koniec':   'Stół nakryty jak w restauracji! Można siadać do kolacji. Brawo!',
+
+    # --- minigra: porządki w pokoju ---
+    'porz_poziom':     'Etap bonusowy! Po zabawie trzeba posprzątać pokój.',
+    'porz_jak':        'Klocki idą do pudełka, a misie na półkę. Chodź strzałkami w lewo '
+                       'i w prawo, a strzałką w górę podnieś i odłóż.',
+    'porz_klocek':     'Masz klocek. Nieś go do pudełka!',
+    'porz_mis':        'Masz misia. Nieś go na półkę!',
+    'porz_zle_klocek': 'Klocki idą do pudełka, nie na półkę.',
+    'porz_zle_mis':    'Misie siadają na półce, nie w pudełku.',
+    'porz_koniec':     'Wszystko na swoim miejscu! Ale porządek. Brawo Franek!',
+
+    # --- minigra: kolory i kształty ---
+    'ksz_poziom':      'Etap bonusowy! Bawimy się w kolory i kształty.',
+    'ksz_jak':         'Strzałki w lewo i w prawo pokazują figury, a strzałka w górę wybiera.',
+    'ksz_ktory_kolor': 'Który jest',
+    'ksz_gdzie':       'Gdzie jest',
+    'ksz_czerwony':    'czerwony',
+    'ksz_niebieski':   'niebieski',
+    'ksz_zielony':     'zielony',
+    'ksz_zolty':       'żółty',
+    'ksz_kolko':       'kółko',
+    'ksz_kwadrat':     'kwadrat',
+    'ksz_trojkat':     'trójkąt',
+    'ksz_brawo':       'Dokładnie! To jest',
+    'ksz_nie':         'To nie ten. Popatrz jeszcze raz.',
+    'ksz_koniec':      'Wszystkie kolory i kształty zgadnięte! Brawo Franek!',
+
+    # --- minigra: rytm i klaskanie ---
+    'rytm_poziom':  'Etap bonusowy! Pani pokazuje rytm, a ty go powtarzasz.',
+    'rytm_jak':     'Pani klaszcze rytm strzałkami. Popatrz, posłuchaj i powtórz go dokładnie '
+                    'tak samo.',
+    'rytm_sluchaj': 'Słuchaj i patrz!',
+    'rytm_powtorz': 'Teraz ty! Powtórz rytm.',
+    'rytm_dobrze':  'Idealnie, ten sam rytm! Brawo!',
+    'rytm_zle':     'Ojej, to inny rytm. Popatrz jeszcze raz.',
+    'rytm_koniec':  'Wszystkie rytmy powtórzone! Ale z ciebie muzyk!',
+
+    # --- minigra: zupka na obiad ---
+    'zupa_poziom':  'Etap bonusowy! Obiadek w przedszkolu. Dzisiaj zupka.',
+    'zupa_jak':     'Zupka jest za gorąca! Trzymaj strzałkę w górę i dmuchaj, aż przestanie '
+                    'parować.',
+    'zupa_ostygla': 'Już dobra, nie parzy! Teraz jedz łyżka po łyżce. Naciskaj strzałki '
+                    'w lewo i w prawo na zmianę.',
+    'zupa_koniec':  'Pusty talerz! Cała zupka zjedzona. Brawo Franek!',
+
+    # --- minigra: szukanie kurtki w szatni ---
+    'szuk_poziom': 'Etap bonusowy! W szatni wisi mnóstwo kurtek. Która jest twoja?',
+    'szuk_jak':    'Popatrz dobrze, to jest twoja kurtka. Zapamiętaj ją! Potem strzałki '
+                   'w lewo i w prawo szukają, a strzałka w górę zdejmuje.',
+    'szuk_patrz':  'Nowa kurtka do zapamiętania. Patrz uważnie!',
+    'szuk_szukaj': 'A teraz znajdź ją na wieszaku!',
+    'szuk_ok':     'To ta! Brawo, dobra pamięć!',
+    'szuk_zle':    'To nie twoja kurtka. Szukaj dalej!',
+    'szuk_koniec': 'Znalazłeś swoją kurtkę za każdym razem! Brawo Franek!',
+
+    # --- minigra: bańki mydlane w kąpieli ---
+    'banki_poziom': 'Etap bonusowy! W kąpieli lecą bańki mydlane.',
+    'banki_jak':    'Łap bańki rączką! Strzałki w lewo i w prawo przesuwają rączkę, a bańka '
+                    'pęka od samego dotknięcia.',
+    'banki_koniec': 'Wszystkie bańki pyk! Ale zabawa. Brawo Franek!',
+
+    # --- minigra: cienie na ścianie ---
+    'cien_poziom': 'Etap bonusowy! Z rączek robimy cienie na ścianie.',
+    'cien_jak':    'Lampka świeci na ścianę. Strzałki w lewo i w prawo wybierają zwierzaka, '
+                   'a strzałka w górę pokazuje jego cień.',
+    'cien_pies':   'Piesek!',
+    'cien_zajac':  'Zajączek!',
+    'cien_ptak':   'Ptaszek!',
+    'cien_hau':    'Hau, hau!',
+    'cien_kic':    'Kic, kic, kic!',
+    'cien_cwir':   'Ćwir, ćwir!',
+    'cien_koniec': 'Pies, zajączek i ptak. Całe zoo na ścianie! Brawo Franek!',
+
+    # --- minigra: liczymy owieczki ---
+    'owce_poziom': 'Etap bonusowy! Przed snem liczymy owieczki.',
+    'owce_jak':    'Owieczka podchodzi do płotu i czeka. Naciśnij strzałkę w górę, żeby '
+                   'przeskoczyła, a ja będę liczyć.',
+    'owce_koniec': 'Dziesięć owieczek przeskoczyło płot. Franek zasypia. Dobranoc!',
+
+    # --- minigra: kotki budują igloo ---
+    'igloo_poziom':  'Etap bonusowy! We śnie kotki budują igloo ze śniegu.',
+    'igloo_jak':     'Kotek macha łapką, kiedy czeka na śnieżkę. Naciśnij wtedy strzałkę '
+                     'w górę i rzuć mu ją.',
+    'igloo_czekaj':  'Poczekaj, aż kotek machnie łapką!',
+    'igloo_rosnie':  'Igloo rośnie! Rzucaj dalej!',
+    'igloo_koniec':  'Igloo gotowe! Kotki idą spać do środka. Dobranoc Franek!',
 }
 
 EFEKTY = {
