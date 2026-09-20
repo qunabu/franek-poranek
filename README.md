@@ -63,7 +63,11 @@ Przedmioty zbiera się samym dotknięciem. Świecąca rzecz ze strzałką to ta,
 po którą trzeba iść teraz. **Nie da się przegrać** — po spadnięciu Franek
 wraca w bezpieczne miejsce.
 
-## Poziomy Franka (27)
+## Poziomy Franka (27 + 6 bonusowych)
+
+Etapy **bonusowe** to zabawy wplecione między zwykłe poziomy. Nie mają numeru
+(na karcie i pasku pisze „BONUS"), więc numeracja pozostałych poziomów – i to,
+co mówi narrator – zostaje bez zmian.
 
 1. **Ciemno!** — w pokoju jest noc, Franek leży w łóżku i wyciąga rączkę do
    ściany. ◀ ▶ przesuwają rączkę, ▲ naciska. Trzeba trafić w **kontakt**, a nie
@@ -86,7 +90,14 @@ wraca w bezpieczne miejsce.
    nie utknął. Na koniec wynik: w ilu procentach poszło do środka i czy
    posprzątane
 4. **Ubieramy się** — majtki → spodnie → skarpetki → koszulka
-5. **Śniadanko** — schody na dół, potem miska → łódeczki → mleko → łyżka → jedzenie
+5. **Śniadanko** — schody na dół, potem miska → łódeczki → mleko → łyżka →
+   jedzenie, a po śniadanku **cztery kapsułki rybno-truskawkowe** (narrator
+   liczy każdą: jeden, dwa, trzy… po czwartej „rybka i truskawka!")
+- 🎁 **Karmimy zwierzaki** (bonus) — karma dla kotów → pierwszy kotek →
+  **drugi kotek na półce** → marchewka → królik. Na koniec wszyscy mruczą
+  i chrupią
+- 🎁 **Gra w grze** (bonus) — Franek dostaje tablet i gra w **Poranek Franka**:
+  na ekraniku chodzi malutki Franek i zbiera trzy rzeczy (◀ ▶ chodzą, ▲ skacze)
 6. **Myjemy ząbki** — pasta → szczoteczka → minigra szorowania
 7. **Wychodzimy!** — czapka → kurtka → buty
 8. **Do samochodu!** — spacer z opiekunem do auta (z mamą: **do taksówki**)
@@ -100,6 +111,13 @@ wraca w bezpieczne miejsce.
 13. **Kółko powitalne** — dzieci siedzą w kręgu na dywanie. ◀ ▶ obchodzą kółko,
     ▲ mówi „cześć". Trzeba przywitać się z każdym; nad tym, do kogo iść, świecą
     iskierki, a nad Frankiem zapala się strzałka, gdy już przy kimś stoi
+- 🎁 **Liczymy jabłuszka** (bonus) — dodawanie dla przedszkolaka, **całe mówione**:
+  narrator pyta „ile to jest dwa plus trzy?", ◀ ▶ przesuwają wybór (każda liczba
+  jest wypowiadana), ▲ zatwierdza, a ▼ **liczy jabłuszka razem z dzieckiem**.
+  Po pomyłce liczymy wspólnie od nowa. Pięć zadań
+- 🎁 **Baba Jaga patrzy** (bonus) — klasyczne „raz, dwa, trzy". Kiedy Baba Jaga
+  stoi tyłem i śpiewa, biegnie się (◀ ▶ na zmianę); gdy się odwróci, trzeba
+  **stać jak posąg**, bo odsyła kawałek do tyłu. Z każdą rundą śpiewa szybciej
 14. **Cały dzień w przedszkolu** — pięć scenek (klocki, farby, obiadek,
     leżakowanie, plac zabaw), słoneczko wędruje po pasku dnia, a Franek
     **robi się coraz brudniejszy** – plamy widać na ubranku
@@ -123,6 +141,12 @@ wraca w bezpieczne miejsce.
 20. **Zabawa w domu** — salon i trzy rzeczy po kolei: **tory z kolejką**,
     **klocki lego** i **rebusy z gazetki**. Franek przebiera się na wieczór
     w domowe ciuszki
+- 🎁 **Tory dla pociągu** (bonus) — prosty *rail maze*: tory leżą poprzekręcane,
+  ◀ ▶ wybierają kawałek, ▲ go obraca. Gdy droga z dworca na dworzec jest cała,
+  **pociąg rusza sam**
+- 🎁 **Podłoga to lawa** (bonus) — cała podłoga to lawa, skacze się po meblach
+  (dywan → pufa → stolik → taboret → półka → **kanapa z misiem**). Dotknięcie
+  lawy cofa na ostatni mebel, więc przegrać się nie da
 21. **Ścianka i płot** — do sąsiada nie ma drogi na skróty: najpierw
     **ścianka do wspinania** (kolorowe chwyty, wchodzi się skokami coraz wyżej),
     potem zejście po drugiej stronie i **przejście w płocie** do Igora

@@ -337,6 +337,78 @@ NARRACJA = {
     'ksiazka_czyta_tata': 'Tata poczyta ci do snu.',
     'ksiazka_przytulas_mama': 'Koniec książki. Przytul mamę na dobranoc!',
     'ksiazka_przytulas_tata': 'Koniec książki. Przytul tatę na dobranoc!',
+
+    # --- cztery kapsułki rybno-truskawkowe po śniadanku ---
+    'zad_kapsulki':   'Po śniadanku czas na kapsułki. Zjedz cztery, rybno-truskawkowe!',
+    'kaps_2':         'Druga kapsułka!',
+    'kaps_3':         'Trzecia kapsułka!',
+    'kaps_4':         'Ostatnia, czwarta kapsułka!',
+    'kapsulki_mniam': 'Cztery kapsułki zjedzone! Rybka i truskawka. Brawo Franek!',
+
+    # --- minigra: liczymy jabłuszka (dodawanie, wszystko mówione) ---
+    'licz_poziom': 'Etap bonusowy! W przedszkolu liczymy jabłuszka.',
+    'licz_jak':    'Pod jabłuszkami są trzy liczby. Strzałki w lewo i w prawo je pokazują, '
+                   'strzałka w górę wybiera. A strzałka w dół policzy razem z tobą.',
+    'licz_ile':    'Ile to jest',
+    'licz_plus':   'plus',
+    'licz_razem':  'Liczymy razem!',
+    'licz_brawo':  'Brawo! Razem to jest',
+    'licz_nie':    'To nie tyle. Policzmy jeszcze raz.',
+    'licz_koniec': 'Wszystko policzone! Ale z ciebie matematyk, Franek!',
+    'licz_1':  'jeden',
+    'licz_2':  'dwa',
+    'licz_3':  'trzy',
+    'licz_4':  'cztery',
+    'licz_5':  'pięć',
+    'licz_6':  'sześć',
+    'licz_7':  'siedem',
+    'licz_8':  'osiem',
+    'licz_9':  'dziewięć',
+    'licz_10': 'dziesięć',
+
+    # --- minigra: gra w grze, czyli Franek gra w Poranek Franka ---
+    'gierka_poziom': 'Etap bonusowy! Franek dostaje tablet i gra w Poranek Franka. '
+                     'Gra w grze!',
+    'gierka_jak':    'W gierce chodzi malutki Franek. Strzałki w lewo i w prawo go '
+                     'prowadzą, strzałka w górę skacze. Zbierz trzy rzeczy.',
+    'gierka_1':      'Malutkie śniadanko!',
+    'gierka_2':      'Malutka szczoteczka!',
+    'gierka_3':      'Malutkie buciki!',
+    'gierka_koniec': 'Koniec grania! Franek odkłada tablet. Lecimy dalej!',
+
+    # --- minigra: tory dla pociągu ---
+    'rail_poziom': 'Etap bonusowy! Franek układa tory dla pociągu.',
+    'rail_jak':    'Tory leżą krzywo. Strzałki w lewo i w prawo wybierają tor, a strzałka '
+                   'w górę go obraca. Ułóż całą drogę z dworca na dworzec!',
+    'rail_pasuje': 'Ten tor pasuje!',
+    'rail_jedzie': 'Tory gotowe! Jedzie pociąg! Ciuch, ciuch!',
+    'rail_koniec': 'Pociąg dojechał na stację. Brawo Franek!',
+
+    # --- minigra: raz, dwa, trzy, Baba Jaga patrzy ---
+    'baba_poziom':  'Etap bonusowy! Na placu zabaw gramy w Raz, dwa, trzy, Baba Jaga patrzy.',
+    'baba_jak':     'Kiedy Baba Jaga stoi tyłem i śpiewa, biegnij! Naciskaj strzałki w lewo '
+                    'i w prawo na zmianę. Jak się odwróci, stój jak posąg!',
+    'baba_raz':     'Raz, dwa, trzy, Baba Jaga patrzy!',
+    'baba_stoj':    'Stój! Ani drgnij!',
+    'baba_lapie':   'Widziała cię! Wracasz kawałek do tyłu.',
+    'baba_wygrana': 'Dobiegłeś do Baby Jagi! Wygrałeś! Brawo Franek!',
+
+    # --- minigra: podłoga to lawa ---
+    'lawa_poziom': 'Etap bonusowy! Podłoga to lawa!',
+    'lawa_jak':    'Cała podłoga to gorąca lawa! Skacz po meblach strzałką w górę i dojdź '
+                   'aż na kanapę. Nie dotykaj podłogi!',
+    'lawa_ups':    'Ups, lawa! Wracasz na ostatni mebel.',
+    'lawa_polowa': 'Połowa za tobą! Skacz dalej!',
+    'lawa_koniec': 'Jesteś na kanapie! Lawa cię nie dostała. Brawo Franek!',
+
+    # --- etap: karmimy dwa koty i królika ---
+    'zwierzaki_poziom': 'Etap bonusowy! Koty i królik też chcą śniadanko.',
+    'zad_karma_kot':    'Weź karmę dla kotów!',
+    'zad_kot1':         'Nakarm pierwszego kotka!',
+    'zad_kot2':         'Teraz drugi kotek! Siedzi na półce.',
+    'zad_marchewka':    'Weź marchewkę dla królika!',
+    'zad_krolik':       'Nakarm królika!',
+    'zwierzaki_koniec': 'Koty mruczą, królik chrupie marchewkę. Wszyscy najedzeni! Brawo Franek!',
 }
 
 EFEKTY = {

@@ -485,6 +485,17 @@ const KLUCZE_MOWA = [
   'zad_kurtka','zad_legginsy','zad_lyzka','zad_majtki','zad_mis','zad_miska','zad_mleko',
   'zad_okno','zad_pasta','zad_platki','zad_rybka','zad_samochod','zad_skarpetki',
   'zad_sniadanie','zad_spodnie','zad_szczoteczka','zad_zdejmij_buty','zad_zdejmij_czapke',
+  'zad_kapsulki','kaps_2','kaps_3','kaps_4','kapsulki_mniam',
+  // minigra z dodawaniem, gra w grze i tory dla pociągu
+  'licz_poziom','licz_jak','licz_ile','licz_plus','licz_razem','licz_brawo','licz_nie',
+  'licz_koniec','licz_1','licz_2','licz_3','licz_4','licz_5','licz_6','licz_7','licz_8',
+  'licz_9','licz_10',
+  'gierka_poziom','gierka_jak','gierka_1','gierka_2','gierka_3','gierka_koniec',
+  'rail_poziom','rail_jak','rail_pasuje','rail_jedzie','rail_koniec',
+  'baba_poziom','baba_jak','baba_raz','baba_stoj','baba_lapie','baba_wygrana',
+  'lawa_poziom','lawa_jak','lawa_ups','lawa_polowa','lawa_koniec',
+  'zwierzaki_poziom','zad_karma_kot','zad_kot1','zad_kot2','zad_marchewka','zad_krolik',
+  'zwierzaki_koniec',
   'zad_zdejmij_kurtke','zad_zeby','zeby_20','zeby_dol_przod','zeby_dol_tyl','zeby_gora_przod',
   'zeby_gora_tyl','zeby_minuta','zeby_pol','zeby_strefa_ok','zle'];
 
@@ -624,6 +635,26 @@ sniadanie:[
 ".kkkkkkkkkkkkkk.",".kmnmwnmwnmnmnk.",".kmmmmmmmmmmmmk.",".kwwwwwwwwwwwwk.",
 "..kwwwwwwwwwwk..","..kwwwwwwwwwwk..","...kwwwwwwwwk...","....kwwwwwwk....",
 ".....kkkkkk.....","................","................","................"],
+kot:[
+"................","................","..k.....k.......",".kak...kak......",
+".kaaakkkaak.....",".kaggaaaggak....",".kaaaakpkaaak...",".kaaaaaaaaaak...",
+"..kaaaaaaaak....","..kaaaaaaaak.kk.","..kaaaaaaaakkak.","..kaaaaaaaaaak..",
+"..kaaaaaaaaak...","..kkkkkkkkkk....","................","................"],
+krolik:[
+"................","....k.....k.....","...kwk...kwk....","...kqk...kqk....",
+"...kwk...kwk....","...kwkkkkkwk....","..kwwwwwwwwwk...","..kwwrwwwrwwk...",
+"..kwwwwqwwwwk...",".kwwwwwwwwwwwk..",".kwwwwwwwwwwwk..",".kwwwwwwwwwwwk..",
+".kwwwwwwwwwwwk..","..kkkkkkkkkkk...","................","................"],
+marchewka:[
+"................",".........kgk....","......kgkkgk....",".....kggkggk....",
+"......kkokk.....",".....koooook....",".....koooook....","......koook.....",
+"......koook.....",".......kook.....",".......kok......",".......kk.......",
+"................","................","................","................"],
+kapsulka:[
+"................","................","................","................",
+"...kkkkkkkkkk...","..koooooqqqqqk..","..kowoooqqqqqk..","..koooooqqqqqk..",
+"..koooooqqwqqk..","...kkkkkkkkkk...","................","................",
+"................","................","................","................"],
 pasta:[
 "................","......kk........",".....kggk.......","....kkwwkk......",
 "....kwwwwk......","....kwwwwk......","....kwggwk......","....kwggwk......",
@@ -748,6 +779,7 @@ pizama:[
 const NAZWY = {
   majtki:'majtki', spodnie:'spodnie', skarpetki:'skarpetki', koszulka:'koszulkę',
   miska:'miskę', platki:'łódeczki', mleko:'mleko', lyzka:'łyżkę', sniadanie:'śniadanie',
+  kapsulka:'kapsułkę', kot:'kotka', krolik:'królika', marchewka:'marchewkę',
   szczoteczka:'szczoteczkę', pasta:'pastę', zeby:'umywalkę',
   kapcie:'kapcie', mis:'misia', grzebien:'grzebień', karma:'karmę dla rybki',
   rybka:'rybkę', legginsy:'legginsy', bluza:'bluzę',
@@ -1382,7 +1414,7 @@ const POZIOMY_FRANEK = [
     ],
     drzwi:{x:870,y:165,w:50,h:70,tekst:'Na dół!'}
   },
-  { nazwa:'Śniadanko', podtytul:'Zejdź po schodach', tlo:'kuchnia', szer:1150,
+  { nazwa:'Śniadanko', podtytul:'Śniadanko i kapsułki', tlo:'kuchnia', szer:1150,
     glos:'f_poziom5', glosZapas:'poziom2',
     start:{x:40,y:40},
     platformy:[
@@ -1400,10 +1432,35 @@ const POZIOMY_FRANEK = [
     ],
     zadania:[
       {typ:'miska',x:670,y:182},{typ:'platki',x:920,y:167},{typ:'mleko',x:835,y:137},
-      {typ:'lyzka',x:500,y:177},{typ:'sniadanie',x:545,y:176, zadanie:'Zjedz śniadanko!', glos:'zad_sniadanie'}
+      {typ:'lyzka',x:500,y:177},{typ:'sniadanie',x:545,y:176, zadanie:'Zjedz śniadanko!', glos:'zad_sniadanie'},
+      // po śniadanku cztery kapsułki rybno-truskawkowe – liczymy je na głos
+      {typ:'kapsulka',nr:1,x:895,y:167, zadanie:'Zjedz pierwszą kapsułkę!', glos:'zad_kapsulki'},
+      {typ:'kapsulka',nr:2,x:940,y:167, zadanie:'Druga kapsułka!',         glos:'kaps_2'},
+      {typ:'kapsulka',nr:3,x:985,y:167, zadanie:'Trzecia kapsułka!',       glos:'kaps_3'},
+      {typ:'kapsulka',nr:4,x:1030,y:167,zadanie:'Ostatnia kapsułka!',      glos:'kaps_4'}
     ],
     drzwi:{x:1075,y:165,w:50,h:70,tekst:'Do łazienki!'}
   },
+  { nazwa:'Karmimy zwierzaki', bonus:true, podtytul:'Dwa koty i królik', tlo:'salon', szer:900,
+    glos:'zwierzaki_poziom', start:{x:30,y:170},
+    platformy:[
+      {x:0,y:235,w:900,h:35,styl:'podloga'},
+      {x:150,y:228,w:150,h:7,styl:'dywan'},
+      {x:355,y:200,w:90,h:35,styl:'szafka'},
+      {x:470,y:172,w:95,h:9,styl:'polka',przenikalna:true},
+      {x:640,y:200,w:80,h:35,styl:'pufa'}
+    ],
+    zadania:[
+      {typ:'karma',     x:110, y:216, zadanie:'Weź karmę dla kotów!',   glos:'zad_karma_kot'},
+      {typ:'kot',       x:280, y:216, zadanie:'Nakarm pierwszego kotka!', glos:'zad_kot1'},
+      {typ:'kot',       x:515, y:158, zadanie:'Teraz drugi kotek!',     glos:'zad_kot2'},
+      {typ:'marchewka', x:600, y:216, zadanie:'Weź marchewkę dla królika!', glos:'zad_marchewka'},
+      {typ:'krolik',    x:790, y:216, zadanie:'Nakarm królika!',        glos:'zad_krolik'}
+    ],
+    drzwi:{x:845,y:165,w:50,h:70,tekst:'Dalej!'}
+  },
+  { typ:'gierka', bonus:true, nazwa:'Gra w grze', podtytul:'Franek gra w Poranek Franka',
+    glos:'gierka_poziom' },
   { nazwa:'Myjemy ząbki', podtytul:'Dwie minuty szorowania', tlo:'lazienka', szer:725,
     glos:'f_poziom6', glosZapas:'poziom3',
     start:{x:30,y:170},
@@ -1475,6 +1532,10 @@ const POZIOMY_FRANEK = [
     wariant:{ mama:{ glos:'fm_poziom12' } } },
   { typ:'kolko', nazwa:'Kółko powitalne', podtytul:'Przywitaj się z dziećmi',
     glos:'f_poziom13' },
+  { typ:'liczenie', bonus:true, nazwa:'Liczymy jabłuszka', podtytul:'Ile to jest razem?',
+    glos:'licz_poziom' },
+  { typ:'baba', bonus:true, nazwa:'Baba Jaga patrzy', podtytul:'Raz, dwa, trzy – stój jak posąg!',
+    glos:'baba_poziom' },
   { typ:'dzien', nazwa:'Cały dzień w przedszkolu', podtytul:'Zabawa, obiadek, leżakowanie',
     glos:'f_poziom14' },
   { typ:'lapanie', nazwa:'Tata cię łapie!', podtytul:'Uciekniesz – nie myjesz się!',
@@ -1523,6 +1584,10 @@ const POZIOMY_FRANEK = [
     ],
     drzwi:{x:930,y:165,w:50,h:70,tekst:'Do ogródka!'}
   },
+  { typ:'kolejka', bonus:true, nazwa:'Tory dla pociągu', podtytul:'Poobracaj tory i puść pociąg',
+    glos:'rail_poziom' },
+  { typ:'lawa', bonus:true, nazwa:'Podłoga to lawa', podtytul:'Skacz po meblach na kanapę',
+    glos:'lawa_poziom' },
   { nazwa:'Ścianka i płot', podtytul:'Wspinaj się do Igora', tlo:'ogrod', szer:1000,
     glos:'f_poziom21', start:{x:30,y:170},
     platformy:[
@@ -1871,7 +1936,12 @@ const STARTY_MINIGIER = {
   igorek: () => startZabawyUIgora(),
   kapiel: () => startKapieli(),
   ksiazka: () => startKsiazki(),
-  sen: () => startSnu()
+  sen: () => startSnu(),
+  liczenie: () => startLiczenia(),
+  gierka: () => startGierki(),
+  kolejka: () => startKolejki(),
+  baba: () => startBabyJagi(),
+  lawa: () => startLawy()
 };
 function startPoziomu(i){
   G.poziom = i;
@@ -1897,6 +1967,19 @@ function dalejPoPoziomie(){
    kasuje się bilet). */
 function wariantEtapu(p){
   return (p && p.wariant && p.wariant[bohater().wariantOp]) || null;
+}
+/* Etapy bonusowe nie mają numeru – dzięki temu nagrane „poziom siódmy" i reszta
+   dalej się zgadzają, choć gra ma o kilka etapów więcej. */
+function numerEtapu(i){
+  const lista = POZ();
+  if(lista[i] && lista[i].bonus) return null;
+  let n = 0;
+  for(let j=0;j<=i && j<lista.length;j++) if(!lista[j].bonus) n++;
+  return n;
+}
+function napisEtapu(i){
+  const nr = numerEtapu(i);
+  return nr ? 'POZIOM ' + nr : 'BONUS';
 }
 function nazwaEtapu(p){ const w = wariantEtapu(p); return (w && w.nazwa) || zOpiekunem(p.nazwa); }
 function podtytulEtapu(p){ const w = wariantEtapu(p); return (w && w.podtytul) || zOpiekunem(p.podtytul); }
@@ -1940,6 +2023,7 @@ function debugEtap(kierunek){
   G.swiatlo = null; G.wstawanie = null; G.siku = null;
   G.kolko = null; G.dzien = null; G.lapanie = null; G.tank = null; G.dom = null;
   G.igorek = null; G.kapiel = null; G.ksiazka = null; G.sen = null;
+  G.liczenie = null; G.gierka = null; G.kolejka = null; G.baba = null; G.lawa = null;
   G.czastki = []; G.overlay = null;
   G.debug = 150;
   startPoziomu(i);
@@ -2065,7 +2149,8 @@ const CZC = {
  "'":["..#..","..#..",".....",".....",".....",".....","....."],
  '+':[".....","..#..","..#..","#####","..#..","..#..","....."],
  '(':["...#.","..#..",".#...",".#...",".#...","..#..","...#."],
- ')':[".#...","..#..","...#.","...#.","...#.","..#..",".#..."]
+ ')':[".#...","..#..","...#.","...#.","...#.","..#..",".#..."],
+ '=':[".....",".....","#####",".....","#####",".....","....."]
 };
 const KRESKA = "...#.", KROPKA = "..#..", OGONEK = "...#.";
 const ZDOBIONE = {
@@ -2208,6 +2293,15 @@ function aktualizujGre(){
       const brawo = 'brawo' + (1 + ((Math.random()*4)|0));
       if(z.typ === 'pizama') przebierzWPizame();
       if(z.typ === 'sniadanie'){ G.overlay = {typ:'jedzenie', t:150}; mow('jedzenie'); }
+      else if(z.typ === 'krolik'){
+        G.overlay = {typ:'zwierzaki', t:190};
+        serduszka(z.x, z.y - 6);
+        sfx('sfx_sukces'); mow('zwierzaki_koniec');
+      }
+      else if(z.typ === 'kapsulka'){
+        if(z.nr >= 4){ G.overlay = {typ:'kapsulki', t:170}; mow('kapsulki_mniam'); }
+        else mow('licz' + z.nr, glosZadania(p, G.zrobione));
+      }
       else if(z.typ === 'kolacja'){ G.overlay = {typ:'kolacja', t:170}; mow('kolacja_mniam'); }
       else if(z.typ === 'igor'){
         G.overlay = {typ:'czesc', t:170};
@@ -2369,6 +2463,8 @@ function rysujGre(){
   if(G.overlay && G.overlay.typ === 'przytulas') rysujPrzytulas(G.overlay);
   if(G.overlay && G.overlay.typ === 'czesc') rysujCzesc(G.overlay);
   if(G.overlay && G.overlay.typ === 'kolacja') rysujKolacje(G.overlay);
+  if(G.overlay && G.overlay.typ === 'kapsulki') rysujKapsulki(G.overlay);
+  if(G.overlay && G.overlay.typ === 'zwierzaki') rysujZwierzaki(G.overlay);
   if(G.infoT > 0){
     ramka(W/2-110, 232, 220, 24, '#a80020');
     napis(G.info, W/2, 244, '#f8d878', '#000000', 1);
@@ -2386,6 +2482,43 @@ function rysujJedzenie(o){
   ctx.drawImage(spr(pusta ? 'ik_miska' : 'ik_sniadanie', pusta ? IKONY.miska : IKONY.sniadanie), 0, 0);
   ctx.restore();
   napis(pusta ? 'ZJEDZONE!' : 'PYSZNE ŁÓDECZKI!', W/2, 172, '#fffeff', '#000000', 2);
+}
+/* koty mruczą, królik chrupie – nagroda za nakarmienie całej trójki */
+function rysujZwierzaki(o){
+  const post = 1 - o.t/190;
+  ctx.globalAlpha = 0.75; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+  ramka(W/2-124, 50, 248, 150, '#007800');
+  napis('WSZYSCY NAJEDZENI!', W/2, 72, '#f8d878', '#000000', 2);
+  const zwierzaki = ['kot','kot','krolik'];
+  for(let i=0;i<3;i++){
+    const bob = Math.round(Math.sin((G.t + i*18)*0.12)*3);
+    ctx.save();
+    ctx.translate(W/2-92 + i*64, 96 + bob); ctx.scale(3,3);
+    ctx.drawImage(spr('ik_'+zwierzaki[i], IKONY[zwierzaki[i]]), 0, 0);
+    ctx.restore();
+  }
+  for(let i=0;i<6;i++){
+    const f = (G.t*0.9 + i*30) % 90;
+    rysujSpr('serduszko', SERDUSZKO, W/2 - 70 + i*26 + Math.sin((G.t+i*15)*0.06)*4, 168 - f*0.8, false);
+  }
+  napis(post > 0.55 ? 'MRUU! CHRUP CHRUP!' : 'KOTKI I KRÓLIK JEDZĄ', W/2, 188, '#fffeff', '#000000', 2);
+}
+function rysujKapsulki(o){
+  const post = 1 - o.t/170;
+  ctx.globalAlpha = 0.75; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+  ramka(W/2-116, 54, 232, 142, '#00a800');
+  napis('CZTERY KAPSUŁKI!', W/2, 76, '#f8d878', '#000000', 2);
+  const ile = Math.min(4, 1 + Math.floor(post*4.4));      // po kolei wskakują do buzi
+  for(let i=0;i<4;i++){
+    ctx.globalAlpha = i < ile ? 1 : 0.2;
+    ctx.save();
+    ctx.translate(W/2-92 + i*48, 100); ctx.scale(3,3);
+    ctx.drawImage(spr('ik_kapsulka', IKONY.kapsulka), 0, 0);
+    ctx.restore();
+    ctx.globalAlpha = 1;
+    napis(String(i+1), W/2-92 + i*48 + 24, 158, i < ile ? '#f8d878' : '#4f4f4f', '#000000', 2);
+  }
+  napis(post > 0.6 ? 'ZJEDZONE! BRAWO!' : 'RYBKA I TRUSKAWKA!', W/2, 182, '#fffeff', '#000000', 1.6);
 }
 function rysujKolacje(o){
   const post = 1 - o.t/170;
@@ -2439,15 +2572,19 @@ function rysujCzesc(o){
 }
 function rysujHUD(p){
   pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
-  napisL('POZIOM '+(G.poziom+1)+' - '+nazwaEtapu(p).toUpperCase(), 4, 10, '#fffeff', null, 1);
+  napisL(napisEtapu(G.poziom)+' - '+nazwaEtapu(p).toUpperCase(), 4, 10, '#fffeff', null, 1);
   const zad = tekstZadania(p, G.zrobione).toUpperCase();
   const tw = szerTekstu(zad, 2);
   ramka(W/2-tw/2-8, 24, tw+16, 28, '#a80020');
   napis(zad, W/2, 38, '#f8d878', '#000000', 2);
   const lista = p.zadania.filter(z => z.typ !== 'zeby');
+  const ile = {};
   for(let i=0;i<lista.length;i++){
     const x = W - 14 - (lista.length-1-i)*20, y = 10;
-    ctx.globalAlpha = G.ekwipunek.includes(lista[i].typ) ? 1 : 0.25;
+    const t = lista[i].typ;                       // ta sama rzecz może być kilka razy
+    ile[t] = (ile[t] || 0) + 1;
+    const mam = G.ekwipunek.filter(e => e === t).length >= ile[t];
+    ctx.globalAlpha = mam ? 1 : 0.25;
     ctx.drawImage(spr('ik_'+lista[i].typ, IKONY[lista[i].typ]), x-8, y-8);
     ctx.globalAlpha = 1;
   }
@@ -5581,7 +5718,7 @@ function rysujKarte(){
   pr(0,0,W,H,'#0000bc');
   const p = POZ()[G.poziom];
   ramka(60, 80, 360, 110, '#000000');
-  napis('POZIOM '+(G.poziom+1), W/2, 104, '#bcbcbc', null, 1.4);
+  napis(napisEtapu(G.poziom), W/2, 104, '#bcbcbc', null, 1.4);
   napis(nazwaEtapu(p).toUpperCase(), W/2, 132, '#f8d878', '#000000', 2.4);
   napis(podtytulEtapu(p).toUpperCase(), W/2, 162, '#3cbcfc', null, 1.3);
   if(G.kartaT>60 && Math.floor(G.t/20)%2===0) napis('NACIŚNIJ  ^', W/2, 220, '#fffeff', '#000000', 1.6);
@@ -5613,6 +5750,653 @@ function rysujKoniec(){
 
 /* ==================== PĘTLA GŁÓWNA ==================== */
 let ostatni = 0, akum = 0;
+
+/* ==================== MINIGRA: LICZYMY JABŁUSZKA ====================
+   Dodawanie dla przedszkolaka. Franek nie umie czytać, więc mówione jest
+   wszystko: pytanie, liczba pod kursorem, liczenie jabłuszek po kolei
+   i wynik. ◀ ▶ przesuwają wybór, ▲ zatwierdza, ▼ liczy razem z tobą. */
+const ZADANIA_LICZENIA = [[1,1],[2,1],[2,2],[3,1],[2,3],[3,2],[4,1],[1,4],[3,3],[4,2]];
+const RUND_LICZENIA = 5;
+
+function startLiczenia(){
+  G.liczenie = { runda:0, i:(Math.random()*ZADANIA_LICZENIA.length)|0, pierwsza:true,
+                 a:1, b:1, suma:2, opcje:[], kursor:0, wynik:null, t:0, liczy:null, koniecT:0 };
+  G.czastki = []; G.ekran = 'liczenie';
+  graj('muz_gra');
+  nowaSuma(true);
+}
+function nowaSuma(pierwsza){
+  const l = G.liczenie;
+  const [a,b] = ZADANIA_LICZENIA[l.i % ZADANIA_LICZENIA.length];
+  l.i++;
+  l.a = a; l.b = b; l.suma = a + b;
+  const opcje = [l.suma];
+  while(opcje.length < 3){                       // dwie liczby obok prawdziwej
+    const k = l.suma + (Math.random() < 0.5 ? -1 : 1) * (1 + ((Math.random()*2)|0));
+    if(k >= 1 && k <= 10 && !opcje.includes(k)) opcje.push(k);
+  }
+  for(let i=opcje.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const x=opcje[i]; opcje[i]=opcje[j]; opcje[j]=x; }
+  l.opcje = opcje; l.kursor = 0; l.wynik = null; l.t = 0; l.liczy = null;
+  przeczytajSume(pierwsza);
+}
+/* „Ile to jest dwa plus trzy?" – zdanie sklejone z osobnych nagranek. */
+function przeczytajSume(zInstrukcja){
+  const l = G.liczenie;
+  const k = ['licz_ile', 'licz_' + l.a, 'licz_plus', 'licz_' + l.b];
+  if(zInstrukcja) k.push('licz_jak');
+  mow(...k);
+}
+function policzZeMna(){
+  const l = G.liczenie;
+  l.liczy = { n:0, t:44 };                      // pierwsze jabłuszko od razu
+  mow('licz_razem');
+}
+function aktualizujLiczenie(){
+  const l = G.liczenie;
+  l.t++;
+  if(l.koniecT > 0){
+    l.koniecT--;
+    if(l.koniecT === 0) dalejPoPoziomie();
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(l.liczy){                                   // liczenie jabłuszek po kolei
+    l.liczy.t++;
+    if(l.liczy.t >= 45){
+      l.liczy.t = 0; l.liczy.n++;
+      if(l.liczy.n > l.suma){ l.liczy = null; przeczytajSume(false); }
+      else { sfx('sfx_zbierz'); mow('licz_' + l.liczy.n); }
+    }
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(l.wynik === 'dobrze'){                      // chwila na brawa i następne zadanie
+    if(l.t > 110){
+      l.runda++;
+      if(l.runda >= RUND_LICZENIA){ l.koniecT = 220; sfx('sfx_sukces'); cisza(); mow('licz_koniec'); }
+      else nowaSuma(false);
+    }
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(nowy('ArrowLeft')  && l.kursor > 0){ l.kursor--; sfx('sfx_zbierz'); mow('licz_' + l.opcje[l.kursor]); }
+  if(nowy('ArrowRight') && l.kursor < l.opcje.length-1){ l.kursor++; sfx('sfx_zbierz'); mow('licz_' + l.opcje[l.kursor]); }
+  if(nowy('ArrowDown')) policzZeMna();
+  if(nowy('ArrowUp')){
+    if(l.opcje[l.kursor] === l.suma){
+      l.wynik = 'dobrze'; l.t = 0;
+      sfx('sfx_sukces');
+      iskry(110 + l.kursor*130, 210, ['#f8d878','#fffeff','#58d854'], 22);
+      mow('licz_brawo', 'licz_' + l.suma);
+    } else {
+      l.wynik = 'zle'; l.t = 0;
+      sfx('sfx_zle'); mow('licz_nie');
+      policzZeMna();                             // od razu liczymy razem
+    }
+  }
+  aktualizujEfekty(); czyscNowe();
+}
+/* jabłuszko: czerwone kółko, ogonek i listek; zgaszone, póki go nie policzymy */
+function jabluszko(cx, cy, jasne){
+  ctx.globalAlpha = jasne ? 1 : 0.45;
+  kolo(cx, cy, 9, '#d82800');
+  kolo(cx-3, cy-3, 3, '#f87858');
+  pr(cx-1, cy-12, 2, 5, '#503000');
+  pr(cx+1, cy-12, 5, 3, '#00a800');
+  ctx.globalAlpha = 1;
+}
+function rysujLiczenie(){
+  const l = G.liczenie;
+  pr(0,0,W,H,'#5c94fc');
+  pr(0,225,W,H-225,'#ac7c00'); pr(0,225,W,3,'#e4e594');
+  slonce(432, 34, 20);
+
+  // dwa talerzyki z jabłuszkami i plus pomiędzy
+  const grupy = [{n:l.a, x:118}, {n:l.b, x:330}];
+  let nr = 0;
+  for(const g of grupy){
+    const szer = (g.n-1)*26;
+    pr(g.x-szer/2-24, 132, szer+48, 8, '#fffeff'); obrys(g.x-szer/2-24, 132, szer+48, 8);
+    for(let i=0;i<g.n;i++){
+      nr++;
+      const jasne = !l.liczy || nr <= l.liczy.n;
+      const skok = (l.liczy && nr === l.liczy.n) ? 5 : 0;
+      jabluszko(g.x - szer/2 + i*26, 122 - skok, jasne);
+      if(l.liczy && nr === l.liczy.n) napis(String(nr), g.x - szer/2 + i*26, 96, '#f8d878', '#000000', 2);
+    }
+  }
+  napis('+', 224, 126, '#fffeff', '#000000', 3);
+  napis('=', 400, 126, '#fffeff', '#000000', 3);
+  napis('?', 432, 126, '#f8d878', '#000000', 3);
+
+  // trzy liczby do wyboru
+  for(let i=0;i<l.opcje.length;i++){
+    const x = 110 + i*130, wybrane = i === l.kursor;
+    const dobre = l.wynik === 'dobrze' && wybrane;
+    ramka(x-40, 182, 80, 56, dobre ? '#007800' : (wybrane ? '#a80020' : '#000000'));
+    napis(String(l.opcje[i]), x, 216, wybrane ? '#f8d878' : '#bcbcbc', '#000000', 3.4);
+    if(wybrane && !l.wynik && Math.floor(G.t/12)%2===0) strzalka(x, 172, G.t);
+  }
+  rysujEfekty();
+
+  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+  napisL('LICZYMY JABŁUSZKA', 4, 10, '#fffeff', null, 1);
+  napisL('ZADANIE ' + Math.min(RUND_LICZENIA, l.runda+1) + '/' + RUND_LICZENIA, W-92, 10, '#f8d878', null, 1);
+  const tw = szerTekstu('ILE TO JEST RAZEM?', 2);
+  pr(W/2-tw/2-6, 24, tw+12, 22, '#000000');
+  napis('ILE TO JEST RAZEM?', W/2, 35, '#f8d878', null, 2);
+
+  if(l.liczy) napis('LICZYMY RAZEM!', W/2, 254, '#fffeff', '#000000', 2);
+  else if(l.wynik === 'dobrze') napis('BRAWO!', W/2, 254, '#58d854', '#000000', 2);
+  else napis('^ WYBIERZ   v POLICZ RAZEM', W/2, 254, '#fffeff', '#000000', 1);
+
+  if(l.koniecT > 0){
+    ctx.globalAlpha = 0.65; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+    napis('WSZYSTKO POLICZONE!', W/2, 118, '#f8d878', '#000000', 3);
+    napis('ALE Z CIEBIE MATEMATYK!', W/2, 152, '#fffeff', '#000000', 2);
+  }
+  rysujDebug();
+}
+
+/* ==================== MINIGRA: GRA W GRZE (INCEPCJA) ====================
+   Po śniadanku Franek dostaje tablet i gra w „Poranek Franka" – tę samą grę,
+   tylko malutką. Na ekranie tabletu chodzi mały Franek i zbiera trzy rzeczy. */
+const GIERKA_SZER = 664, GIERKA_WYS = 294, GIERKA_PODLOGA = 240;
+const GIERKA_EKRAN = {x:74, y:54, w:332, h:147};
+const GIERKA_PLATFORMY = [{x:296,y:172,w:120,h:10}];
+const GIERKA_RZECZY = [
+  {typ:'sniadanie',   x:180, y:214, glos:'gierka_1'},
+  {typ:'szczoteczka', x:356, y:146, glos:'gierka_2'},
+  {typ:'buty',        x:560, y:214, glos:'gierka_3'}
+];
+function startGierki(){
+  G.gierka = { x:24, y:GIERKA_PODLOGA-50, vx:0, vy:0, kier:1, faza:0, ziemia:true,
+               wziete:[false,false,false], ile:0, t:0, koniecT:0 };
+  G.czastki = []; G.ekran = 'gierka';
+  graj('muz_gra'); mow('gierka_jak');
+}
+function aktualizujGierke(){
+  const gi = G.gierka;
+  gi.t++;
+  if(gi.koniecT > 0){
+    gi.koniecT--;
+    if(gi.koniecT === 0) dalejPoPoziomie();
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  gi.vx = ((klaw['ArrowRight']?1:0) - (klaw['ArrowLeft']?1:0)) * 2.4;
+  if(gi.vx) gi.kier = gi.vx > 0 ? 1 : -1;
+  if(nowy('ArrowUp') && gi.ziemia){ gi.vy = -5.8; gi.ziemia = false; sfx('sfx_skok'); }
+  gi.vy += 0.27; if(gi.vy > 7) gi.vy = 7;
+  gi.x += gi.vx;
+  if(gi.x < 4) gi.x = 4;
+  if(gi.x > GIERKA_SZER - 26) gi.x = GIERKA_SZER - 26;
+  const staryDol = gi.y + 50;
+  gi.y += gi.vy;
+  gi.ziemia = false;
+  for(const pl of GIERKA_PLATFORMY){
+    if(gi.x + 22 > pl.x && gi.x < pl.x + pl.w && gi.vy > 0 &&
+       staryDol <= pl.y + 2 && gi.y + 50 >= pl.y){ gi.y = pl.y - 50; gi.vy = 0; gi.ziemia = true; }
+  }
+  if(gi.y + 50 > GIERKA_PODLOGA){ gi.y = GIERKA_PODLOGA - 50; gi.vy = 0; gi.ziemia = true; }
+  if(Math.abs(gi.vx) > 0.1 && gi.ziemia) gi.faza += 0.16;
+
+  for(let i=0;i<GIERKA_RZECZY.length;i++){
+    const z = GIERKA_RZECZY[i];
+    if(gi.wziete[i]) continue;
+    if(gi.x + 22 < z.x-13 || gi.x > z.x+13 || gi.y + 50 < z.y-14 || gi.y > z.y+14) continue;
+    gi.wziete[i] = true; gi.ile++;
+    sfx('sfx_zbierz');
+    if(gi.ile >= GIERKA_RZECZY.length){ gi.koniecT = 210; sfx('sfx_sukces'); cisza(); mow('gierka_koniec'); }
+    else mow(z.glos);
+  }
+  aktualizujEfekty(); czyscNowe();
+}
+function rysujGierke(){
+  const gi = G.gierka, e = GIERKA_EKRAN;
+  pr(0,0,W,H,'#64b0ff');                                   // pokój
+  pr(0,228,W,H-228,'#ac7c00'); pr(0,228,W,3,'#e4e594');
+
+  pr(54,34,372,200,'#4f4f4f'); obrys(54,34,372,200);       // tablet
+  pr(58,38,364,192,'#2c2c2c');
+  kolo(240, 222, 5, '#bcbcbc');
+
+  ctx.save();
+  ctx.beginPath(); ctx.rect(e.x, e.y, e.w, e.h); ctx.clip();
+  ctx.translate(e.x, e.y); ctx.scale(e.w/GIERKA_SZER, e.h/GIERKA_WYS);
+  pr(0,0,GIERKA_SZER,GIERKA_WYS,'#5c94fc');                // malutki świat
+  pr(0,GIERKA_PODLOGA,GIERKA_SZER,GIERKA_WYS-GIERKA_PODLOGA,'#ac7c00');
+  pr(0,GIERKA_PODLOGA,GIERKA_SZER,5,'#e4e594');
+  for(const pl of GIERKA_PLATFORMY){ pr(pl.x,pl.y,pl.w,pl.h,'#d82800'); obrys(pl.x,pl.y,pl.w,pl.h); }
+  for(let i=0;i<GIERKA_RZECZY.length;i++){
+    if(gi.wziete[i]) continue;
+    const z = GIERKA_RZECZY[i];
+    const bob = Math.round(Math.sin((G.t + i*20)*0.08)*3);
+    ctx.save(); ctx.translate(z.x, z.y + bob); ctx.scale(1.6,1.6);
+    rysujIkone(z.typ, 0, 0, false);
+    ctx.restore();
+  }
+  rysujFranka(gi.x, gi.y, gi.kier, gi.faza, !gi.ziemia, gi.vy > 0);
+  pr(0,0,GIERKA_SZER,30,'#000000'); pr(0,30,GIERKA_SZER,2,'#4f4f4f');
+  napisL('PORANEK FRANKA', 8, 16, '#fffeff', null, 2);     // HUD w gierce w grze
+  for(let i=0;i<GIERKA_RZECZY.length;i++){
+    ctx.globalAlpha = gi.wziete[i] ? 1 : 0.25;
+    ctx.save(); ctx.translate(GIERKA_SZER-40-(2-i)*40, 16); ctx.scale(1.6,1.6);
+    rysujIkone(GIERKA_RZECZY[i].typ, 0, 0, false);
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+  if(gi.koniecT > 0){
+    ctx.globalAlpha = 0.6; pr(0,0,GIERKA_SZER,GIERKA_WYS,'#000000'); ctx.globalAlpha = 1;
+    napis('BRAWO!', GIERKA_SZER/2, 150, '#f8d878', '#000000', 5);
+  }
+  ctx.restore();
+
+  ctx.globalAlpha = 0.12;                                   // szkło ekranu
+  for(let y=e.y; y<e.y+e.h; y+=4) pr(e.x, y, e.w, 1, '#000000');
+  ctx.globalAlpha = 1;
+  pr(40,198,36,22,SKORA); obrys(40,198,36,22);               // rączki trzymają tablet
+  pr(404,198,36,22,SKORA); obrys(404,198,36,22);
+  rysujEfekty();
+
+  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+  napisL('GRA W GRZE', 4, 10, '#fffeff', null, 1);
+  const tw = szerTekstu('FRANEK GRA W PORANEK FRANKA', 2);
+  pr(W/2-tw/2-6, 23, tw+12, 22, '#000000');
+  napis('FRANEK GRA W PORANEK FRANKA', W/2, 34, '#f8d878', null, 2);
+  napis(gi.koniecT > 0 ? 'KONIEC GRANIA!' : '<  >  CHODŹ     ^  SKOK', W/2, 255, '#fffeff', '#000000', 2);
+  rysujDebug();
+}
+
+/* ==================== MINIGRA: TORY DLA POCIĄGU (rail maze) ====================
+   Prosty rail maze dla przedszkolaka: tory leżą poprzekręcane, trzeba je
+   poobracać tak, żeby droga z dworca do dworca była cała. ◀ ▶ wybierają tor,
+   ▲ obraca. Jak wszystko pasuje, pociąg sam rusza. */
+const KOL_POLA = 46, KOL_X = 100, KOL_Y = 62;            // siatka 6 x 4
+/* trasa po kolei: [kolumna, wiersz]; pierwszy i ostatni to dworce */
+const KOL_TRASA = [[0,1],[1,1],[2,1],[2,2],[3,2],[4,2],[4,1],[5,1]];
+const KOL_KSZTALTY = { prosty:[1,3], luk:[1,2] };         // przy obrocie 0
+function kolKierunki(t){
+  return KOL_KSZTALTY[t.ksztalt].map(d => (d + t.obrot) % 4);
+}
+function kolPasuje(t){
+  const ma = kolKierunki(t).slice().sort().join(',');
+  return ma === t.cel.slice().sort().join(',');
+}
+function startKolejki(){
+  const tory = [];
+  for(let i=0;i<KOL_TRASA.length;i++){
+    const [kx,ky] = KOL_TRASA[i];
+    const poprz = KOL_TRASA[i-1], nast = KOL_TRASA[i+1];
+    const cel = [];
+    if(poprz) cel.push(kolStrona(kx, ky, poprz));
+    if(nast)  cel.push(kolStrona(kx, ky, nast));
+    const dworzec = i === 0 || i === KOL_TRASA.length-1;
+    const ksztalt = cel.length === 2 && (cel[0] + 2) % 4 === cel[1] ? 'prosty' : 'luk';
+    const t = {kx, ky, cel, dworzec, ksztalt, obrot:0};
+    // na start każdy tor leży krzywo – dziecko ma go poobracać
+    if(!dworzec) do { t.obrot = (Math.random()*4)|0; } while(kolPasuje(t));
+    tory.push(t);
+  }
+  G.kolejka = { tory, ruchome: tory.filter(t => !t.dworzec), kursor:0,
+                gotowe:false, pociag:0, koniecT:0, t:0 };
+  G.czastki = []; G.ekran = 'kolejka';
+  graj('muz_gra'); mow('rail_jak');
+}
+function kolStrona(kx, ky, cel){                 // w którą stronę leży sąsiad
+  if(cel[0] > kx) return 1;
+  if(cel[0] < kx) return 3;
+  return cel[1] > ky ? 2 : 0;
+}
+function aktualizujKolejke(){
+  const k = G.kolejka;
+  k.t++;
+  if(k.koniecT > 0){
+    k.koniecT--;
+    if(k.koniecT === 0) dalejPoPoziomie();
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(k.gotowe){                                   // pociąg jedzie sam
+    k.pociag += 0.022;
+    if(k.pociag >= KOL_TRASA.length - 1){
+      k.pociag = KOL_TRASA.length - 1;
+      k.koniecT = 210; sfx('sfx_sukces'); cisza(); mow('rail_koniec');
+    }
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(nowy('ArrowLeft')  && k.kursor > 0){ k.kursor--; sfx('sfx_zbierz'); }
+  if(nowy('ArrowRight') && k.kursor < k.ruchome.length-1){ k.kursor++; sfx('sfx_zbierz'); }
+  if(nowy('ArrowUp')){
+    const t = k.ruchome[k.kursor];
+    t.obrot = (t.obrot + 1) % 4;
+    sfx('sfx_skok');
+    if(kolPasuje(t)){
+      sfx('sfx_zbierz');
+      iskry(KOL_X + t.kx*KOL_POLA + KOL_POLA/2, KOL_Y + t.ky*KOL_POLA + KOL_POLA/2,
+            ['#f8d878','#fffeff','#58d854'], 10);
+      if(k.ruchome.every(kolPasuje)){
+        k.gotowe = true; k.pociag = 0; cisza(); mow('rail_jedzie');
+      } else {
+        mow('rail_pasuje');
+        if(k.kursor < k.ruchome.length-1) k.kursor++;    // sam skacze do następnego
+      }
+    }
+  }
+  aktualizujEfekty(); czyscNowe();
+}
+function kolSrodek(i){
+  const [kx,ky] = KOL_TRASA[i];
+  return {x: KOL_X + kx*KOL_POLA + KOL_POLA/2, y: KOL_Y + ky*KOL_POLA + KOL_POLA/2};
+}
+/* kawałek toru: od krawędzi kratki aż za środek, żeby łuki się schodziły */
+function rysujTorOdcinek(cx, cy, dir){
+  const d = KOL_POLA/2, dl = d + 9;
+  const poziom = dir === 1 || dir === 3;
+  const x = dir === 3 ? cx-d : cx-9, y = dir === 0 ? cy-d : cy-9;
+  const w = poziom ? dl : 18, h = poziom ? 18 : dl;
+  pr(x, y, w, h, '#ac7c00');
+  if(poziom){
+    for(let i=0;i<4;i++) pr(x + 2 + i*8, y+1, 3, 16, '#503000');
+    pr(x, y+3, w, 2, '#bcbcbc'); pr(x, y+13, w, 2, '#bcbcbc');
+  } else {
+    for(let i=0;i<4;i++) pr(x+1, y + 2 + i*8, 16, 3, '#503000');
+    pr(x+3, y, 2, h, '#bcbcbc'); pr(x+13, y, 2, h, '#bcbcbc');
+  }
+}
+function rysujKolejke(){
+  const k = G.kolejka;
+  pr(0,0,W,H,'#0058f8');
+  pr(0,0,W,H,'#3cbcfc'); pr(0,240,W,30,'#00a800'); pr(0,240,W,3,'#58d854');
+  for(let x=0;x<W;x+=24) for(let y=20;y<240;y+=24) pr(x, y, 2, 2, '#64b0ff');  // dywan
+
+  for(const t of k.tory){
+    const cx = KOL_X + t.kx*KOL_POLA + KOL_POLA/2, cy = KOL_Y + t.ky*KOL_POLA + KOL_POLA/2;
+    const dobry = !t.dworzec && kolPasuje(t);
+    pr(cx-KOL_POLA/2+1, cy-KOL_POLA/2+1, KOL_POLA-2, KOL_POLA-2, dobry ? '#2f8f4f' : '#1e6ec8');
+    if(t.dworzec){
+      pr(cx-16, cy-16, 32, 32, '#d82800'); obrys(cx-16, cy-16, 32, 32);
+      pr(cx-10, cy-6, 20, 14, '#f8d878');
+      for(const d of t.cel) rysujTorOdcinek(cx, cy, d);
+    } else {
+      for(const d of kolKierunki(t)) rysujTorOdcinek(cx, cy, d);
+    }
+  }
+  if(!k.gotowe){                                  // ramka na wybranym torze
+    const t = k.ruchome[k.kursor];
+    const cx = KOL_X + t.kx*KOL_POLA, cy = KOL_Y + t.ky*KOL_POLA;
+    if(Math.floor(G.t/8)%2===0){
+      ctx.strokeStyle = '#f8d878'; ctx.lineWidth = 2;
+      ctx.strokeRect(cx+1.5, cy+1.5, KOL_POLA-3, KOL_POLA-3);
+    }
+    strzalka(cx + KOL_POLA/2, cy - 12, G.t);
+  } else {
+    const i = Math.floor(k.pociag), f = k.pociag - i;
+    const a = kolSrodek(Math.min(i, KOL_TRASA.length-1));
+    const b = kolSrodek(Math.min(i+1, KOL_TRASA.length-1));
+    const x = a.x + (b.x-a.x)*f, y = a.y + (b.y-a.y)*f;
+    pr(x-13, y-11, 26, 18, '#d82800'); obrys(x-13, y-11, 26, 18);
+    pr(x-9, y-7, 10, 8, '#64b0ff');
+    pr(x+4, y-18, 6, 8, '#503000');
+    kolo(x-7, y+8, 3, '#000000'); kolo(x+7, y+8, 3, '#000000');
+    if(G.t % 10 === 0) iskry(x+7, y-20, ['#fffeff','#bcbcbc'], 3);
+  }
+  rysujEfekty();
+
+  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+  napisL('TORY DLA POCIĄGU', 4, 10, '#fffeff', null, 1);
+  const ile = k.ruchome.filter(kolPasuje).length;
+  napisL('TORY: ' + ile + '/' + k.ruchome.length, W-86, 10, '#f8d878', null, 1);
+  napis(k.gotowe ? 'CIUCH CIUCH!' : '<  >  WYBIERZ TOR   ^  OBRÓĆ', W/2, 257, '#fffeff', '#000000', 2);
+  if(k.koniecT > 0){
+    ctx.globalAlpha = 0.65; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+    napis('POCIĄG DOJECHAŁ!', W/2, 118, '#f8d878', '#000000', 3);
+    napis('BRAWO FRANEK!', W/2, 152, '#fffeff', '#000000', 2);
+  }
+  rysujDebug();
+}
+
+
+/* ==================== MINIGRA: RAZ, DWA, TRZY – BABA JAGA PATRZY ====================
+   Baba Jaga stoi tyłem i śpiewa – wtedy się biegnie (◀ ▶ na zmianę). Jak się
+   odwróci, trzeba stać jak posąg, bo odsyła kawałek do tyłu. */
+const BABA_META = 362, BABA_ZIEMIA = 228;
+function startBabyJagi(){
+  G.baba = { x:8, v:0, ostatni:0, faza:0, stan:'spiew', t:0, dl:150, runda:0,
+             kara:0, koniecT:0, mrug:0,
+             dzieci:[{x:34, v:0, faza:0, p:0, dy:-8}, {x:2, v:0, faza:0, p:1, dy:6},
+                     {x:20, v:0, faza:0, p:3, dy:12}] };
+  G.czastki = []; G.ekran = 'baba';
+  graj('muz_jazda'); mow('baba_jak', 'baba_raz');
+}
+function aktualizujBabe(){
+  const b = G.baba;
+  b.t++;
+  if(b.koniecT > 0){
+    b.koniecT--;
+    if(b.koniecT === 0) dalejPoPoziomie();
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(b.kara > 0){                                  // złapany – chwila postoju
+    b.kara--; b.v = 0;
+    if(b.kara === 0){ b.stan = 'spiew'; b.t = 0; mow('baba_raz'); }
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  rozpedzBieg(b);
+  if(b.stan === 'spiew'){
+    for(const d of b.dzieci){                      // dzieciaki biegną razem z Frankiem
+      d.v = Math.min(2.6, d.v + 0.05 + Math.random()*0.06);
+      d.x += d.v; d.faza += d.v*0.22;
+      if(d.x > BABA_META) d.x = BABA_META;
+    }
+    if(b.t >= b.dl){
+      b.stan = 'patrzy'; b.t = 0;
+      b.dl2 = 70 + ((Math.random()*80)|0);
+      sfx('sfx_bum'); mow('baba_stoj');
+    }
+  } else {
+    for(const d of b.dzieci) d.v = 0;
+    if(b.v > 0.4){                                 // ruszył się – Baba Jaga widzi
+      b.kara = 70; b.stan = 'zlapany';
+      b.x = Math.max(0, b.x - 46); b.v = 0;
+      sfx('sfx_zle'); cisza(); mow('baba_lapie');
+      iskry(b.x + 10, 190, ['#d82800','#f8d878'], 14);
+      aktualizujEfekty(); czyscNowe(); return;
+    }
+    if(b.t >= b.dl2){
+      b.stan = 'spiew'; b.t = 0; b.runda++;
+      b.dl = Math.max(100, 150 - b.runda*8);       // z każdą rundą śpiewa szybciej
+      mow('baba_raz');
+    }
+  }
+  if(b.x >= BABA_META && b.koniecT === 0){
+    b.x = BABA_META;
+    b.koniecT = 210; sfx('sfx_sukces'); cisza(); mow('baba_wygrana');
+    for(let i=0;i<50;i++) G.czastki.push({x:Math.random()*W, y:-8-Math.random()*60,
+      vx:(Math.random()-0.5)*1, vy:0.6+Math.random()*1.6, zyc:200,
+      kol:['#d82800','#f8d878','#58d854','#3cbcfc','#fe6ecc'][(Math.random()*5)|0], r:2+Math.random()*2});
+  }
+  aktualizujEfekty(); czyscNowe();
+}
+/* Baba Jaga: odwrócona tyłem śpiewa, obrócona – patrzy wielkimi oczami */
+function rysujBabe(x, y, patrzy, t){
+  const kolysanie = patrzy ? 0 : Math.round(Math.sin(t*0.16)*2);
+  pr(x-14, y-34+kolysanie, 28, 34, '#7527fe');            // suknia
+  pr(x-14, y-34+kolysanie, 28, 3, '#a45cff');
+  obrys(x-14, y-34+kolysanie, 28, 34);
+  pr(x-18, y-30+kolysanie, 4, 16, '#7527fe');             // ręce
+  pr(x+14, y-30+kolysanie, 4, 16, '#7527fe');
+  pr(x-18, y-14+kolysanie, 4, 4, '#58d854'); pr(x+14, y-14+kolysanie, 4, 4, '#58d854');
+  pr(x-10, y-52+kolysanie, 20, 18, '#58d854');            // zielona buzia
+  obrys(x-10, y-52+kolysanie, 20, 18);
+  pr(x-13, y-50+kolysanie, 26, 4, '#bcbcbc');             // siwe włosy
+  if(patrzy){
+    pr(x-6, y-46, 4, 5, '#fffeff'); pr(x+2, y-46, 4, 5, '#fffeff');
+    pr(x-5, y-45, 2, 3, '#000000'); pr(x+3, y-45, 2, 3, '#000000');
+    pr(x-2, y-41, 4, 6, '#007800');                        // nos
+    pr(x-5, y-36, 10, 2, '#a80020');
+  } else {
+    pr(x-10, y-50+kolysanie, 20, 12, '#bcbcbc');           // tył głowy
+  }
+  ctx.fillStyle = '#2b2b33';                               // kapelusz
+  ctx.beginPath();
+  ctx.moveTo(x-16, y-52+kolysanie); ctx.lineTo(x, y-78+kolysanie); ctx.lineTo(x+16, y-52+kolysanie);
+  ctx.closePath(); ctx.fill();
+  pr(x-20, y-54+kolysanie, 40, 4, '#2b2b33'); obrys(x-20, y-54+kolysanie, 40, 4);
+  pr(x+18, y-40+kolysanie, 3, 40, '#883800');              // miotła
+  pr(x+12, y-4+kolysanie, 15, 8, '#ac7c00');
+}
+function rysujBabeJage(){
+  const b = G.baba;
+  pr(0,0,W,H,'#5c94fc'); slonce(60, 34, 26);
+  for(const [x,y] of [[150,30],[300,48],[420,22]]) rysujSpr('ch', CHMURA, x, y, false);
+  pr(0,200,W,H-200,'#00a800'); pr(0,200,W,4,'#58d854');
+  drzewo(40, 200);
+  for(let x=6;x<W;x+=40) pr(x, 196, 3, 6, '#b8f818');      // kępki trawy
+
+  pr(BABA_META+16, 150, 3, 78, '#fffeff');                 // słupek mety
+  for(let i=0;i<5;i++) pr(BABA_META+19, 150+i*8, 10, 4, i%2 ? '#000000' : '#d82800');
+
+  const patrzy = b.stan === 'patrzy' || b.stan === 'zlapany';
+  rysujBabe(430, BABA_ZIEMIA, patrzy, G.t);
+  for(const d of b.dzieci) rysujDziecko(d.x + 20, BABA_ZIEMIA-50+d.dy, 1, d.faza, DZIECI[d.p]);
+  rysujFranka(b.x, BABA_ZIEMIA-50, 1, b.faza, false, false);
+  if(b.kara > 0 && Math.floor(G.t/6)%2===0) napis('WIDZI CIĘ!', b.x+10, 150, '#d82800', '#000000', 2);
+  rysujEfekty();
+
+  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+  napisL('BABA JAGA PATRZY', 4, 10, '#fffeff', null, 1);
+  const t = patrzy ? 'BABA JAGA PATRZY!' : 'RAZ, DWA, TRZY...';
+  const tw = szerTekstu(t, 2);
+  pr(W/2-tw/2-6, 24, tw+12, 22, patrzy ? '#a80020' : '#000000');
+  napis(t, W/2, 35, patrzy ? '#fffeff' : '#f8d878', '#000000', 2);
+  napis(patrzy ? 'STÓJ JAK POSĄG!' : '<  >  NA ZMIANĘ – BIEGNIJ!', W/2, 258, '#fffeff', '#000000', 2);
+  if(b.koniecT > 0){
+    ctx.globalAlpha = 0.6; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+    napis('DOBIEGŁEŚ!', W/2, 118, '#f8d878', '#000000', 3);
+    napis('BRAWO FRANEK!', W/2, 152, '#fffeff', '#000000', 2);
+  }
+  rysujDebug();
+}
+
+/* ==================== MINIGRA: PODŁOGA TO LAWA ====================
+   Salon wieczorem: podłoga to lawa, więc skacze się po meblach aż na kanapę.
+   ◀ ▶ chodzą, ▲ skacze. Dotknięcie lawy cofa na ostatni mebel. */
+const LAWA_POZIOM = 236;
+const LAWA_MEBLE = [
+  {x:0,   y:212, w:76, h:26, co:'dywan'},
+  {x:104, y:190, w:58, h:12, co:'pufa'},
+  {x:192, y:158, w:62, h:11, co:'stolik'},
+  {x:278, y:196, w:50, h:12, co:'taboret'},
+  {x:340, y:150, w:58, h:10, co:'polka'},
+  {x:414, y:186, w:66, h:50, co:'kanapa'}
+];
+function startLawy(){
+  const m = LAWA_MEBLE[0];
+  G.lawa = { x:14, y:m.y-50, vx:0, vy:0, kier:1, faza:0, ziemia:true,
+             bezpiecz:{x:14, y:m.y-50}, polowa:false, koniecT:0, ups:0, t:0 };
+  G.czastki = []; G.ekran = 'lawa';
+  graj('muz_gra'); mow('lawa_jak');
+}
+function aktualizujLawe(){
+  const l = G.lawa;
+  l.t++;
+  if(l.koniecT > 0){
+    l.koniecT--;
+    if(l.koniecT === 0) dalejPoPoziomie();
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(l.ups > 0){ l.ups--; aktualizujEfekty(); czyscNowe(); return; }
+  l.vx = ((klaw['ArrowRight']?1:0) - (klaw['ArrowLeft']?1:0)) * 2.2;
+  if(l.vx) l.kier = l.vx > 0 ? 1 : -1;
+  if(nowy('ArrowUp') && l.ziemia){ l.vy = -6.1; l.ziemia = false; sfx('sfx_skok'); }
+  l.vy += 0.28; if(l.vy > 7.5) l.vy = 7.5;
+  l.x += l.vx;
+  if(l.x < 0) l.x = 0;
+  if(l.x > W - 22) l.x = W - 22;
+  const staryDol = l.y + 50;
+  l.y += l.vy;
+  l.ziemia = false;
+  for(const m of LAWA_MEBLE){
+    if(l.x + 22 > m.x && l.x < m.x + m.w && l.vy >= 0 &&
+       staryDol <= m.y + 2 && l.y + 50 >= m.y){
+      l.y = m.y - 50; l.vy = 0; l.ziemia = true;
+      l.bezpiecz = {x: Math.max(m.x, Math.min(m.x + m.w - 22, l.x)), y: m.y - 50};
+      if(!l.polowa && m.x > 180){ l.polowa = true; mow('lawa_polowa'); }
+      if(m.co === 'kanapa' && l.koniecT === 0){
+        l.koniecT = 215; sfx('sfx_sukces'); cisza(); mow('lawa_koniec');
+        for(let i=0;i<40;i++) G.czastki.push({x:Math.random()*W, y:-8-Math.random()*60,
+          vx:(Math.random()-0.5)*1, vy:0.6+Math.random()*1.5, zyc:190,
+          kol:['#d82800','#f8d878','#58d854','#3cbcfc','#fe6ecc'][(Math.random()*5)|0], r:2+Math.random()*2});
+      }
+    }
+  }
+  if(l.y + 50 > LAWA_POZIOM && !l.ziemia){          // wpadł w lawę
+    sfx('sfx_zle'); mow('lawa_ups');
+    iskry(l.x + 11, LAWA_POZIOM, ['#fc9838','#d82800','#f8d878'], 18);
+    l.x = l.bezpiecz.x; l.y = l.bezpiecz.y; l.vx = 0; l.vy = 0; l.ziemia = true; l.ups = 40;
+  }
+  if(Math.abs(l.vx) > 0.1 && l.ziemia) l.faza += 0.16;
+  aktualizujEfekty(); czyscNowe();
+}
+function rysujMebelLawy(m, t){
+  const {x, y, w, h, co} = m;
+  if(co === 'dywan'){
+    pr(x, y, w, h, '#3cbcfc'); pr(x, y, w, 3, '#64b0ff'); obrys(x, y, w, h);
+    for(let i=0;i<4;i++) pr(x+6+i*18, y+8, 8, 8, '#fffeff');
+  } else if(co === 'kanapa'){
+    pr(x, y, w, h, '#a80020'); pr(x, y, w, 4, '#d82800'); obrys(x, y, w, h);
+    pr(x+4, y-14, w-8, 16, '#d82800'); obrys(x+4, y-14, w-8, 16);
+    rysujIkone('mis', x + w/2, y - 24, false);
+  } else if(co === 'pufa'){
+    pr(x, y, w, h, '#fe6ecc'); pr(x, y, w, 3, '#fec4ea'); obrys(x, y, w, h);
+    pr(x+6, y+h, w-12, 6, '#a80020');
+  } else if(co === 'polka'){
+    pr(x, y, w, h, '#ac7c00'); pr(x, y, w, 2, '#e4e594'); obrys(x, y, w, h);
+    pr(x+6, y-14, 8, 14, '#00a800'); pr(x+18, y-18, 8, 18, '#0058f8');   // książki
+    pr(x+30, y-12, 8, 12, '#d82800');
+  } else {
+    pr(x, y, w, h, '#ac7c00'); pr(x, y, w, 2, '#e4e594'); obrys(x, y, w, h);
+    pr(x+4, y+h, 6, LAWA_POZIOM-y-h, '#883800');
+    pr(x+w-10, y+h, 6, LAWA_POZIOM-y-h, '#883800');
+  }
+}
+function rysujLawe(){
+  const l = G.lawa;
+  pr(0,0,W,H,'#f7d8a5');                                   // ściana salonu
+  for(let x=0;x<W;x+=60) pr(x, 20, 2, LAWA_POZIOM-20, '#e4c08a');
+  pr(40, 60, 90, 60, '#64b0ff'); obrys(40, 60, 90, 60);    // okno
+  pr(84, 60, 3, 60, '#fffeff'); pr(40, 88, 90, 3, '#fffeff');
+
+  for(const m of LAWA_MEBLE) rysujMebelLawy(m, G.t);
+  if(l.ups === 0 || Math.floor(G.t/4)%2===0)
+    rysujFranka(l.x, l.y, l.kier, l.faza, !l.ziemia, l.vy > 0);
+
+  // lawa: bąble i falująca powierzchnia
+  pr(0, LAWA_POZIOM, W, H-LAWA_POZIOM, '#d82800');
+  for(let x=0;x<W;x+=8){
+    const f = Math.round(Math.sin((x + G.t*1.6)*0.08)*2);
+    pr(x, LAWA_POZIOM-2+f, 8, 6, '#fc9838');
+  }
+  for(let i=0;i<6;i++){
+    const bx = (i*83 + Math.floor(G.t*0.6)) % W;
+    const by = LAWA_POZIOM + 8 + Math.round(Math.sin((G.t+i*40)*0.07)*4);
+    kolo(bx, by, 3, '#f8d878');
+  }
+  rysujEfekty();
+
+  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+  napisL('PODŁOGA TO LAWA', 4, 10, '#fffeff', null, 1);
+  const tw = szerTekstu('NIE DOTYKAJ PODŁOGI!', 2);
+  pr(W/2-tw/2-6, 24, tw+12, 22, '#a80020');
+  napis('NIE DOTYKAJ PODŁOGI!', W/2, 35, '#f8d878', '#000000', 2);
+  if(l.ups > 0) napis('AAA, LAWA!', W/2, 120, '#fc9838', '#000000', 3);
+  const pw = szerTekstu('<  >  CHODŹ     ^  SKOK', 2);
+  pr(W/2-pw/2-6, 248, pw+12, 20, '#000000');
+  napis('<  >  CHODŹ     ^  SKOK', W/2, 258, '#fffeff', '#000000', 2);
+  if(l.koniecT > 0){
+    ctx.globalAlpha = 0.6; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+    napis('JESTEŚ NA KANAPIE!', W/2, 118, '#f8d878', '#000000', 3);
+    napis('LAWA CIĘ NIE DOSTAŁA!', W/2, 152, '#fffeff', '#000000', 2);
+  }
+  rysujDebug();
+}
+
 function petla(ts){
   requestAnimationFrame(petla);
   if(!ostatni) ostatni = ts;
@@ -5625,7 +6409,7 @@ function petla(ts){
 }
 let ostatniEkranPrzyciskow = null;
 const ETAPY_DWA_KCIUKI = ['mycie','wyscig','wyscig_okno','swiatlo','wstawanie','siku',
-                          'lapanie','dom','kapiel'];
+                          'lapanie','dom','kapiel','gierka','baba','lawa'];
 function odswiezPrzyciski(){
   if(G.ekran === ostatniEkranPrzyciskow) return;
   ostatniEkranPrzyciskow = G.ekran;
@@ -5684,6 +6468,11 @@ function krok(){
     case 'kapiel': aktualizujKapiel(); break;
     case 'ksiazka': aktualizujKsiazke(); break;
     case 'sen': aktualizujSen(); break;
+    case 'liczenie': aktualizujLiczenie(); break;
+    case 'gierka': aktualizujGierke(); break;
+    case 'kolejka': aktualizujKolejke(); break;
+    case 'baba': aktualizujBabe(); break;
+    case 'lawa': aktualizujLawe(); break;
     case 'koniec':
       if(G.t % 5 === 0 && G.czastki.length < 120)
         G.czastki.push({x:Math.random()*W, y:-6, vx:(Math.random()-0.5)*1, vy:0.6+Math.random()*1.4,
@@ -5718,6 +6507,11 @@ function rysuj(){
     case 'kapiel': rysujKapiel(); break;
     case 'ksiazka': rysujKsiazke(); break;
     case 'sen': rysujSen(); break;
+    case 'liczenie': rysujLiczenie(); break;
+    case 'gierka': rysujGierke(); break;
+    case 'kolejka': rysujKolejke(); break;
+    case 'baba': rysujBabeJage(); break;
+    case 'lawa': rysujLawe(); break;
     case 'koniec': rysujKoniec(); break;
   }
 }
