@@ -2139,6 +2139,32 @@ function napisEtapu(i){
 }
 function nazwaEtapu(p){ const w = wariantEtapu(p); return (w && w.nazwa) || zOpiekunem(p.nazwa); }
 function podtytulEtapu(p){ const w = wariantEtapu(p); return (w && w.podtytul) || zOpiekunem(p.podtytul); }
+/* Zapowiedzi etapów mają drugą wersję – bez numeru poziomu (pliki n_...).
+   W trybie prostym etapy są przetasowane, więc nagrane „poziom siódmy" by kłamało.
+   Pliki dociągają się dopiero wtedy, kiedy są potrzebne. */
+const KLUCZE_BEZ_NUMERU = new Set([
+  'baba_poziom','banki_poziom','cien_poziom','f_poziom10','f_poziom11','f_poziom12',
+  'f_poziom13','f_poziom14','f_poziom15','f_poziom16','f_poziom17','f_poziom18',
+  'f_poziom19','f_poziom20','f_poziom21','f_poziom22','f_poziom23','f_poziom24',
+  'f_poziom25','f_poziom26','f_poziom27','f_poziom4','f_poziom5','f_poziom6',
+  'f_poziom7','f_poziom8','f_poziom9','fm_poziom10','fm_poziom11','fm_poziom12',
+  'fm_poziom15','fm_poziom16','fm_poziom17','fm_poziom19','fm_poziom8','fm_poziom9',
+  'gierka_poziom','igloo_poziom','ksz_poziom','lawa_poziom','licz_poziom','owce_poziom',
+  'p2_poziom1','p2_poziom10','p2_poziom11','p2_poziom12','p2_poziom2','p2_poziom3',
+  'p2_poziom4','p2_poziom5','p2_poziom6','p2_poziom7','p2_poziom8','p2_poziom9',
+  'p_poziom1','p_poziom2','p_poziom3','p_poziom4','p_poziom5','p_poziom6',
+  'pog_poziom','porz_poziom','poziom1','poziom2','poziom3','poziom4',
+  'poziom5','poziom6','poziom7','poziom8','poziom9','poziom_siku',
+  'poziom_swiatlo','poziom_wstawanie','pt2_poziom10','pt2_poziom11','pt2_poziom12','pt2_poziom8',
+  'rail_poziom','rytm_poziom','stol_poziom','szn_poziom','szuk_poziom','zupa_poziom',
+  'zwierzaki_poziom',
+]);
+function glosEtapu(k){
+  if(!k || TRYB !== 'prosty' || JEZYK === 'en' || !KLUCZE_BEZ_NUMERU.has(k)) return k;
+  const n = 'n_' + k;
+  if(!bufory[n]) wczytajAudio(n, GLOSNOSC_NARRATORA, false, true);
+  return n;
+}
 function kartaPoziomu(i){
   G.poziom = i; G.kartaT = 0; G.ekran = 'karta';
   graj('muz_menu');
@@ -2146,9 +2172,7 @@ function kartaPoziomu(i){
   const w = wariantEtapu(p);
   const wt = bohater().wariantOp === 'tata' && p.glosTaty ? p.glosTaty : null;
   const k = najlepszyGlos(w && w.glos, wt, p.glos, p.glosZapas);
-  // w trybie prostym etapy są przetasowane, więc nagrane „poziom siódmy" by kłamało
-  // – gra sięga wtedy po wersję bez numeru (n_...), a angielskie nagrania numerów nie mają
-  mow(TRYB === 'prosty' && JEZYK !== 'en' ? najlepszyGlos('n_' + k, k) : k);
+  mow(glosEtapu(k));
 }
 /* Nowe kwestie narratora dochodzą osobnym plikiem. Póki go nie ma, gra sięga
    po starą kwestię tego poziomu, żeby zawsze coś powiedzieć. */
@@ -2371,6 +2395,81 @@ function rysujZnaki(znaki, px, py, kol, skala){
    Klucze pisane tak jak w kodzie – wersje DUŻYMI i małymi dorabiają się same,
    a zdania złożone (np. „Najpierw znajdź miskę!") składają się z kawałków. */
 const TLUM = {
+  'KROPEL':'DROPS',
+  '<  >  NA ZMIANĘ':'<  >  ONE BY ONE',
+  '<  >  WYBIERAJ     ^  TO TEN!':'<  >  CHOOSE     ^  THAT ONE!',
+  '<  >  WYBIERZ     ^  POKAŻ CIEŃ':'<  >  CHOOSE     ^  SHOW SHADOW',
+  'ANI KROPLI OBOK! BRAWO!':'NOT A DROP SPILLED! WELL DONE!',
+  'CAŁY DZIEŃ ZA TOBĄ!':'A WHOLE DAY BEHIND YOU!',
+  'CZYSTY!':'CLEAN!',
+  'DESKA CZYSTA! BRAWO!':'THE SEAT IS CLEAN! WELL DONE!',
+  'DESKA DO WYTARCIA...':'THE SEAT NEEDS WIPING...',
+  'DO JUTRA!':'SEE YOU TOMORROW!',
+  'DOBRA ROBOTA!':'GOOD JOB!',
+  'DOBRANOC!':'GOOD NIGHT!',
+  'DOBRANOC...':'GOOD NIGHT...',
+  'I DOJECHAĆ DO PRZEDSZKOLA':'AND GET TO PRESCHOOL',
+  'I PRZEŻYĆ CAŁY DZIEŃ W PRZEDSZKOLU':'AND GET THROUGH A DAY AT PRESCHOOL',
+  'KONIEC GRANIA!':'GAME OVER!',
+  'KOTKI I KRÓLIK JEDZĄ':'THE CATS AND THE RABBIT EAT',
+  'MRUU! CHRUP CHRUP!':'PURR! CRUNCH CRUNCH!',
+  'NA RAZIE!':'SEE YOU!',
+  'NASTĘPNY RAZ PUŚĆ WCZEŚNIEJ':'NEXT TIME LET GO SOONER',
+  'OJ, ROZLANE!':'OH NO, SPILLED!',
+  'OJ, ZGNIECIONY!':'OH NO, CRUMPLED!',
+  'POMÓŻ FRANKOWI SIĘ UBRAĆ,':'HELP FRANEK GET DRESSED,',
+  'POMÓŻ POLI SIĘ UBRAĆ,':'HELP POLA GET DRESSED,',
+  'POSPRZĄTANE PO SOBIE!':'ALL CLEANED UP!',
+  'ROZLANE':'SPILLED',
+  'RYBKA I TRUSKAWKA!':'FISH AND STRAWBERRY!',
+  'RÓWNIUTKO! BRAWO!':'PERFECTLY STRAIGHT! WELL DONE!',
+  'SKASOWANY!':'STAMPED!',
+  'START!':'GO!',
+  'SZORU, SZORU!':'SCRUB, SCRUB!',
+  'ZATANKOWANE!':'FILLED UP!',
+  'ZJEDZONE! BRAWO!':'ALL EATEN! WELL DONE!',
+  'ZĄBKI CZYŚCIUTKIE!':'TEETH SPARKLING CLEAN!',
+  '^  ^  ^  ZACIĄGAJ!':'^  ^  ^  PULL IT TIGHT!',
+  'PORANEK':'MORNING',
+  'BILET':'TICKET',
+  'BAK':'TANK',
+  'GNIECIONY':'CRUMPLED',
+  'WYGRYWA':'WINS',
+  'CIĘ GONI':'IS CHASING YOU',
+  'POCZYTA CI DO SNU':'WILL READ TO YOU',
+  'CZYTA:':'READS:',
+  'JUŻ IDZIE PO CIEBIE':'IS COMING TO GET YOU',
+  'TATO':'DAD',
+  'MAMO':'MUM',
+  'TATĄ':'DAD',
+  'MAMĄ':'MUM',
+  'DO WIDZENIA, TATO!':'GOODBYE, DAD!',
+  'DO WIDZENIA, MAMO!':'GOODBYE, MUM!',
+  'JUŻ IDZIE PO CIEBIE!':'IS COMING TO GET YOU!',
+  'CIĘ ŁAPIE!':'IS CHASING YOU!',
+  'SZYBCIEJ TATA, RURA!':'FASTER DAD, ZOOM!',
+  'SZYBCIEJ MAMA, RURA!':'FASTER MUM, ZOOM!',
+  'SZYBCIEJ MAMA, SPÓŹNIMY SIĘ!':'FASTER MUM, WE WILL BE LATE!',
+  'SZYBCIEJ TATA, JEDZIEMY!':'FASTER DAD, LET\'S GO!',
+  'SZYBCIEJ TATA, SPÓŹNIMY SIĘ!':'FASTER DAD, WE WILL BE LATE!',
+  'SZYBCIEJ MAMA, JEDZIEMY!':'FASTER MUM, LET\'S GO!',
+  'DOM':'HOME',
+  'PRZEDSZKOLE':'PRESCHOOL',
+  'CAŁY DZIEŃ, KĄPIEL, KSIĄŻKA I SEN O KOTKACH!':'A WHOLE DAY, A BATH, A BOOK AND A DREAM ABOUT CATS!',
+  'UBRANA, NAJEDZONA, Z CZYSTYMI ZĄBKAMI!':'DRESSED, FED AND WITH CLEAN TEETH!',
+  'UBRANY, NAJEDZONY, Z CZYSTYMI ZĄBKAMI!':'DRESSED, FED AND WITH CLEAN TEETH!',
+  'MOCNO, MOCNO!':'BIG SQUEEZE!',
+  'Z KIM DO PRZEDSZKOLA?':'WHO GOES WITH YOU?',
+  'IDZIE DZIŚ Z...':'GOES TODAY WITH...',
+  'MAMA OLA':'MUM OLA',
+  'TATA ADAM':'DAD ADAM',
+  'MAMA MAGDA':'MUM MAGDA',
+  'TATA':'DAD',
+  'MAMA':'MUM',
+  'ROWEREM':'BY BIKE',
+  'TAKSÓWKĄ':'BY TAXI',
+  'AUTEM':'BY CAR',
+  'AUTOBUSEM':'BY BUS',
   '<  >  KARTA     ^  ODKRYJ':'<  >  CARD     ^  TURN IT OVER',
   '<  >  WYBIERAJ     ^  TA WIĘKSZA':'<  >  CHOOSE     ^  THE BIGGER ONE',
   '<  >  WYBIERAJ     ^  TO TO':'<  >  CHOOSE     ^  THAT ONE',
@@ -2758,7 +2857,6 @@ const TLUM = {
   'Wygrzeb się z łóżka':'Climb out of bed',
   'Wyścig do furtki!':'Race to the gate!',
   'Wyścig do okna!':'Race to the window!',
-  'Z KIM DO PRZEDSZKOLA?':'WHO TAKES YOU TO PRESCHOOL?',
   'Z MAMĄ LUB TATĄ':'WITH MUM OR DAD',
   'ZABAWA KLOCKAMI':'PLAYING WITH BRICKS',
   'ZADANIE':'TASK',
@@ -4902,7 +5000,7 @@ function rysujWyscig(){
     napis(sek > 0 ? String(sek) : 'START!', W/2, 100, '#f8d878', '#000000', 6);
   } else if(w.koniecT > 0){
     ctx.globalAlpha=0.6; pr(0,0,W,H,'#000000'); ctx.globalAlpha=1;
-    napis(bohater().imie + ' WYGRYWA!', W/2, 110, '#f8d878', '#000000', 3);
+    napis(bohater().imie + ' ' + tlum('WYGRYWA!'), W/2, 110, '#f8d878', '#000000', 3);
     napis('BRAWO!', W/2, 145, '#fffeff', '#000000', 2);
   } else {
     napis('NACISKAJ  <  >  NA ZMIANĘ', W/2, 258, '#fffeff', '#000000', 1.6);
@@ -5045,7 +5143,7 @@ function rysujWyscigDoOkna(){
     const sek = Math.ceil(w.odliczanie/60);
     napis(sek > 0 ? String(sek) : 'START!', W/2, 96, '#f8d878', '#000000', 6);
   } else if(w.koniecT > 0){
-    napis('PA PA, ' + bohater().wolacz + '!', W/2, 68, '#f8d878', '#000000', 3);
+    napis(tlum('PA PA,') + ' ' + tlum(bohater().wolacz) + '!', W/2, 68, '#f8d878', '#000000', 3);
     napis('DO ZOBACZENIA PO PODWIECZORKU!', W/2, 258, '#fffeff', '#000000', 1.2);
   } else {
     napis('NACISKAJ  <  >  NA ZMIANĘ', W/2, 258, '#fffeff', '#000000', 1.6);
@@ -5295,7 +5393,7 @@ function rysujDzien(){
   if(d.koniecT > 0){
     ctx.globalAlpha = 0.6; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
     napis('KONIEC DNIA!', W/2, 110, '#f8d878', '#000000', 3);
-    napis(bohater().opiekunM + ' JUŻ IDZIE PO CIEBIE!', W/2, 145, '#fffeff', '#000000', 1.6);
+    napis(tlum(bohater().opiekunM) + ' ' + tlum('JUŻ IDZIE PO CIEBIE!'), W/2, 145, '#fffeff', '#000000', 1.6);
   } else {
     napis('^  DALEJ', W/2, 258, '#fffeff', '#000000', 1.4);
   }
@@ -5402,7 +5500,7 @@ function rysujLapanie(){
   rysujEfekty();
 
   pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
-  napisL(bohater().opiekunM + ' CIĘ ŁAPIE!', 4, 10, '#fffeff', null, 1);
+  napisL(tlum(bohater().opiekunM) + ' ' + tlum('CIĘ ŁAPIE!'), 4, 10, '#fffeff', null, 1);
   const post = Math.min(1, l.x/l.meta);
   pr(W/2-80,26,160,12,'#000000'); pr(W/2-78,28,156,8,'#4f4f4f');
   pr(W/2-78,28,Math.round(156*post),8,'#58d854');
@@ -5663,7 +5761,7 @@ function rysujDom(){
     rysujFranka(bx, 166, 1, d.faza, false, false);
     rysujEfekty();
     pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
-    napisL(RODZICE[bohater().domownik].podpis + ' CIĘ GONI!', 4, 10, '#fffeff', null, 1);
+    napisL(tlum(RODZICE[bohater().domownik].podpis) + ' ' + tlum('CIĘ GONI!'), 4, 10, '#fffeff', null, 1);
     if(Math.floor(G.t/60)%2 === 0){
       const tekst = 'ALE BRUDAS!';
       const tw = szerTekstu(tekst, 1);
@@ -6140,7 +6238,7 @@ function rysujKsiazke(){
     }
     ramka(W/2-176, 176, 352, 46, '#0000bc');
     napis('<  >  WYBIERASZ,   ^  ZACZYNA', W/2, 192, '#fffeff', '#000000', 1.4);
-    napis(RODZICE[b.czyta].podpis + ' POCZYTA CI DO SNU', W/2, 212, '#c0dfff', null, 1.2);
+    napis(tlum(RODZICE[b.czyta].podpis) + ' ' + tlum('POCZYTA CI DO SNU'), W/2, 212, '#c0dfff', null, 1.2);
     rysujDebug(); return;
   }
 
@@ -6166,7 +6264,7 @@ function rysujKsiazke(){
     napis(ks.tytul, bx+52, 122, '#000000', null, 1);
 
     pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
-    napisL(RODZICE[b.czyta].podpis + ' CZYTA: ' + ks.tytul, 4, 10, '#fffeff', null, 1);
+    napisL(tlum(RODZICE[b.czyta].podpis) + ' ' + tlum('CZYTA:') + ' ' + tlum(ks.tytul), 4, 10, '#fffeff', null, 1);
     ramka(W/2-160, 236, 320, 24, '#0000bc');
     napis(ks.zdanie, W/2, 248, '#f8d878', null, 1);
     napis('STRONA ' + (b.strona+1) + '/' + ile(2,3), W/2-70, 152, '#fffeff', '#000000', 1.2);
@@ -6423,7 +6521,7 @@ function rysujWyborOpiekuna(){
   }
   pr(0,210,W,H-210,'#007800'); pr(0,210,W,3,'#58d854');
   for(let i=0;i<W;i+=6) pr(i,207,3,4,'#b8f818');
-  napis('Z KIM DO PRZEDSZKOLA?', 240, 26, '#f8d878', '#000000', 2.6);
+  napis('Z KIM DO PRZEDSZKOLA?', 240, 26, '#f8d878', '#000000', 2);
 
   const warianty = OPIEKUNOWIE[G.kto];
   ['mama','tata'].forEach((klucz, i) => {
@@ -6441,7 +6539,7 @@ function rysujWyborOpiekuna(){
     napis('<', 26, 100, '#fffeff', '#000000', 3);
     napis('>', 454, 100, '#fffeff', '#000000', 3);
   }
-  napis(BOHATEROWIE[G.kto].imie + ' IDZIE DZIŚ Z...', 240, 199, '#c0dfff', '#000000', 1.2);
+  napis(BOHATEROWIE[G.kto].imie + ' ' + tlum('IDZIE DZIŚ Z...'), 240, 199, '#c0dfff', '#000000', 1.2);
   if(Math.floor(G.t/20)%2===0) napis('NACIŚNIJ  ^  ŻEBY ZACZĄĆ', 240, 236, '#f8d878', '#000000', 2);
 }
 function rysujIntro(){
@@ -6457,8 +6555,11 @@ function rysujIntro(){
 
   const boh = bohater();
   const dopelniacz = G.kto === 'franek' ? 'FRANKA' : 'POLI';
-  napis('PORANEK', 296, 46, '#f8d878', '#000000', 4);
-  napis(dopelniacz, 296, 84, '#d82800', '#000000', 4);
+  // po angielsku kolejność odwrotna: FRANEK'S MORNING, nie MORNING FRANEK
+  // po angielsku kolejność odwrotna: FRANEK'S MORNING, nie MORNING FRANEK
+  const dzierzawczy = G.kto === 'franek' ? "FRANEK'S" : "POLA'S";
+  napis(JEZYK === 'en' ? dzierzawczy : 'PORANEK', 296, 46, '#f8d878', '#000000', 4);
+  napis(JEZYK === 'en' ? 'PORANEK' : dopelniacz, 296, 84, '#d82800', '#000000', 4);
 
   const b = Math.floor(Math.sin(G.t*0.05)*2);
   if(!rysujPortret(boh.portret, 70, 204+b, 88, 86)) rysujFranka(44, 150+b, 1, 0, false, false);
@@ -8964,7 +9065,7 @@ function krok(){
       // dwa przełączniki: ◀ ▶ zmieniają język, ▼ tryb, ▲ zaczyna grę
       if(nowy('ArrowLeft') || nowy('ArrowRight')){
         JEZYK = JEZYK === 'en' ? 'pl' : 'en';
-        zapiszUstawienia(); przeladujMowe(); sfx('sfx_zbierz');
+        zapiszUstawienia(); przeladujMowe(); odswiezNapisInstalacji(); sfx('sfx_zbierz');
         setTimeout(() => mow('menu_jezyk'), 120);
       }
       if(nowy('ArrowDown')){
@@ -9115,7 +9216,16 @@ requestAnimationFrame(petla);
    komputerze otwiera prawdziwe okienko instalacji, a na iPhonie tłumaczy,
    gdzie kliknąć. Przycisk pokazuje się tylko w menu, żeby nie zasłaniać gry. */
 const przyciskInstaluj = document.getElementById('instaluj');
-if(JEZYK === 'en' && przyciskInstaluj) przyciskInstaluj.textContent = '📲 INSTALL THE GAME';
+/* napis na przycisku instalacji też zmienia się z językiem */
+function odswiezNapisInstalacji(){
+  if(!przyciskInstaluj) return;
+  const stary = przyciskInstaluj.textContent || '';
+  const jak = stary.indexOf('JAK') >= 0 || stary.indexOf('HOW') >= 0;
+  przyciskInstaluj.textContent = JEZYK === 'en'
+    ? (jak ? '📲 HOW TO INSTALL?' : '📲 INSTALL THE GAME')
+    : (jak ? '📲 JAK ZAINSTALOWAĆ?' : '📲 ZAINSTALUJ GRĘ');
+}
+odswiezNapisInstalacji();
 const okienkoJak = document.getElementById('jakInstalowac');
 let zachetaInstalacji = null;
 
