@@ -10,18 +10,24 @@ kształty, wzory i karty**. **Sterowanie: same strzałki.**
 Dzieci w tym wieku nie czytają, więc **wszystko czyta narrator** — każde zadanie,
 każda liczba i każda litera jest wypowiadana na głos.
 
-## Pierwszy ekran: język i tryb
+## Język i tryb
 
 Gra **startuje po angielsku w trybie uproszczonym** — tak, żeby służyła też jako
-osłuchanie się z angielskim. Na pierwszym ekranie stoją dwa przełączniki:
+osłuchanie się z angielskim. Żadnego dodatkowego ekranu na starcie nie ma: gra
+od razu pyta, kim grasz, a na dole widać, co jest ustawione
+(`ENGLISH  SIMPLE  CHANGE: U`).
+
+Ustawienia otwiera się **przyciskiem ⚙** w prawym górnym rogu albo **klawiszem U**
+— i tylko wtedy, kiedy ktoś chce coś zmienić:
 
 | Przełącznik | Klawisz | Wartości |
 |---|---|---|
 | **Język** | ◀ ▶ | **ENGLISH** (domyślnie) albo **POLSKI** |
 | **Tryb** | ▼ | **PROSTY** (domyślnie) albo **PEŁNY** |
-| Start | ▲ | zaczyna grę |
+| Zamknij | ▲ | wraca do wyboru postaci |
 
-Wybór **zapamiętuje się** w przeglądarce, a narrator mówi w wybranym języku —
+Na tablecie wystarczy dotknąć paska z językiem albo z trybem. Wybór
+**zapamiętuje się** w przeglądarce, a narrator mówi w wybranym języku —
 każda kwestia jest nagrana dwa razy, po polsku i po angielsku.
 
 **Tryb prosty (35 etapów)** — żaden etap się nie powtarza: ząbki myje się raz,
@@ -57,6 +63,7 @@ Rdzeń gry — są w **obu trybach**:
 | ◀ ▶ | chodzenie (w aucie: wolniej / szybciej; w minigrach: sterowanie) |
 | ▲ | skok (w aucie: pas wyżej), a także „zacznij / dalej" i „naciśnij" |
 | ▼ | w aucie: pas niżej, przy myciu ząbków i w kąpieli: następna strefa |
+| **U** | ustawienia: język i tryb (to samo co przycisk ⚙) |
 | **P** / **O** | **DEBUG**: następny / poprzedni etap (do podglądania planszy) |
 
 W etapach z pogonią (tata przed myciem, mama w domu) i w wyścigach naciska się

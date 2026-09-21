@@ -56,6 +56,10 @@
   body.dwaKciuki #dotyk button[data-k="ArrowDown"]{right:auto;left:50%;
     margin-left:calc(-1 * var(--bw) - var(--luz) / 2);}
   body.dwaKciuki:not(.strefy) #dotyk button[data-k="ArrowUp"]{margin-left:calc(var(--bw) / -2);}
+  #ustawienia{position:fixed;top:10px;right:64px;width:44px;height:44px;border:3px solid #fffeff;
+    border-radius:8px;background:rgba(0,0,0,.5);color:#fffeff;font-size:20px;cursor:pointer;
+    z-index:100;display:none;}
+  body.wMenu #ustawienia{display:block;}
   #glosnik{position:fixed;top:10px;right:12px;width:44px;height:44px;border:3px solid #fffeff;
     border-radius:8px;background:rgba(0,0,0,.5);color:#fffeff;font-size:20px;cursor:pointer;}
 
@@ -76,12 +80,12 @@
   @media (prefers-reduced-motion: reduce){ #obroc .telefon{animation:none;transform:rotate(-90deg);} }
   @media (orientation: portrait) and (pointer: coarse){
     #obroc{display:flex;}
-    #wrap,#dotyk,#glosnik{display:none !important;}
+    #wrap,#dotyk,#glosnik,#ustawienia{display:none !important;}
   }
   /* zapas dla urządzeń, które raportują rysik jako „pointer: fine" */
   @media (orientation: portrait) and (hover: none){
     #obroc{display:flex;}
-    #wrap,#dotyk,#glosnik{display:none !important;}
+    #wrap,#dotyk,#glosnik,#ustawienia{display:none !important;}
   }
   /* --- instalacja na pulpicie --- */
   #instaluj{position:fixed;top:10px;left:12px;z-index:100;display:none;
@@ -112,6 +116,7 @@
     #dotyk{--bw:58px; --pad:12px; --luz:10px;}
     #dotyk button{font-size:24px;opacity:.75;}
     #glosnik{width:36px;height:36px;font-size:16px;top:6px;right:8px;}
+    #ustawienia{width:36px;height:36px;font-size:16px;top:6px;right:52px;}
   }
 </style>
 </head>
@@ -123,6 +128,7 @@
 </div>
 <div id="wrap"><canvas id="c" width="480" height="270" tabindex="0"></canvas></div>
 <button id="glosnik" title="Dźwięk włącz/wyłącz">🔊</button>
+<button id="ustawienia" title="Język i tryb / language and mode">⚙</button>
 <button id="instaluj">📲 ZAINSTALUJ GRĘ</button>
 <div id="jakInstalowac">
   <div class="pudlo">
@@ -166,6 +172,12 @@ addEventListener('keydown', e => {
   odblokujDzwiek();
   if (e.key === 'ArrowUp') pelnyEkranPrzyWyborze();
   // DEBUG: P – następny etap, O – poprzedni (do podglądania, jak co wygląda)
+  // U (albo O z Shiftem) – ustawienia języka i trybu, bez osobnego ekranu
+  if (e.key === 'u' || e.key === 'U' || e.key === 'O'){
+    G.ustawOtwarte = !G.ustawOtwarte;
+    if(G.ustawOtwarte){ G.ekran = 'wybor'; mow('menu_jak'); }
+    return;
+  }
   if (e.key === 'p' || e.key === 'P') debugEtap(1);
   if (e.key === 'o' || e.key === 'O') debugEtap(-1);
 });
@@ -215,16 +227,16 @@ if ('ontouchstart' in window) {
 }
 function klikniecieWPlansze(e){
   odblokujDzwiek(); cv.focus();
-  // ekran ustawień: dotknięcie paska z językiem albo z trybem przełącza go,
-  // a dotknięcie niżej zaczyna grę – na tablecie nie trzeba szukać strzałek
-  if (G.ekran === 'ustawienia'){
+  // otwarta nakładka ustawień: dotknięcie paska z językiem albo z trybem przełącza go,
+  // a dotknięcie niżej zamyka – na tablecie nie trzeba szukać strzałek
+  if (G.ustawOtwarte){
     const r = cv.getBoundingClientRect();
     const punkt = (e && e.touches && e.touches[0]) ? e.touches[0] : e;
     const y = (punkt && typeof punkt.clientY === 'number' && r.height)
               ? (punkt.clientY - r.top) / r.height * H : 999;
-    if(y > 44 && y < 122) klaw['ArrowLeft_nowy'] = true;
-    else if(y >= 122 && y < 200) klaw['ArrowDown_nowy'] = true;
-    else klaw['ArrowUp_nowy'] = true;
+    if(y > 44 && y < 122) przelaczJezyk();
+    else if(y >= 122 && y < 200) przelaczTryb();
+    else { G.ustawOtwarte = false; sfx('sfx_zbierz'); }
     return;
   }
   if (G.ekran === 'wybor'){
@@ -307,6 +319,19 @@ try{
   const z = localStorage.getItem('franek_ustawienia');
   if(z){ const u = JSON.parse(z); if(u.jezyk) JEZYK = u.jezyk; if(u.tryb) TRYB = u.tryb; }
 }catch(e){}
+function przelaczJezyk(){
+  JEZYK = JEZYK === 'en' ? 'pl' : 'en';
+  zapiszUstawienia(); przeladujMowe(); odswiezNapisInstalacji();
+  pamiecTlum && Object.keys(pamiecTlum).forEach(k => delete pamiecTlum[k]);
+  sfx('sfx_zbierz');
+  setTimeout(() => mow('menu_jezyk'), 120);
+}
+function przelaczTryb(){
+  TRYB = TRYB === 'prosty' ? 'zaawansowany' : 'prosty';
+  zapiszUstawienia(); LISTA_POZIOMOW = null; ustawDlugosci();
+  sfx('sfx_zbierz');
+  mow(TRYB === 'prosty' ? 'menu_prosty' : 'menu_pelny');
+}
 function zapiszUstawienia(){
   try{ localStorage.setItem('franek_ustawienia', JSON.stringify({jezyk:JEZYK, tryb:TRYB})); }catch(e){}
 }
@@ -595,6 +620,13 @@ KLUCZE_MUZ.forEach(k => wczytajAudio(k, GLOSNOSC_MUZYKI, true));
 KLUCZE_MOWA.forEach(k => wczytajAudio(k, GLOSNOSC_NARRATORA, false, true));
 // efekty nie potrzebują elementów <audio> – siedzą w pamięci jako próbki WebAudio
 
+document.getElementById('ustawienia').addEventListener('click', e => {
+  e.stopPropagation();
+  odblokujDzwiek();
+  G.ustawOtwarte = !G.ustawOtwarte;
+  if(G.ustawOtwarte){ if(G.ekran !== 'wybor'){ G.ekran = 'wybor'; } mow('menu_jak'); }
+  sfx('sfx_zbierz');
+});
 document.getElementById('glosnik').addEventListener('click', e => {
   e.stopPropagation();
   dzwiekWlaczony = !dzwiekWlaczony;
@@ -2041,7 +2073,7 @@ function POZ(){
 
 /* ==================== STAN GRY ==================== */
 const G = {
-  ekran:'ustawienia', kto:'franek', poziom:0, t:0, kartaT:0, ustaw:0,
+  ekran:'wybor', kto:'franek', poziom:0, t:0, kartaT:0, ustawOtwarte:false,
   gracz:null, kamera:0, zrobione:0, ekwipunek:[],
   czastki:[], overlay:null, info:null, infoT:0,
   tata:{x:0,y:0}, mycie:null, jazda:null, wyscig:null, okno:null, ostatnieZadanie:-1,
@@ -2395,6 +2427,11 @@ function rysujZnaki(znaki, px, py, kol, skala){
    Klucze pisane tak jak w kodzie – wersje DUŻYMI i małymi dorabiają się same,
    a zdania złożone (np. „Najpierw znajdź miskę!") składają się z kawałków. */
 const TLUM = {
+  'POLSKI':'POLISH',
+  'ZMIANA':'CHANGE',
+  'ZMIANA:  U':'CHANGE:  U',
+  '^  ZAMKNIJ':'^  CLOSE',
+  'USTAWIENIA':'SETTINGS',
   'KROPEL':'DROPS',
   '<  >  NA ZMIANĘ':'<  >  ONE BY ONE',
   '<  >  WYBIERAJ     ^  TO TEN!':'<  >  CHOOSE     ^  THAT ONE!',
@@ -6451,12 +6488,10 @@ function rysujFlage(x, y, w, h, jezyk){
   }
 }
 function rysujUstawienia(){
-  pr(0,0,W,H,'#0000bc');
-  for(let i=0;i<60;i++){
-    const x=(i*97)%W, y=(i*53)%H;
-    if(Math.floor(G.t/12+i)%3===0) pr(x,y,1,1,'#fffeff');
-  }
-  napis('PORANEK FRANKA', 240, 26, '#f8d878', '#000000', 3);
+  ctx.globalAlpha = 0.9; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+  const tw = szerTekstu('USTAWIENIA', 2);
+  pr(W/2-tw/2-8, 22, tw+16, 20, '#0000bc'); obrys(W/2-tw/2-8, 22, tw+16, 20);
+  napis('USTAWIENIA', 240, 32, '#f8d878', null, 2);
 
   ramka(40, 48, 400, 70, '#000000');                       // język
   napis('JĘZYK', 92, 66, '#c0dfff', null, 1);
@@ -6481,7 +6516,7 @@ function rysujUstawienia(){
     pr(x-14, 204, 28, 24, kol); obrys(x-14, 204, 28, 24);
     napis(['A','1','?','+'][i], x, 216, '#000000', null, 2);
   }
-  if(Math.floor(G.t/20)%2===0) napis('NACIŚNIJ  ^  ŻEBY ZACZĄĆ', 240, 250, '#f8d878', '#000000', 2);
+  if(Math.floor(G.t/20)%2===0) napis('^  ZAMKNIJ', 240, 250, '#f8d878', '#000000', 2);
   rysujDebug();
 }
 function rysujWybor(){
@@ -6492,7 +6527,7 @@ function rysujWybor(){
   }
   pr(0,210,W,H-210,'#007800'); pr(0,210,W,3,'#58d854');
   for(let i=0;i<W;i+=6) pr(i,207,3,4,'#b8f818');
-  napis('KIM CHCESZ GRAĆ?', 240, 26, '#f8d878', '#000000', 3);
+  napis('KIM CHCESZ GRAĆ?', 240, 40, '#f8d878', '#000000', 3);
 
   const opcje = ['franek','pola'];
   opcje.forEach((klucz, i) => {
@@ -6511,6 +6546,10 @@ function rysujWybor(){
     napis('>', 454, 108, '#fffeff', '#000000', 3);
   }
   if(Math.floor(G.t/20)%2===0) napis('NACIŚNIJ  ^  ŻEBY ZACZĄĆ', 240, 236, '#f8d878', '#000000', 2);
+  // ustawienia są opcjonalne: pasek tylko pokazuje, co jest wybrane i gdzie to zmienić
+  rysujFlage(126, 250, 22, 14, JEZYK);
+  napisL(tlum(JEZYK === 'en' ? 'ENGLISH' : 'POLSKI') + '  ' + tlum(TRYB === 'prosty' ? 'PROSTY' : 'PEŁNY')
+         + '    ' + tlum('ZMIANA') + ':  U', 156, 259, '#64b0ff', null, 1);
 }
 
 function rysujWyborOpiekuna(){
@@ -6521,7 +6560,7 @@ function rysujWyborOpiekuna(){
   }
   pr(0,210,W,H-210,'#007800'); pr(0,210,W,3,'#58d854');
   for(let i=0;i<W;i+=6) pr(i,207,3,4,'#b8f818');
-  napis('Z KIM DO PRZEDSZKOLA?', 240, 26, '#f8d878', '#000000', 2);
+  napis('Z KIM DO PRZEDSZKOLA?', 240, 34, '#f8d878', '#000000', 2);
 
   const warianty = OPIEKUNOWIE[G.kto];
   ['mama','tata'].forEach((klucz, i) => {
@@ -9047,12 +9086,13 @@ const ETAPY_DWA_KCIUKI = ['mycie','wyscig','wyscig_okno','swiatlo','wstawanie','
                           'lapanie','dom','kapiel','gierka','baba','lawa',
                           'sznurowki','zupa','porzadki','banki'];
 function odswiezPrzyciski(){
-  if(G.ekran === ostatniEkranPrzyciskow) return;
-  ostatniEkranPrzyciskow = G.ekran;
+  const stan = G.ekran + (G.ustawOtwarte ? '+ustaw' : '');
+  if(stan === ostatniEkranPrzyciskow) return;
+  ostatniEkranPrzyciskow = stan;
   document.body.classList.toggle('wAucie', G.ekran === 'jazda');
   document.body.classList.toggle('wMenu', G.ekran === 'wybor' || G.ekran === 'intro'
-                                       || G.ekran === 'ustawienia' || G.ekran === 'opiekun');
-  document.body.classList.toggle('zDolem', G.ekran === 'ustawienia');
+                                       || G.ekran === 'opiekun');
+  document.body.classList.toggle('zDolem', G.ekran === 'wybor' && G.ustawOtwarte);
   // etapy, w których ◀ i ▶ idą do obu krawędzi – gra się dwoma kciukami
   document.body.classList.toggle('dwaKciuki', ETAPY_DWA_KCIUKI.includes(G.ekran));
   document.body.classList.toggle('strefy', G.ekran === 'mycie' || G.ekran === 'kapiel');
@@ -9061,21 +9101,14 @@ function krok(){
   G.t++;
   odswiezPrzyciski();
   switch(G.ekran){
-    case 'ustawienia':
-      // dwa przełączniki: ◀ ▶ zmieniają język, ▼ tryb, ▲ zaczyna grę
-      if(nowy('ArrowLeft') || nowy('ArrowRight')){
-        JEZYK = JEZYK === 'en' ? 'pl' : 'en';
-        zapiszUstawienia(); przeladujMowe(); odswiezNapisInstalacji(); sfx('sfx_zbierz');
-        setTimeout(() => mow('menu_jezyk'), 120);
-      }
-      if(nowy('ArrowDown')){
-        TRYB = TRYB === 'prosty' ? 'zaawansowany' : 'prosty';
-        zapiszUstawienia(); LISTA_POZIOMOW = null; ustawDlugosci(); sfx('sfx_zbierz');
-        mow(TRYB === 'prosty' ? 'menu_prosty' : 'menu_pelny');
-      }
-      if(nowy('ArrowUp')){ sfx('sfx_sukces'); G.ekran = 'wybor'; mow('wybor'); }
-      czyscNowe(); break;
     case 'wybor':
+      // ustawienia (język i tryb) to nakładka pod ⚙ – nie osobny ekran
+      if(G.ustawOtwarte){
+        if(nowy('ArrowLeft') || nowy('ArrowRight')) przelaczJezyk();
+        if(nowy('ArrowDown')) przelaczTryb();
+        if(nowy('ArrowUp')){ G.ustawOtwarte = false; sfx('sfx_zbierz'); mow('wybor'); }
+        czyscNowe(); break;
+      }
       // zmiana bohatera zeruje etap – Franek ma ich 27, Pola 12
       if(nowy('ArrowLeft') && G.kto !== 'franek'){ G.kto='franek'; G.poziom=0; sfx('sfx_zbierz'); }
       if(nowy('ArrowRight') && G.kto !== 'pola'){ G.kto='pola'; G.poziom=0; sfx('sfx_zbierz'); }
@@ -9155,8 +9188,7 @@ function rysuj(){
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0,0,W,H);
   switch(G.ekran){
-    case 'ustawienia': rysujUstawienia(); break;
-    case 'wybor': rysujWybor(); break;
+    case 'wybor': rysujWybor(); if(G.ustawOtwarte) rysujUstawienia(); break;
     case 'intro': rysujIntro(); break;
     case 'opiekun': rysujWyborOpiekuna(); break;
     case 'karta': rysujKarte(); break;
@@ -9204,8 +9236,7 @@ function rysuj(){
 }
 // muzyka menu + powitanie startują po pierwszym geście gracza
 let powitano = false;
-function powitaj(){ if(powitano) return; powitano = true; graj('muz_menu');
-  mow(G.ekran === 'ustawienia' ? 'menu_jak' : 'wybor'); }
+function powitaj(){ if(powitano) return; powitano = true; graj('muz_menu'); mow('wybor'); }
 ['keydown','pointerdown','touchstart'].forEach(z => addEventListener(z, powitaj, {once:false}));
 ustawDlugosci();
 requestAnimationFrame(petla);
@@ -9237,6 +9268,7 @@ function juzZainstalowana(){
 function pokazPrzyciskInstaluj(napisNaPrzycisku){
   if(juzZainstalowana()) return;
   przyciskInstaluj.textContent = napisNaPrzycisku;
+  odswiezNapisInstalacji();
   document.body.classList.add('mozna');
 }
 const naIPhonie = /iPhone|iPad|iPod/.test(navigator.userAgent)
