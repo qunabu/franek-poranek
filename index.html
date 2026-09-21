@@ -46,6 +46,7 @@
   /* ▼ zmienia pas tylko w samochodzie, a strefę tylko przy myciu ząbków */
   #dotyk button[data-k="ArrowDown"]{display:none;}
   body.wAucie #dotyk button[data-k="ArrowDown"],
+  body.zDolem #dotyk button[data-k="ArrowDown"],
   body.strefy #dotyk button[data-k="ArrowDown"]{display:block;}
   /* etapy „na dwa kciuki" (wyścigi, szorowanie, sikanie, wstawanie, światło):
      ◀ przy lewej krawędzi, ▶ przy prawej, a ▲ ▼ na środku pod spodem */
@@ -143,10 +144,10 @@
    ====================================================================== */
 
 /* --- USTAWIENIA, KTÓRE ŁATWO ZMIENIĆ ------------------------------- */
-const CZAS_MYCIA_ZEBOW = 35;        // bazowe SEKUNDY szczotkowania; ruch skraca je
+let CZAS_MYCIA_ZEBOW = 35;        // bazowe SEKUNDY szczotkowania; ruch skraca je
                                     // 2x (trzymanie strzałki) lub 3x (szorowanie
                                     // lewo-prawo na zmianę)
-const DROGA_DO_PRZEDSZKOLA = 7000;  // długość trasy samochodem
+let DROGA_DO_PRZEDSZKOLA = 7000;  // długość trasy samochodem
 const GLOSNOSC_MUZYKI = 0.30;
 const GLOSNOSC_NARRATORA = 1.0;
 const GLOSNOSC_EFEKTOW = 0.5;
@@ -214,6 +215,18 @@ if ('ontouchstart' in window) {
 }
 function klikniecieWPlansze(e){
   odblokujDzwiek(); cv.focus();
+  // ekran ustawień: dotknięcie paska z językiem albo z trybem przełącza go,
+  // a dotknięcie niżej zaczyna grę – na tablecie nie trzeba szukać strzałek
+  if (G.ekran === 'ustawienia'){
+    const r = cv.getBoundingClientRect();
+    const punkt = (e && e.touches && e.touches[0]) ? e.touches[0] : e;
+    const y = (punkt && typeof punkt.clientY === 'number' && r.height)
+              ? (punkt.clientY - r.top) / r.height * H : 999;
+    if(y > 44 && y < 122) klaw['ArrowLeft_nowy'] = true;
+    else if(y >= 122 && y < 200) klaw['ArrowDown_nowy'] = true;
+    else klaw['ArrowUp_nowy'] = true;
+    return;
+  }
   if (G.ekran === 'wybor'){
     // dotknięcie portretu od razu wybiera postać i zaczyna grę
     const r = cv.getBoundingClientRect();
@@ -281,13 +294,67 @@ document.getElementById('obroc').addEventListener('click', () => { odblokujDzwie
 /* Pliki z ElevenLabs (audio/*.mp3). Gdy ich nie ma – awaryjne piszczenie
    z WebAudio, żeby gra nigdy nie była niema. */
 let dzwiekWlaczony = true, dzwiekOdblokowany = false;
+
+/* ==================== JĘZYK I TRYB GRY ====================
+   Gra domyślnie startuje po angielsku i w wersji uproszczonej (bez etapów,
+   które się powtarzają). Na ekranie startowym jedno i drugie się przełącza,
+   a wybór zapamiętuje przeglądarka.
+   • JEZYK 'en' – narrator czyta pliki z audio/en/, napisy idą przez tlum()
+   • TRYB 'prosty' – POZ() pomija etapy oznaczone zaawansowany:true,
+     a minigry są krótsze (patrz ile()). */
+let JEZYK = 'en', TRYB = 'prosty';
+try{
+  const z = localStorage.getItem('franek_ustawienia');
+  if(z){ const u = JSON.parse(z); if(u.jezyk) JEZYK = u.jezyk; if(u.tryb) TRYB = u.tryb; }
+}catch(e){}
+function zapiszUstawienia(){
+  try{ localStorage.setItem('franek_ustawienia', JSON.stringify({jezyk:JEZYK, tryb:TRYB})); }catch(e){}
+}
+/* ile czegoś robimy: w trybie prostym mniej powtórzeń, w zaawansowanym pełna wersja */
+function ile(prosty, zaawansowany){ return TRYB === 'prosty' ? prosty : zaawansowany; }
+/* Tryb prosty skraca każdą minigrę – tyle samo nauki, mniej powtarzania.
+   Wołane przy starcie i przy przełączeniu trybu na ekranie ustawień. */
+function ustawDlugosci(){
+  CZAS_MYCIA_ZEBOW = ile(18, 35);
+  DROGA_DO_PRZEDSZKOLA = ile(3600, 7000);
+  SIKU_SEK = ile(8, 13);
+  META_WYSCIGU = ile(850, 1400);
+  RUND_LICZENIA = ile(3, 5);
+  BABA_META = ile(286, 362);
+  SZN_DZIUREK = ile(3, 4);
+  KSZ_RUND = ile(3, 5);
+  RYTM_RUND = ile(3, 4);
+  ZUPA_LYZEK = ile(4, 6);
+  SZUK_RUND = ile(2, 3);
+  BANIEK = ile(8, 12);
+  OWIEC = ile(6, 10);
+}
+
 const KAT_AUDIO = 'audio/';
 const PLIKI = (typeof AUDIO_WBUDOWANE !== 'undefined') ? AUDIO_WBUDOWANE : null;
 const bufory = {};          // klucz -> HTMLAudioElement (wzorzec)
 const gotowe = {};          // klucz -> czy da się odtworzyć
 
-function zrodlo(klucz){ return PLIKI ? (PLIKI[klucz] || null) : (KAT_AUDIO + klucz + '.mp3'); }
-function wczytajAudio(klucz, glosnosc, petla){
+const mowaKlucz = {};        // klucz -> czy to narrator (muzyka jest wspólna dla języków)
+function zrodlo(klucz){
+  if(PLIKI) return PLIKI[(JEZYK === 'en' && mowaKlucz[klucz] ? 'en/' : '') + klucz]
+             || PLIKI[klucz] || null;
+  const kat = (JEZYK === 'en' && mowaKlucz[klucz]) ? KAT_AUDIO + 'en/' : KAT_AUDIO;
+  return kat + klucz + '.mp3';
+}
+/* przy zmianie języka nie tworzymy nowych elementów – tylko przestawiamy src */
+function przeladujMowe(){
+  for(const k in bufory){
+    if(!mowaKlucz[k]) continue;
+    const a = bufory[k];
+    try{ a.pause(); }catch(e){}
+    delete gotowe[k];
+    a.src = zrodlo(k);
+    try{ a.load(); }catch(e){}
+  }
+}
+function wczytajAudio(klucz, glosnosc, petla, mowa){
+  if(mowa) mowaKlucz[klucz] = true;
   const src = zrodlo(klucz);
   if(!src) return null;
   const a = new Audio();
@@ -511,11 +578,21 @@ const KLUCZE_MOWA = [
   'cien_koniec',
   'owce_poziom','owce_jak','owce_koniec',
   'igloo_poziom','igloo_jak','igloo_czekaj','igloo_rosnie','igloo_koniec',
+  'menu_jak','menu_jezyk','menu_prosty','menu_pelny',
+  'alf_poziom','alf_jak','alf_pytanie','alf_brawo','alf_nie','alf_koniec',
+  'alf_kot','alf_rybka','alf_czapka','alf_mleko','alf_buty','alf_lyzka','alf_krolik','alf_marchewka',
+  'lit_a','lit_b','lit_c','lit_d','lit_e','lit_f','lit_g','lit_h','lit_i','lit_j','lit_k','lit_l',
+  'lit_m','lit_n','lit_o','lit_p','lit_r','lit_s','lit_t','lit_u','lit_w','lit_ł',
+  'mem_poziom','mem_jak','mem_para','mem_nie','mem_koniec',
+  'wzor_poziom','wzor_jak','wzor_co_dalej','wzor_brawo','wzor_nie','wzor_koniec',
+  'nie_poziom','nie_jak','nie_ktore','nie_brawo','nie_nie','nie_koniec',
+  'nie_zwierzeta','nie_jedzenie','nie_ubrania','nie_zabawki','nie_kuchnia',
+  'karty_poziom','karty_jak','karty_ktora','karty_brawo','karty_nie','karty_koniec',
   'zad_zdejmij_kurtke','zad_zeby','zeby_20','zeby_dol_przod','zeby_dol_tyl','zeby_gora_przod',
   'zeby_gora_tyl','zeby_minuta','zeby_pol','zeby_strefa_ok','zle'];
 
 KLUCZE_MUZ.forEach(k => wczytajAudio(k, GLOSNOSC_MUZYKI, true));
-KLUCZE_MOWA.forEach(k => wczytajAudio(k, GLOSNOSC_NARRATORA, false));
+KLUCZE_MOWA.forEach(k => wczytajAudio(k, GLOSNOSC_NARRATORA, false, true));
 // efekty nie potrzebują elementów <audio> – siedzą w pamięci jako próbki WebAudio
 
 document.getElementById('glosnik').addEventListener('click', e => {
@@ -1474,7 +1551,7 @@ const POZIOMY_FRANEK = [
     ],
     drzwi:{x:845,y:165,w:50,h:70,tekst:'Dalej!'}
   },
-  { typ:'gierka', bonus:true, nazwa:'Gra w grze', podtytul:'Franek gra w Poranek Franka',
+  { zaawansowany:true, typ:'gierka', bonus:true, nazwa:'Gra w grze', podtytul:'Franek gra w Poranek Franka',
     glos:'gierka_poziom' },
   { nazwa:'Myjemy ząbki', podtytul:'Dwie minuty szorowania', tlo:'lazienka', szer:725,
     glos:'f_poziom6', glosZapas:'poziom3',
@@ -1510,7 +1587,7 @@ const POZIOMY_FRANEK = [
   },
   { typ:'sznurowki', bonus:true, nazwa:'Zawiązujemy buty', podtytul:'Sznurówki i kokardka',
     glos:'szn_poziom' },
-  { nazwa:'Do samochodu!', podtytul:'Tata już czeka', tlo:'podworko', szer:800, tata:true,
+  { zaawansowany:true, nazwa:'Do samochodu!', podtytul:'Tata już czeka', tlo:'podworko', szer:800, tata:true,
     glos:'f_poziom8', glosZapas:'poziom5',
     wariant:{ mama:{ nazwa:'Do taksówki!', podtytul:'Mama już czeka', glos:'fm_poziom8' } },
     start:{x:30,y:170},
@@ -1546,7 +1623,7 @@ const POZIOMY_FRANEK = [
     ],
     drzwi:{x:720,y:165,w:50,h:70,tekst:'Do sali!'}
   },
-  { typ:'wyscig_okno', nazwa:'Wyścig do okna!', podtytul:'Biegnij i pomachaj tacie',
+  { zaawansowany:true, typ:'wyscig_okno', nazwa:'Wyścig do okna!', podtytul:'Biegnij i pomachaj tacie',
     glos:'f_poziom12', glosZapas:'poziom9',
     wariant:{ mama:{ glos:'fm_poziom12' } } },
   { typ:'kolko', nazwa:'Kółko powitalne', podtytul:'Przywitaj się z dziećmi',
@@ -1555,29 +1632,35 @@ const POZIOMY_FRANEK = [
     glos:'licz_poziom' },
   { typ:'ksztalty', bonus:true, nazwa:'Kolory i kształty', podtytul:'Który jest czerwony?',
     glos:'ksz_poziom' },
+  { typ:'alfabet', bonus:true, nazwa:'Alfabet', podtytul:'Na jaką literę się zaczyna?',
+    glos:'alf_poziom' },
+  { typ:'niepasuje', bonus:true, nazwa:'Co nie pasuje?', podtytul:'Trzy z jednej rodziny, jedno z innej',
+    glos:'nie_poziom' },
+  { typ:'wzor', bonus:true, nazwa:'Co będzie dalej?', podtytul:'Dokończ wzór',
+    glos:'wzor_poziom' },
   { typ:'rytm', bonus:true, nazwa:'Rytm i klaskanie', podtytul:'Powtórz rytm pani',
     glos:'rytm_poziom' },
   { typ:'baba', bonus:true, nazwa:'Baba Jaga patrzy', podtytul:'Raz, dwa, trzy – stój jak posąg!',
     glos:'baba_poziom' },
   { typ:'zupa', bonus:true, nazwa:'Zupka na obiad', podtytul:'Najpierw dmuchaj, potem jedz',
     glos:'zupa_poziom' },
-  { typ:'dzien', nazwa:'Cały dzień w przedszkolu', podtytul:'Zabawa, obiadek, leżakowanie',
+  { zaawansowany:true, typ:'dzien', nazwa:'Cały dzień w przedszkolu', podtytul:'Zabawa, obiadek, leżakowanie',
     glos:'f_poziom14' },
   { typ:'szukanie', bonus:true, nazwa:'Szukamy kurtki', podtytul:'Która wisi twoja?',
     glos:'szuk_poziom' },
-  { typ:'lapanie', nazwa:'Tata cię łapie!', podtytul:'Uciekniesz – nie myjesz się!',
+  { zaawansowany:true, typ:'lapanie', nazwa:'Tata cię łapie!', podtytul:'Uciekniesz – nie myjesz się!',
     meta:1500, glos:'f_poziom15',
     wariant:{ mama:{ glos:'fm_poziom15' } } },
-  { typ:'jazda', nazwa:'Jedziemy do domu', podtytul:'W radiu Kocia Szajka',
+  { zaawansowany:true, typ:'jazda', nazwa:'Jedziemy do domu', podtytul:'W radiu Kocia Szajka',
     wariant:{ mama:{ nazwa:'Wracamy autobusem', podtytul:'W autobusie Kocia Szajka',
                      glos:'fm_poziom16' } },
     dlugosc:5200, cel:'stacja', powrot:true, radio:true, tytul:'JEDZIEMY NA STACJĘ',
     glos:'f_poziom16', glosJak:'jazda_dom' },
-  { typ:'tankowanie', nazwa:'Tankujemy!', podtytul:'Nie rozlej benzyny',
+  { zaawansowany:true, typ:'tankowanie', nazwa:'Tankujemy!', podtytul:'Nie rozlej benzyny',
     glos:'f_poziom17',
     wariant:{ mama:{ nazwa:'Kasujemy bilet!', podtytul:'Wsuń bilet w kasownik',
                      glos:'fm_poziom17' } } },
-  { nazwa:'Idziemy do domu', podtytul:'Przywitaj się z Igorem', tlo:'ulica', szer:900,
+  { zaawansowany:true, nazwa:'Idziemy do domu', podtytul:'Przywitaj się z Igorem', tlo:'ulica', szer:900,
     tata:true, glos:'f_poziom18', start:{x:30,y:170},
     platformy:[
       {x:0,y:235,w:900,h:35,styl:'ziemia'},
@@ -1594,7 +1677,7 @@ const POZIOMY_FRANEK = [
     wariant:{ mama:{ podtytul:'Tata czeka w drzwiach', glos:'fm_poziom19' } } },
 
   /* ---------- wieczór w domu ---------- */
-  { nazwa:'Zabawa w domu', podtytul:'Tory, lego i rebusy', tlo:'salon', szer:1000,
+  { zaawansowany:true, nazwa:'Zabawa w domu', podtytul:'Tory, lego i rebusy', tlo:'salon', szer:1000,
     glos:'f_poziom20', start:{x:40,y:170}, ubranie:'wieczor',
     platformy:[
       {x:0,y:235,w:1000,h:35,styl:'podloga'},
@@ -1613,11 +1696,15 @@ const POZIOMY_FRANEK = [
   },
   { typ:'porzadki', bonus:true, nazwa:'Porządki w pokoju', podtytul:'Klocki do pudełka, misie na półkę',
     glos:'porz_poziom' },
+  { typ:'memory', bonus:true, nazwa:'Pary obrazków', podtytul:'Znajdź takie same karty',
+    glos:'mem_poziom' },
+  { typ:'karty', bonus:true, nazwa:'Wyższa karta', podtytul:'Która liczba jest większa?',
+    glos:'karty_poziom' },
   { typ:'kolejka', bonus:true, nazwa:'Tory dla pociągu', podtytul:'Poobracaj tory i puść pociąg',
     glos:'rail_poziom' },
   { typ:'lawa', bonus:true, nazwa:'Podłoga to lawa', podtytul:'Skacz po meblach na kanapę',
     glos:'lawa_poziom' },
-  { nazwa:'Ścianka i płot', podtytul:'Wspinaj się do Igora', tlo:'ogrod', szer:1000,
+  { zaawansowany:true, nazwa:'Ścianka i płot', podtytul:'Wspinaj się do Igora', tlo:'ogrod', szer:1000,
     glos:'f_poziom21', start:{x:30,y:170},
     platformy:[
       {x:0,y:235,w:1000,h:35,styl:'ziemia'},
@@ -1635,11 +1722,11 @@ const POZIOMY_FRANEK = [
     drzwi:{x:790,y:166,w:56,h:70,tekst:'Do Igora!',plot:true,glos:'zad_plot',
            opis:'Wspinaj się i przejdź przez płot!'}
   },
-  { typ:'igorek', nazwa:'Zabawa z Igorem', podtytul:'Piłka, autka i chowanego',
+  { zaawansowany:true, typ:'igorek', nazwa:'Zabawa z Igorem', podtytul:'Piłka, autka i chowanego',
     glos:'f_poziom22' },
   { typ:'stol', bonus:true, nazwa:'Nakrywamy do stołu', podtytul:'Talerz, kubek i widelec dla każdego',
     glos:'stol_poziom' },
-  { nazwa:'Kolacja', podtytul:'Fish and chips!', tlo:'kuchnia', szer:1000,
+  { zaawansowany:true, nazwa:'Kolacja', podtytul:'Fish and chips!', tlo:'kuchnia', szer:1000,
     glos:'f_poziom23', start:{x:100,y:170},
     platformy:[
       {x:0,y:235,w:1000,h:35,styl:'podloga'},
@@ -1657,11 +1744,11 @@ const POZIOMY_FRANEK = [
     ],
     drzwi:{x:940,y:165,w:50,h:70,tekst:'Do łazienki!'}
   },
-  { typ:'kapiel', nazwa:'Kąpiel', podtytul:'Umyj się cały, po kolei',
+  { zaawansowany:true, typ:'kapiel', nazwa:'Kąpiel', podtytul:'Umyj się cały, po kolei',
     glos:'f_poziom24' },
   { typ:'banki', bonus:true, nazwa:'Bańki mydlane', podtytul:'Łap bańki rączką',
     glos:'banki_poziom' },
-  { nazwa:'Ząbki i piżamka', podtytul:'Jeszcze raz szorujemy', tlo:'lazienka', szer:800,
+  { zaawansowany:true, nazwa:'Ząbki i piżamka', podtytul:'Jeszcze raz szorujemy', tlo:'lazienka', szer:800,
     glos:'f_poziom25', start:{x:30,y:170},
     platformy:[
       {x:0,y:235,w:800,h:35,styl:'kafle'},
@@ -1687,7 +1774,7 @@ const POZIOMY_FRANEK = [
     glos:'owce_poziom' },
   { typ:'sen', nazwa:'Sen o kotkach', podtytul:'Kotki rzucają śnieżkami',
     glos:'f_poziom27' },
-  { typ:'igloo', bonus:true, nazwa:'Kotki budują igloo', podtytul:'Podawaj śnieżki kotkom',
+  { zaawansowany:true, typ:'igloo', bonus:true, nazwa:'Kotki budują igloo', podtytul:'Podawaj śnieżki kotkom',
     glos:'igloo_poziom' }
 ];
 
@@ -1938,11 +2025,23 @@ function zOpiekunem(t){
   return t;
 }
 function bohater(){ return BOHATEROWIE[G.kto]; }
-function POZ(){ return BOHATEROWIE[G.kto].poziomy; }
+/* W trybie prostym odpadają etapy oznaczone zaawansowany:true – to te, które
+   się powtarzają (drugie mycie ząbków, druga jazda autem, drugi wyścig...). */
+let LISTA_POZIOMOW = null;
+function odswiezPoziomy(){
+  const l = BOHATEROWIE[G.kto].poziomy;
+  LISTA_POZIOMOW = TRYB === 'prosty' ? l.filter(p => !p.zaawansowany) : l;
+}
+function POZ(){
+  if(!LISTA_POZIOMOW || LISTA_POZIOMOW.zrodlo !== G.kto + TRYB){
+    odswiezPoziomy(); LISTA_POZIOMOW.zrodlo = G.kto + TRYB;
+  }
+  return LISTA_POZIOMOW;
+}
 
 /* ==================== STAN GRY ==================== */
 const G = {
-  ekran:'wybor', kto:'franek', poziom:0, t:0, kartaT:0,
+  ekran:'ustawienia', kto:'franek', poziom:0, t:0, kartaT:0, ustaw:0,
   gracz:null, kamera:0, zrobione:0, ekwipunek:[],
   czastki:[], overlay:null, info:null, infoT:0,
   tata:{x:0,y:0}, mycie:null, jazda:null, wyscig:null, okno:null, ostatnieZadanie:-1,
@@ -1992,7 +2091,12 @@ const STARTY_MINIGIER = {
   banki: () => startBaniek(),
   cienie: () => startCieni(),
   owce: () => startOwiec(),
-  igloo: () => startIgloo()
+  igloo: () => startIgloo(),
+  alfabet: () => startAlfabetu(),
+  memory: () => startMemory(),
+  wzor: () => startWzoru(),
+  niepasuje: () => startNiepasuje(),
+  karty: () => startKart()
 };
 function startPoziomu(i){
   G.poziom = i;
@@ -2029,8 +2133,9 @@ function numerEtapu(i){
   return n;
 }
 function napisEtapu(i){
+  if(TRYB === 'prosty') return (i+1) + '/' + POZ().length;   // bez numerów, sam postęp
   const nr = numerEtapu(i);
-  return nr ? 'POZIOM ' + nr : 'BONUS';
+  return nr ? (JEZYK === 'en' ? 'LEVEL ' : 'POZIOM ') + nr : 'BONUS';
 }
 function nazwaEtapu(p){ const w = wariantEtapu(p); return (w && w.nazwa) || zOpiekunem(p.nazwa); }
 function podtytulEtapu(p){ const w = wariantEtapu(p); return (w && w.podtytul) || zOpiekunem(p.podtytul); }
@@ -2040,7 +2145,10 @@ function kartaPoziomu(i){
   const p = POZ()[i];
   const w = wariantEtapu(p);
   const wt = bohater().wariantOp === 'tata' && p.glosTaty ? p.glosTaty : null;
-  mow(najlepszyGlos(w && w.glos, wt, p.glos, p.glosZapas));
+  const k = najlepszyGlos(w && w.glos, wt, p.glos, p.glosZapas);
+  // w trybie prostym etapy są przetasowane, więc nagrane „poziom siódmy" by kłamało
+  // – gra sięga wtedy po wersję bez numeru (n_...), a angielskie nagrania numerów nie mają
+  mow(TRYB === 'prosty' && JEZYK !== 'en' ? najlepszyGlos('n_' + k, k) : k);
 }
 /* Nowe kwestie narratora dochodzą osobnym plikiem. Póki go nie ma, gra sięga
    po starą kwestię tego poziomu, żeby zawsze coś powiedzieć. */
@@ -2078,6 +2186,7 @@ function debugEtap(kierunek){
   G.pogoda = null; G.sznurowki = null; G.stol = null; G.porzadki = null;
   G.ksztalty = null; G.rytm = null; G.zupa = null; G.szukanie = null;
   G.banki = null; G.cienie = null; G.owce = null; G.igloo = null;
+  G.alfabet = null; G.memory = null; G.wzor = null; G.niepasuje = null; G.karty = null;
   G.czastki = []; G.overlay = null;
   G.debug = 150;
   startPoziomu(i);
@@ -2244,7 +2353,12 @@ function glifNaKanwie(zn, kol){
   pamiecGlifow.set(klucz, c);
   return c;
 }
-function szerTekstu(t, skala){ return [...t].length * 6 * (skala||1); }
+/* Szerokość napisu liczymy po przetłumaczeniu i w takiej samej całkowitej skali,
+   w jakiej rysuje rysujTekst – inaczej czarne tabliczki nie pasowałyby do napisów
+   (angielskie zdania bywają dłuższe od polskich). */
+function szerTekstu(t, skala){
+  return [...tlum(t)].length * 6 * Math.max(1, Math.round(skala || 1));
+}
 function rysujZnaki(znaki, px, py, kol, skala){
   const sw = 5*skala, sh = 9*skala, krok = 6*skala;
   for(let i=0;i<znaki.length;i++){
@@ -2252,7 +2366,538 @@ function rysujZnaki(znaki, px, py, kol, skala){
     ctx.drawImage(glifNaKanwie(znaki[i], kol), px + i*krok, py, sw, sh);
   }
 }
+/* ==================== SŁOWNIK PL -> EN ====================
+   Wszystkie napisy w kodzie są po polsku; tlum() podmienia je na angielskie.
+   Klucze pisane tak jak w kodzie – wersje DUŻYMI i małymi dorabiają się same,
+   a zdania złożone (np. „Najpierw znajdź miskę!") składają się z kawałków. */
+const TLUM = {
+  '<  >  KARTA     ^  ODKRYJ':'<  >  CARD     ^  TURN IT OVER',
+  '<  >  WYBIERAJ     ^  TA WIĘKSZA':'<  >  CHOOSE     ^  THE BIGGER ONE',
+  '<  >  WYBIERAJ     ^  TO TO':'<  >  CHOOSE     ^  THAT ONE',
+  '<  >  WYBIERAJ     ^  TA LITERA':'<  >  CHOOSE     ^  THIS LETTER',
+  'ALE PAMIĘĆ!':'WHAT A MEMORY!',
+  'ALE Z CIEBIE DETEKTYW!':'YOU ARE A REAL DETECTIVE!',
+  'ALE Z CIEBIE MĄDRALA!':'YOU ARE A CLEVER ONE!',
+  'ALFABET':'LETTERS',
+  'Alfabet':'Letters',
+  'CO BĘDZIE DALEJ?':'WHAT COMES NEXT?',
+  'CO NIE PASUJE?':'WHICH ONE IS ODD?',
+  'Co będzie dalej?':'What comes next?',
+  'Co nie pasuje?':'Which one is odd?',
+  'Dokończ wzór':'Finish the pattern',
+  'Która liczba jest większa?':'Which number is bigger?',
+  'Na jaką literę się zaczyna?':'Which letter does it start with?',
+  'NA JAKĄ LITERĘ SIĘ ZACZYNA?':'WHICH LETTER DOES IT START WITH?',
+  'PARY OBRAZKÓW':'MATCHING PAIRS',
+  'PARY':'PAIRS',
+  'Pary obrazków':'Matching pairs',
+  'Trzy z jednej rodziny, jedno z innej':'Three from one family, one from another',
+  'WIESZ, KTÓRA WIĘKSZA!':'YOU KNOW WHICH IS BIGGER!',
+  'WSZYSTKIE PARY!':'ALL THE PAIRS!',
+  'WSZYSTKIE WZORY ZGADNIĘTE!':'EVERY PATTERN WORKED OUT!',
+  'WSZYSTKO POSORTOWANE!':'ALL SORTED!',
+  'WYŻSZA KARTA':'THE HIGHER CARD',
+  'Wyższa karta':'The higher card',
+  'ZNASZ LICZBY!':'YOU KNOW YOUR NUMBERS!',
+  'ZNASZ LITERKI!':'YOU KNOW YOUR LETTERS!',
+  'Znajdź takie same karty':'Find two cards the same',
+  '^  NIECH SKACZE!':'^  LET IT JUMP!',
+  '^ v  ZMIEŃ PAS      >  SZYBCIEJ':'^ v  CHANGE LANE      >  FASTER',
+  '^ v  ZMIEŃ ŚCIEŻKĘ      <  >  PEDAŁUJ NA ZMIANĘ':'^ v  CHANGE PATH      <  >  PEDAL ONE BY ONE',
+  'KTÓRA KARTA JEST WIĘKSZA?':'WHICH CARD IS BIGGER?',
+  'TAK! TA JEST WIĘKSZA':'YES! THAT ONE IS BIGGER',
+  'KTÓRE NIE PASUJE?':'WHICH ONE DOES NOT BELONG?',
+  'TO NIE PASUJE! BRAWO':'THAT ONE DOES NOT BELONG! WELL DONE',
+  'BRAWO! TAKI JEST WZÓR':'WELL DONE! THAT IS THE PATTERN',
+  'STRONA':'PAGE',
+  '<   >   ^  POWTARZAJ':'<   >   ^  COPY IT',
+  '<  >  CHODZENIE        ^  SKOK':'<  >  WALK        ^  JUMP',
+  '<  >  CHODŹ     ^  PODNIEŚ / POŁÓŻ':'<  >  WALK     ^  PICK UP / PUT DOWN',
+  '<  >  CHODŹ     ^  SKOK':'<  >  WALK     ^  JUMP',
+  '<  >  MIEJSCE     ^  POŁÓŻ':'<  >  SEAT     ^  PUT IT',
+  '<  >  NA ZMIANĘ - BIEGNIJ!':'<  >  ONE BY ONE - RUN!',
+  '<  >  RUSZAJ RĄCZKĄ':'<  >  MOVE YOUR HAND',
+  '<  >  SZUKAJ     ^  ZDEJMIJ':'<  >  LOOK     ^  TAKE IT',
+  '<  >  TAM I Z POWROTEM':'<  >  BACK AND FORTH',
+  '<  >  WYBIERASZ,   ^  ZACZYNA':'<  >  CHOOSE,   ^  START',
+  '<  >  WYBIERZ TOR   ^  OBRÓĆ':'<  >  PICK TRACK   ^  TURN',
+  'A B C':'A B C',
+  'AAA, LAWA!':'AAA, LAVA!',
+  'ALE PORZĄDEK W POKOJU!':'WHAT A TIDY ROOM!',
+  'ALE Z CIEBIE MATEMATYK!':'YOU ARE A REAL MATHEMATICIAN!',
+  'ALE Z CIEBIE MUZYK!':'YOU ARE A REAL MUSICIAN!',
+  'AUTKA PO TRAWIE':'TOY CARS ON THE GRASS',
+  'BABA JAGA PATRZY':'RED LIGHT, GREEN LIGHT',
+  'BAŃKI MYDLANE':'SOAP BUBBLES',
+  'BAŃKI':'BUBBLES',
+  'BLOKI':'BLOCKS',
+  'BRAWO':'WELL DONE',
+  'BRAWO FRANEK!':'WELL DONE FRANEK!',
+  'BRAWO!':'WELL DONE!',
+  'BRAWO! TERAZ WSTAWAJ!':'WELL DONE! NOW GET UP!',
+  'Baba Jaga patrzy':'Red light, green light',
+  'Bańki mydlane':'Soap bubbles',
+  'Biegnij i pomachaj mamie':'Run and wave to mum',
+  'Biegnij i pomachaj tacie':'Run and wave to dad',
+  'CAŁA ZUPKA ZJEDZONA!':'ALL THE SOUP IS GONE!',
+  'CAŁE ZOO NA ŚCIANIE!':'A WHOLE ZOO ON THE WALL!',
+  'CAŁY DZIEŃ W PRZEDSZKOLU':'A WHOLE DAY AT PRESCHOOL',
+  'CAŁY RYTM POWTÓRZONY!':'EVERY RHYTHM COPIED!',
+  'CELUJ DO WODY:  <  BLIŻEJ    >  DALEJ':'AIM AT THE WATER:  <  NEARER    >  FURTHER',
+  'CELUJ:  <  BLIŻEJ      >  DALEJ':'AIM:  <  NEARER      >  FURTHER',
+  'CHOWANEGO ZA KRZAKIEM':'HIDE AND SEEK BEHIND THE BUSH',
+  'CHRUP!':'CRUNCH!',
+  'CIEMNO! ZAPAL ŚWIATŁO':'DARK! TURN ON THE LIGHT',
+  'CIENIE NA ŚCIANIE':'SHADOWS ON THE WALL',
+  'CIUCH CIUCH!':'CHOO CHOO!',
+  'CZAPKA I SZALIK':'HAT AND SCARF',
+  'CZAS NA ZABAWĘ!':'PLAYTIME!',
+  'CZERWONY':'RED',
+  'CZEŚĆ, IGOR!':'HELLO, IGOR!',
+  'CZTERY KAPSUŁKI!':'FOUR CAPSULES!',
+  'CZYSTE ZĄBKI':'CLEAN TEETH',
+  'CZYSTO':'CLEAN',
+  'CZYSTO JAK MARZENIE!':'SQUEAKY CLEAN!',
+  'CZYSTY I SUCHY!':'CLEAN AND DRY!',
+  'Cały dzień w przedszkolu':'A whole day at preschool',
+  'Ciemno!':'Dark!',
+  'Cienie na ścianie':'Shadows on the wall',
+  'Czapka, kurtka i buty':'Hat, coat and shoes',
+  'DESKA I PODŁOGA CZYSTE':'SEAT AND FLOOR ARE CLEAN',
+  'DO ZOBACZENIA PO PODWIECZORKU!':'SEE YOU AFTER SNACK TIME!',
+  'DO ŚRODKA W':'INSIDE',
+  'DO ŚRODKA':'INSIDE',
+  'DOBIEGŁEŚ!':'YOU MADE IT!',
+  'DOBRANOC FRANEK!':'GOOD NIGHT FRANEK!',
+  'DOBRANOC,':'GOOD NIGHT,',
+  'DOBRANOC, FRANEK!':'GOOD NIGHT, FRANEK!',
+  'DOJECHALIŚMY!':'WE ARE THERE!',
+  'DOLNE OD ŚRODKA':'BOTTOM TEETH INSIDE',
+  'DOLNE Z PRZODU':'BOTTOM TEETH IN FRONT',
+  'DRUGIE DOSTANIE PRZYTULASA':'THE OTHER ONE GETS A HUG',
+  'DZIESIĘĆ OWIECZEK!':'TEN SHEEP!',
+  'DZIURKI':'HOLES',
+  'Dalej!':'Go on!',
+  'Do Igora!':'To Igor!',
+  'Do domu!':'Back home!',
+  'Do ogródka!':'To the garden!',
+  'Do przedpokoju!':'To the hallway!',
+  'Do sali!':'To the classroom!',
+  'Do samochodu!':'To the car!',
+  'Do taksówki!':'To the taxi!',
+  'Do łazienki!':'To the bathroom!',
+  'Do łóżka!':'To bed!',
+  'Druga kapsułka!':'Second capsule!',
+  'Dwa koty i królik':'Two cats and a rabbit',
+  'Dwie minuty szorowania':'Two minutes of scrubbing',
+  'Dziesięć owiec przez płot':'Ten sheep over the fence',
+  'FISH AND CHIPS!':'FISH AND CHIPS!',
+  'FRANEK GRA W PORANEK FRANKA':'FRANEK PLAYS FRANEK\'S MORNING',
+  'FRANEK ZASYPIA...':'FRANEK IS FALLING ASLEEP...',
+  'FURTKA':'GATE',
+  'Fish and chips!':'Fish and chips!',
+  'Franek gra w Poranek Franka':'Franek plays Franek\'s Morning',
+  'GASIMY ŚWIATŁO...':'LIGHTS OUT...',
+  'GDZIE JEST IGOR?':'WHERE IS IGOR?',
+  'GORĄCE!':'HOT!',
+  'GRA W GRZE':'A GAME IN THE GAME',
+  'Gra w grze':'A game in the game',
+  'GÓRNE OD ŚRODKA':'TOP TEETH INSIDE',
+  'GÓRNE Z PRZODU':'TOP TEETH IN FRONT',
+  'GŁOWA':'HEAD',
+  'I PRZEBIERAMY SIĘ W PIŻAMKĘ':'AND PUT ON PYJAMAS',
+  'IDZIEMY DO DOMU!':'LET\'S GO HOME!',
+  'IDZIEMY SIĘ UMYĆ!':'TIME TO WASH UP!',
+  'IDZIEMY SIĘ UMYĆ?':'SHALL WE WASH UP?',
+  'IDŹ  <  >      POWIEDZ CZEŚĆ  ^':'WALK  <  >      SAY HELLO  ^',
+  'IGLOO GOTOWE!':'THE IGLOO IS DONE!',
+  'ILE TO JEST RAZEM?':'HOW MANY ALTOGETHER?',
+  'Idziemy do domu':'Walking home',
+  'Idź do umywalki!':'Go to the sink!',
+  'Igora':'Igor',
+  'Ile to jest razem?':'How many altogether?',
+  'JAK ROBIMY SIKU?':'HOW DO WE PEE?',
+  'JASNO!':'LIGHT!',
+  'JEDZIEMY NA STACJĘ':'OFF TO THE PETROL STATION',
+  'JESTEŚ NA KANAPIE!':'YOU ARE ON THE SOFA!',
+  'JESTEŚ!':'GOT YOU!',
+  'JESTEŚMY W DOMU':'WE ARE HOME',
+  'Jaka dziś pogoda?':'What is the weather today?',
+  'Jedziemy do domu':'Driving home',
+  'Jedziemy do przedszkola!':'Driving to preschool!',
+  'Jesteśmy w domu':'We are home',
+  'Jeszcze raz szorujemy':'Scrubbing once more',
+  'JĘZYK':'LANGUAGE',
+  'KALOSZE I PARASOL':'WELLIES AND UMBRELLA',
+  'KASUJEMY BILET':'STAMPING THE TICKET',
+  'KASZKIET I OKULARY':'CAP AND SUNGLASSES',
+  'KIM CHCESZ GRAĆ?':'WHO DO YOU WANT TO BE?',
+  'KOCIA SZAJKA':'THE CAT GANG',
+  'KOLORY I KSZTAŁTY':'COLOURS AND SHAPES',
+  'KOLORY I KSZTAŁTY BEZ BŁĘDU!':'COLOURS AND SHAPES, ALL CORRECT!',
+  'KONIEC DNIA!':'END OF THE DAY!',
+  'KONIEC SIKU!':'ALL DONE!',
+  'KOTKI BUDUJĄ IGLOO':'CATS BUILD AN IGLOO',
+  'KOTKI IDĄ SPAĆ DO ŚRODKA':'THE CATS GO TO SLEEP INSIDE',
+  'KOTKI RZUCAJĄ ŚNIEŻKAMI CAŁĄ NOC':'THE CATS THROW SNOWBALLS ALL NIGHT',
+  'KRÓTKO, BEZ POWTÓREK':'SHORT, NO REPEATS',
+  'KTO KŁADZIE CIĘ SPAĆ?':'WHO PUTS YOU TO BED?',
+  'KTÓRĄ KSIĄŻKĘ CZYTAMY?':'WHICH BOOK DO WE READ?',
+  'KWADRAT':'SQUARE',
+  'Kapcie i miś':'Slippers and teddy',
+  'Karmimy zwierzaki':'Feeding the pets',
+  'Kasujemy bilet!':'Stamping the ticket!',
+  'Klocki do pudełka, misie na półkę':'Blocks in the box, teddies on the shelf',
+  'Kolacja':'Dinner',
+  'Kolory i kształty':'Colours and shapes',
+  'Kotki budują igloo':'Cats build an igloo',
+  'Kotki rzucają śnieżkami':'Cats throwing snowballs',
+  'Książka na dobranoc':'Bedtime book',
+  'Kto czyta i jaką książkę':'Who reads and which book',
+  'Która wisi twoja?':'Which one is yours?',
+  'Który jest czerwony?':'Which one is red?',
+  'KÓŁKO':'CIRCLE',
+  'KÓŁKO POWITALNE':'MORNING CIRCLE',
+  'Kółko powitalne':'Morning circle',
+  'KĄPIEL':'BATH TIME',
+  'Kąpiel':'Bath time',
+  'LAWA CIĘ NIE DOSTAŁA!':'THE LAVA DID NOT GET YOU!',
+  'LEŻAKOWANIE':'NAP TIME',
+  'LICZYMY JABŁUSZKA':'COUNTING APPLES',
+  'LICZYMY OWIECZKI':'COUNTING SHEEP',
+  'LICZYMY RAZEM!':'LET\'S COUNT TOGETHER!',
+  'Liczymy jabłuszka':'Counting apples',
+  'Liczymy owieczki':'Counting sheep',
+  'MALOWANIE FARBAMI':'PAINTING WITH PAINTS',
+  'MAM CIĘ!':'GOT YOU!',
+  'MAMA WOŁA NA KOLACJĘ!':'MUM IS CALLING FOR DINNER!',
+  'MNIAM!':'YUM!',
+  'MNIAM! MNIAM!':'YUM! YUM!',
+  'MOŻNA SIADAĆ DO KOLACJI!':'DINNER CAN BEGIN!',
+  'MUMINKI':'THE MOOMINS',
+  'MYJEMY SIĘ!':'WASHING UP!',
+  'MYJEMY ZĄBKI':'BRUSHING TEETH',
+  'Mama czeka w drzwiach':'Mum is waiting at the door',
+  'Mama już czeka':'Mum is already waiting',
+  'Miska, płatki, mleko':'Bowl, cereal, milk',
+  'Myjemy ząbki':'Brushing teeth',
+  'NA SIEDZĄCO':'SITTING DOWN',
+  'NA STOJĄCO':'STANDING UP',
+  'NACISKAJ  <  >  NA ZMIANĘ':'PRESS  <  >  ONE BY ONE',
+  'NACIŚNIJ  ^':'PRESS  ^',
+  'NACIŚNIJ  ^  I SPŁUCZ':'PRESS  ^  TO FLUSH',
+  'NACIŚNIJ  ^  ŻEBY ZACZĄĆ':'PRESS  ^  TO START',
+  'NACIŚNIJ  ^  ŻEBY ZAGRAĆ JESZCZE RAZ':'PRESS  ^  TO PLAY AGAIN',
+  'NAKRYWAMY DO STOŁU':'SETTING THE TABLE',
+  'NASTĘPNYM RAZEM CELUJ DO ŚRODKA':'NEXT TIME AIM FOR THE MIDDLE',
+  'NIC SIĘ NIE OBSIKA':'NOTHING GETS SPLASHED',
+  'NIE DOTYKAJ PODŁOGI!':'DO NOT TOUCH THE FLOOR!',
+  'NIE MYJEMY SIĘ!':'NO WASHING TODAY!',
+  'NIE ZASYPIAJ!':'DO NOT FALL ASLEEP!',
+  'NIEBIESKI':'BLUE',
+  'NOGI':'LEGS',
+  'Na dwór!':'Outside!',
+  'Na dół!':'Downstairs!',
+  'Na rower!':'To the bike!',
+  'Na stojąco czy na siedząco?':'Standing up or sitting down?',
+  'Naciskaj ◀ ▶ na zmianę':'Press ◀ ▶ one by one',
+  'Najpierw dmuchaj, potem jedz':'First blow, then eat',
+  'Nakarm królika!':'Feed the rabbit!',
+  'Nakarm pierwszego kotka!':'Feed the first cat!',
+  'Nakarm rybkę':'Feed the fish',
+  'Nakarm rybkę!':'Feed the fish!',
+  'Nakrywamy do stołu':'Setting the table',
+  'Nie rozlej benzyny':'Do not spill the petrol',
+  'OBIADEK':'LUNCH',
+  'OBSIKANĄ DESKĘ TRZEBA POTEM UMYĆ!':'A SPLASHED SEAT HAS TO BE CLEANED!',
+  'OKNO':'WINDOW',
+  'OWCE':'SHEEP',
+  'Ostatnia kapsułka!':'Last capsule!',
+  'PA PA,':'BYE BYE,',
+  'PA PA, IGOR!':'BYE BYE, IGOR!',
+  'PANI':'TEACHER',
+  'PEŁNY':'FULL',
+  'PIES':'DOG',
+  'PIES, ZAJĄCZEK I PTAK!':'DOG, BUNNY AND BIRD!',
+  'PIRAT RABARBAR':'PIRATE RHUBARB',
+  'PIŁKA W OGRÓDKU':'BALL IN THE GARDEN',
+  'PLAC ZABAW':'PLAYGROUND',
+  'POCIĄG DOJECHAŁ!':'THE TRAIN IS HOME!',
+  'PODŁOGA TO LAWA':'THE FLOOR IS LAVA',
+  'PORANEK':'MORNING',
+  'PORANEK FRANKA':'FRANEK\'S MORNING',
+  'PORZĄDKI W POKOJU':'TIDYING THE ROOM',
+  'POSPRZĄTANE!':'ALL TIDY!',
+  'PROSTY':'SIMPLE',
+  'PRZEDSZKOLE':'PRESCHOOL',
+  'PRZYSTANEK':'BUS STOP',
+  'PRZYTULAS DLA':'A HUG FOR',
+  'PRZYTULAS!':'BIG HUG!',
+  'PTAK':'BIRD',
+  'PUPA':'BOTTOM',
+  'PUSTY TALERZ!':'EMPTY PLATE!',
+  'PUŚĆ  ^  TERAZ!':'LET GO OF  ^  NOW!',
+  'PUŚĆ W ZIELONYM POLU!':'LET GO IN THE GREEN ZONE!',
+  'PYSZNE ŁÓDECZKI!':'YUMMY CEREAL!',
+  'Pies, zajączek i ptak':'Dog, bunny and bird',
+  'Piłka, autka i chowanego':'Ball, cars and hide and seek',
+  'Po kolei!':'One by one!',
+  'Podawaj śnieżki kotkom':'Pass snowballs to the cats',
+  'Podłoga to lawa':'The floor is lava',
+  'Poobracaj tory i puść pociąg':'Turn the tracks and run the train',
+  'Porządki w pokoju':'Tidying the room',
+  'Powiedz cześć Igorowi!':'Say hello to Igor!',
+  'Powieś kurtkę!':'Hang up your coat!',
+  'Powtórz rytm pani':'Copy the teacher\'s rhythm',
+  'Przytul mamę!':'Hug mum!',
+  'Przytul tatę!':'Hug dad!',
+  'Przywitaj się z Igorem':'Say hello to Igor',
+  'Przywitaj się z dziećmi':'Say hello to the children',
+  'PĘCHERZ':'BLADDER',
+  'RADIO':'RADIO',
+  'RUNDA':'ROUND',
+  'RYBKA I FRYTKI!':'FISH AND CHIPS!',
+  'RYTM':'RHYTHM',
+  'RYTM I KLASKANIE':'RHYTHM AND CLAPPING',
+  'Raz, dwa, trzy – stój jak posąg!':'One, two, three - freeze!',
+  'Rowerem do przedszkola!':'Cycling to preschool!',
+  'Rozbierz się i przytul mamę':'Take it off and hug mum',
+  'Rozbierz się i przytul tatę':'Take it off and hug dad',
+  'Rybka':'Fish',
+  'Rytm i klaskanie':'Rhythm and clapping',
+  'RĘCE':'ARMS',
+  'SAM ZAWIĄZAŁEŚ BUTY!':'YOU TIED YOUR SHOES YOURSELF!',
+  'SEN O KOTKACH':'A DREAM ABOUT CATS',
+  'SIEDZISZ SPOKOJNIE - NIC SIĘ NIE OBSIKA':'SIT STILL - NOTHING GETS SPLASHED',
+  'SIKU DO KIBELKA':'PEE IN THE TOILET',
+  'SIĘGNIJ  <  >     NACIŚNIJ  ^':'REACH  <  >     PRESS  ^',
+  'SPRZĄTAMY PO SOBIE':'WE CLEAN UP AFTER OURSELVES',
+  'SPRZĄTNIĘTE':'TIDIED',
+  'SPŁUKANE!':'FLUSHED!',
+  'STACJA':'STATION',
+  'STOPY':'FEET',
+  'STRONA':'PAGE',
+  'STÓJ JAK POSĄG!':'FREEZE LIKE A STATUE!',
+  'STÓŁ NAKRYTY!':'THE TABLE IS SET!',
+  'SZORUJ  <  >':'SCRUB  <  >',
+  'SZORUJ  <  >  NA ZMIANĘ':'SCRUB  <  >  ONE BY ONE',
+  'SZUKAJ KONTAKTU NA ŚCIANIE':'LOOK FOR THE SWITCH ON THE WALL',
+  'SZUKAMY KURTKI':'FINDING YOUR COAT',
+  'SZYJA':'NECK',
+  'Sen o kotkach':'A dream about cats',
+  'Siku do kibelka':'Pee in the toilet',
+  'Skacz po meblach na kanapę':'Jump on the furniture to the sofa',
+  'Szatnia':'Cloakroom',
+  'Sznurówki i kokardka':'Laces and a bow',
+  'Szukamy kurtki':'Finding your coat',
+  'TANKUJEMY AUTO':'FILLING UP THE CAR',
+  'TERAZ TRZEBA POSPRZĄTAĆ...':'NOW WE HAVE TO CLEAN UP...',
+  'TERAZ ZĄBKI I PIŻAMKA':'NOW TEETH AND PYJAMAS',
+  'TO NIE TO!':'NOT THAT ONE!',
+  'TORY DLA POCIĄGU':'TRACKS FOR THE TRAIN',
+  'TORY':'TRACKS',
+  'TRYB':'MODE',
+  'TRZEBA CELOWAĆ':'YOU HAVE TO AIM',
+  'TRZYMAJ  ^':'HOLD  ^',
+  'TRZYMAJ  ^  I TANKUJ':'HOLD  ^  AND FILL UP',
+  'TRZYMAJ  ^  I WSUWAJ BILET':'HOLD  ^  AND PUSH THE TICKET',
+  'TRÓJKĄT':'TRIANGLE',
+  'Taksówką do przedszkola!':'Taxi to preschool!',
+  'Talerz, kubek i widelec dla każdego':'A plate, a cup and a fork for everyone',
+  'Tankujemy!':'Filling up!',
+  'Tata cię łapie!':'Dad is chasing you!',
+  'Tata czeka w drzwiach':'Dad is waiting at the door',
+  'Tata już czeka':'Dad is already waiting',
+  'Teraz drugi kotek!':'Now the second cat!',
+  'Tory dla pociągu':'Tracks for the train',
+  'Tory, lego i rebusy':'Train set, bricks and puzzles',
+  'Trzecia kapsułka!':'Third capsule!',
+  'U IGORA ZA PŁOTEM':'AT IGOR\'S, BEHIND THE FENCE',
+  'UBIERAMY SIĘ NA POGODĘ':'DRESSING FOR THE WEATHER',
+  'UBRANY NA KAŻDĄ POGODĘ!':'READY FOR ANY WEATHER!',
+  'UCIEKAJ!  <  >  NA ZMIANĘ':'RUN!  <  >  ONE BY ONE',
+  'UCIEKŁEM!':'I GOT AWAY!',
+  'UMYJ PODŁOGĘ':'CLEAN THE FLOOR',
+  'UMYJ RĄCZKI!':'WASH YOUR HANDS!',
+  'UMYTE W':'WASHED',
+  'UMYTY, PRZEBRANY, W DOMU!':'WASHED, CHANGED AND HOME!',
+  'UPS! OBOK!':'OOPS! MISSED!',
+  'UPS! OSTROŻNIE!':'OOPS! CAREFUL!',
+  'Ubieramy się':'Getting dressed',
+  'Ubierz piżamkę!':'Put on your pyjamas!',
+  'Ubierz się na deszcz, śnieg i słońce':'Dress for rain, snow and sun',
+  'Ubierz się po kolei':'Get dressed one thing at a time',
+  'Uciekniesz – nie myjesz się!':'Get away and skip the washing!',
+  'Umyj się cały, po kolei':'Wash every part, one by one',
+  'Umyj ząbki i uczesz się':'Brush your teeth and comb your hair',
+  'W autobusie Kocia Szajka':'The Cat Gang on the bus',
+  'W radiu Kocia Szajka':'The Cat Gang on the radio',
+  'WIDZI CIĘ!':'SHE SEES YOU!',
+  'WSTAWAJ,':'GET UP,',
+  'WSTAWANIE':'GETTING UP',
+  'WSZYSCY NAJEDZENI!':'EVERYONE IS FED!',
+  'WSZYSCY PRZYWITANI!':'EVERYONE SAID HELLO!',
+  'WSZYSTKIE BAŃKI PYK!':'ALL THE BUBBLES POPPED!',
+  'WSZYSTKIE ETAPY, PEŁNY DZIEŃ':'ALL THE STAGES, A WHOLE DAY',
+  'WSZYSTKO POLICZONE!':'ALL COUNTED!',
+  'WSZYSTKO ZGADŁEŚ!':'YOU GOT THEM ALL!',
+  'WYTRZYJ DESKĘ':'WIPE THE SEAT',
+  'WYŚCIG DO FURTKI':'RACE TO THE GATE',
+  'WYŚCIG DO OKNA':'RACE TO THE WINDOW',
+  'Weź kapcie i misia':'Take your slippers and teddy',
+  'Weź karmę dla kotów!':'Take the cat food!',
+  'Weź marchewkę dla królika!':'Take a carrot for the rabbit!',
+  'Wracamy autobusem':'Riding the bus home',
+  'Wsiadaj!':'Get in!',
+  'Wspinaj się do Igora':'Climb over to Igor',
+  'Wspinaj się i przejdź przez płot!':'Climb up and cross the fence!',
+  'Wstawaj, Franek!':'Get up, Franek!',
+  'Wstawaj, Pola!':'Get up, Pola!',
+  'Wsuń bilet w kasownik':'Push the ticket into the machine',
+  'Wychodzimy!':'Going out!',
+  'Wygrzeb się z łóżka':'Climb out of bed',
+  'Wyścig do furtki!':'Race to the gate!',
+  'Wyścig do okna!':'Race to the window!',
+  'Z KIM DO PRZEDSZKOLA?':'WHO TAKES YOU TO PRESCHOOL?',
+  'Z MAMĄ LUB TATĄ':'WITH MUM OR DAD',
+  'ZABAWA KLOCKAMI':'PLAYING WITH BRICKS',
+  'ZADANIE':'TASK',
+  'ZAJĄCZEK':'BUNNY',
+  'ZAWIĄZANE!':'ALL TIED!',
+  'ZAWIĄZUJEMY BUTY':'TYING SHOES',
+  'ZIELONY':'GREEN',
+  'ZJEDZONE!':'ALL EATEN!',
+  'ZJEŚĆ ŚNIADANKO, UMYĆ ZĄBKI':'EAT BREAKFAST, BRUSH TEETH',
+  'ZMIEŃ STRZAŁKĄ W BOK':'CHANGE WITH LEFT OR RIGHT',
+  'ZMIEŃ ZĄBKI  ^  v':'CHANGE TEETH  ^  v',
+  'ZNALAZŁEŚ SWOJĄ KURTKĘ!':'YOU FOUND YOUR COAT!',
+  'ZUPKA NA OBIAD':'SOUP FOR LUNCH',
+  'ZYGZAK MCQUEEN':'LIGHTNING MCQUEEN',
+  'Zabawa w domu':'Playing at home',
+  'Zabawa z Igorem':'Playing with Igor',
+  'Zabawa, obiadek, leżakowanie':'Playing, lunch and a nap',
+  'Zapal światło w pokoju':'Turn on the light',
+  'Zawiązujemy buty':'Tying shoes',
+  'Zdejmij buty!':'Take off your shoes!',
+  'Zdejmij czapkę!':'Take off your hat!',
+  'Zjedz kolację!':'Eat your dinner!',
+  'Zjedz pierwszą kapsułkę!':'Eat the first capsule!',
+  'Zjedz śniadanko!':'Eat your breakfast!',
+  'Zupka na obiad':'Soup for lunch',
+  'Ząbki i piżamka':'Teeth and pyjamas',
+  '^  DALEJ':'^  NEXT',
+  '^  RZUĆ ŚNIEŻKĄ':'^  THROW A SNOWBALL',
+  '^  RZUĆ ŚNIEŻKĘ':'^  THROW A SNOWBALL',
+  '^  SPŁUCZ WODĘ':'^  FLUSH',
+  '^ WYBIERZ   v POLICZ RAZEM':'^ CHOOSE   v COUNT WITH ME',
+  '^ v  ZMIENIA CZĘŚĆ':'^ v  CHANGE THE PART',
+  'ŁAP BAŃKI RĄCZKĄ!':'CATCH THE BUBBLES!',
+  'ŁYŻKI':'SPOONS',
+  'Łap bańki rączką':'Catch the bubbles with your hand',
+  'Łazienka':'Bathroom',
+  'ŚPIJ SŁODKO, FRANEK!':'SLEEP TIGHT, FRANEK!',
+  'Ścianka i płot':'Climbing wall and fence',
+  'Śniadanko':'Breakfast',
+  'Śniadanko i kapsułki':'Breakfast and capsules',
+  'Śniadanko!':'Breakfast!',
+  'ŻÓŁTY':'YELLOW',
+  '▲▼ pas, ▶ szybciej':'▲▼ lane, ▶ faster',
+  '▲▼ ścieżka, ◀ ▶ pedałuj':'▲▼ path, ◀ ▶ pedal',
+  'bluzę':'a jumper',
+  'buty':'shoes',
+  'czapkę':'a hat',
+  'frytki':'chips',
+  'gazetkę z rebusami':'a puzzle book',
+  'grzebień':'a comb',
+  'kapcie':'slippers',
+  'kapsułkę':'a capsule',
+  'karmę dla rybki':'fish food',
+  'klocki lego':'lego bricks',
+  'koszulkę':'a t-shirt',
+  'kotka':'a cat',
+  'królika':'a rabbit',
+  'kurtkę':'a coat',
+  'legginsy':'leggings',
+  'majtki':'pants',
+  'marchewkę':'a carrot',
+  'misia':'a teddy',
+  'miskę':'a bowl',
+  'mleko':'milk',
+  'opiekuna':'your grown-up',
+  'pastę':'toothpaste',
+  'pistolet':'the nozzle',
+  'piżamkę':'pyjamas',
+  'rybkę':'the fish',
+  'rybkę w panierce':'battered fish',
+  'skarpetki':'socks',
+  'spodnie':'trousers',
+  'szczoteczkę':'a toothbrush',
+  'talerz':'a plate',
+  'tory z kolejką':'the train set',
+  'umywalkę':'the sink',
+  'łyżkę':'a spoon',
+  'łódeczki':'cereal',
+  'śniadanie':'breakfast',
+  'Najpierw':'First',
+  'Znajdź':'Find',
+  'TATY':'DAD',
+  'MAMY':'MUM',
+  'FRANKA':'FRANEK',
+  'POLI':'POLA',
+  'IGOR':'IGOR',
+  'FRANEK':'FRANEK',
+  'POLA':'POLA',
+  'ZOSIA':'SOPHIE',
+  'ANTEK':'TONY',
+  'HANIA':'HANNAH',
+  'KUBA':'JACOB',
+};
+const TLUM_DUZE = {}, TLUM_MALE = {};
+for(const k in TLUM){
+  TLUM_DUZE[k.toUpperCase()] = TLUM[k].toUpperCase();
+  TLUM_MALE[k.toLowerCase()] = TLUM[k].toLowerCase();
+}
+function tlumSlownik(s){
+  if(TLUM[s] !== undefined) return TLUM[s];
+  if(TLUM_DUZE[s] !== undefined) return TLUM_DUZE[s];
+  if(TLUM_MALE[s] !== undefined) return TLUM_MALE[s];
+  return undefined;
+}
+function tlumSklej(s, gleb){
+  const w = tlumSlownik(s);
+  if(w !== undefined) return w;
+  if(gleb > 2) return undefined;
+  for(let i = s.lastIndexOf(' '); i > 0; i = s.lastIndexOf(' ', i-1)){
+    const a = tlumSklej(s.slice(0,i), gleb+1), b = tlumSklej(s.slice(i+1), gleb+1);
+    if(a !== undefined && b !== undefined) return a + ' ' + b;
+  }
+  return undefined;
+}
+
+/* Wszystkie napisy idą przez rysujTekst, więc tłumaczymy dokładnie tutaj –
+   dzięki temu w kodzie minigier zostają polskie teksty. */
+const pamiecTlum = {};
+function tlum(s){
+  if(JEZYK !== 'en' || !s) return s;
+  if(pamiecTlum[s] !== undefined) return pamiecTlum[s];
+  let w = tlumSlownik(s);
+  if(w === undefined){
+    const zn = s.match(/^(.*[^\s!?.])([!?.]+)$/);              // „ZJEDZ ŚNIADANKO!"
+    const rdzen = zn ? zn[1] : s, ogon = zn ? zn[2] : '';
+    if(zn){ const b = tlumSlownik(rdzen); if(b !== undefined) w = b + ogon; }
+    if(w === undefined && s.indexOf(' - ') > 0) w = s.split(' - ').map(tlum).join(' - ');
+    if(w === undefined){
+      const m = s.match(/^([^0-9]*[^0-9\s:])(:?\s*)([0-9].*)$/);   // „ZADANIE 3/5"
+      if(m){ const b = tlumSlownik(m[1]); if(b !== undefined) w = b + m[2] + m[3]; }
+    }
+    if(w === undefined){ const b = tlumSklej(rdzen, 0); if(b !== undefined) w = b + ogon; }
+  }
+  if(w === undefined) w = s;
+  pamiecTlum[s] = w;
+  return w;
+}
 function rysujTekst(t, x, y, kol, cien, skala, wyr){
+  t = tlum(t);
   skala = Math.max(1, Math.round(skala || 1));
   const znaki = [...t];
   const w = znaki.length*6*skala, h = 9*skala;
@@ -2946,7 +3591,7 @@ function rysujWstawanie(){
    Po siku spłukujemy (^), a jak coś się obsikało, to trzeba po sobie posprzątać:
    wytrzeć deskę papierem i umyć podłogę mopem – ◀ ▶ tam i z powrotem,
    dokładnie tak samo jak przy myciu ząbków. */
-const SIKU_SEK = 13;                       // ile sekund leci siku
+let SIKU_SEK = 13;                       // ile sekund leci siku
 const SIKU_OD = 258;                       // skąd startuje strumień
 const MUSZLA = {x:294, w:86, rim:166, wodaOd:318, wodaDo:356};
 const SIKU_SPOSOBY = [
@@ -4156,7 +4801,7 @@ function rysujJazde(){
 /* ==================== MINIGRA: WYŚCIG DO FURTKI ====================
    Naciskanie ◀ i ▶ na zmianę rozpędza bohatera. Opiekun biegnie tuż obok,
    ale zawsze przegrywa o włos – dziecko ma wygrać. */
-const META_WYSCIGU = 1400;
+let META_WYSCIGU = 1400;
 /* naprzemienne stukanie w strzałki dodaje prędkości (wspólne dla obu wyścigów) */
 function rozpedzBieg(w){
   if(nowy('ArrowLeft')  && w.ostatni !== -1){ w.v += 0.55; w.ostatni = -1; sfx('sfx_skok'); }
@@ -5418,7 +6063,7 @@ function aktualizujKsiazke(){
   } else if(b.etap === 'czytanie'){
     if(b.t > 60 && (nowy('ArrowUp') || b.t > 300)){
       b.strona++; b.t = 0; sfx('sfx_zbierz');
-      if(b.strona >= 3){
+      if(b.strona >= ile(2,3)){
         b.etap = 'przytulas'; b.strona = 0;
         cisza(); mow(najlepszyGlos('ksiazka_przytulas_' + drugiRodzic(b.czyta),
                                    'ksiazka_przytulas'));
@@ -5524,7 +6169,8 @@ function rysujKsiazke(){
     napisL(RODZICE[b.czyta].podpis + ' CZYTA: ' + ks.tytul, 4, 10, '#fffeff', null, 1);
     ramka(W/2-160, 236, 320, 24, '#0000bc');
     napis(ks.zdanie, W/2, 248, '#f8d878', null, 1);
-    napis('STRONA ' + (b.strona+1) + ' Z 3   -   ^  DALEJ', W/2, 152, '#fffeff', '#000000', 1.2);
+    napis('STRONA ' + (b.strona+1) + '/' + ile(2,3), W/2-70, 152, '#fffeff', '#000000', 1.2);
+    napis('^  DALEJ', W/2+60, 152, '#fffeff', '#000000', 1.2);
   } else if(b.etap === 'przytulas'){
     const drugi = RODZICE[drugiRodzic(b.czyta)];
     rysujRodzica(352, 150, -1, 0, drugi);
@@ -5682,6 +6328,64 @@ function rysujPortret(nazwa, cx, dolY, maxW, maxH){
   ctx.drawImage(im, Math.round(cx - w/2), Math.round(dolY - h), w, h);
   return true;
 }
+/* ==================== EKRAN USTAWIEŃ ====================
+   Pierwsze, co widać: flaga z językiem i przełącznik trybu. Dziecko samo
+   sobie klika, a rodzic wie, gdzie zmienić na polski i pełną wersję. */
+function rysujFlage(x, y, w, h, jezyk){
+  if(jezyk === 'en'){
+    pr(x, y, w, h, '#0000bc');
+    ctx.save();                                     // przekątne Union Jacka
+    ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+    for(const [kol, gr] of [['#fffeff', 7], ['#d82800', 3]]){
+      ctx.strokeStyle = kol; ctx.lineWidth = gr;
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x+w, y+h);
+      ctx.moveTo(x+w, y); ctx.lineTo(x, y+h); ctx.stroke();
+    }
+    ctx.restore();
+    pr(x, y + h/2 - 5, w, 10, '#fffeff');
+    pr(x + w/2 - 5, y, 10, h, '#fffeff');
+    pr(x, y + h/2 - 3, w, 6, '#d82800');
+    pr(x + w/2 - 3, y, 6, h, '#d82800');
+    obrys(x, y, w, h);
+  } else {
+    pr(x, y, w, h/2, '#fffeff'); pr(x, y + h/2, w, h/2, '#d82800');
+    obrys(x, y, w, h);
+  }
+}
+function rysujUstawienia(){
+  pr(0,0,W,H,'#0000bc');
+  for(let i=0;i<60;i++){
+    const x=(i*97)%W, y=(i*53)%H;
+    if(Math.floor(G.t/12+i)%3===0) pr(x,y,1,1,'#fffeff');
+  }
+  napis('PORANEK FRANKA', 240, 26, '#f8d878', '#000000', 3);
+
+  ramka(40, 48, 400, 70, '#000000');                       // język
+  napis('JĘZYK', 92, 66, '#c0dfff', null, 1);
+  rysujFlage(64, 76, 56, 34, JEZYK);
+  napis(JEZYK === 'en' ? 'ENGLISH' : 'POLSKI', 250, 84, '#f8d878', '#000000', 3);
+  if(Math.floor(G.t/12)%2===0){
+    napis('<', 152, 92, '#fffeff', '#000000', 2);
+    napis('>', 404, 92, '#fffeff', '#000000', 2);
+  }
+  napis('ZMIEŃ STRZAŁKĄ W BOK', 250, 108, '#c0dfff', null, 1);
+
+  ramka(40, 126, 400, 70, '#000000');                      // tryb
+  napis('TRYB', 88, 144, '#c0dfff', null, 1);
+  const prosty = TRYB === 'prosty';
+  napis(prosty ? 'PROSTY' : 'PEŁNY', 250, 160, prosty ? '#58d854' : '#fc9838', '#000000', 3);
+  napis(prosty ? 'KRÓTKO, BEZ POWTÓREK' : 'WSZYSTKIE ETAPY, PEŁNY DZIEŃ', 250, 182, '#c0dfff', null, 1);
+  if(Math.floor(G.t/12)%2===0) napis('v', 404, 160, '#fffeff', '#000000', 2);
+
+  for(let i=0;i<4;i++){                                    // ikonki edukacyjne
+    const x = 96 + i*96;
+    const kol = ['#d82800','#58d854','#3cbcfc','#f8d878'][i];
+    pr(x-14, 204, 28, 24, kol); obrys(x-14, 204, 28, 24);
+    napis(['A','1','?','+'][i], x, 216, '#000000', null, 2);
+  }
+  if(Math.floor(G.t/20)%2===0) napis('NACIŚNIJ  ^  ŻEBY ZACZĄĆ', 240, 250, '#f8d878', '#000000', 2);
+  rysujDebug();
+}
 function rysujWybor(){
   pr(0,0,W,H,'#0000bc');
   for(let i=0;i<50;i++){
@@ -5810,7 +6514,7 @@ let ostatni = 0, akum = 0;
    wszystko: pytanie, liczba pod kursorem, liczenie jabłuszek po kolei
    i wynik. ◀ ▶ przesuwają wybór, ▲ zatwierdza, ▼ liczy razem z tobą. */
 const ZADANIA_LICZENIA = [[1,1],[2,1],[2,2],[3,1],[2,3],[3,2],[4,1],[1,4],[3,3],[4,2]];
-const RUND_LICZENIA = 5;
+let RUND_LICZENIA = 5;
 
 function startLiczenia(){
   G.liczenie = { runda:0, i:(Math.random()*ZADANIA_LICZENIA.length)|0, pierwsza:true,
@@ -6209,7 +6913,8 @@ function rysujKolejke(){
 /* ==================== MINIGRA: RAZ, DWA, TRZY – BABA JAGA PATRZY ====================
    Baba Jaga stoi tyłem i śpiewa – wtedy się biegnie (◀ ▶ na zmianę). Jak się
    odwróci, trzeba stać jak posąg, bo odsyła kawałek do tyłu. */
-const BABA_META = 362, BABA_ZIEMIA = 228;
+let BABA_META = 362;
+const BABA_ZIEMIA = 228;
 function startBabyJagi(){
   G.baba = { x:8, v:0, ostatni:0, faza:0, stan:'spiew', t:0, dl:150, runda:0,
              kara:0, koniecT:0, mrug:0,
@@ -6580,7 +7285,7 @@ function rysujPogode(){
 /* ==================== MINIGRA: ZAWIĄZUJEMY BUTY ====================
    Sznurówka idzie przez cztery pary dziurek – ◀ ▶ na zmianę przeciągają.
    Na koniec kokardka: naciskaj ▲. */
-const SZN_DZIUREK = 4;
+let SZN_DZIUREK = 4;
 function startSznurowek(){
   G.sznurowki = { pasek:0, dziurka:0, ostatni:0, faza:'przewlekanie', kokardka:0, koniecT:0, t:0 };
   G.czastki = []; G.ekran = 'sznurowki';
@@ -6788,7 +7493,8 @@ const PORZ_RZECZY = [
   {typ:'klocek', x:160, kol:'#00a800'}
 ];
 function startPorzadkow(){
-  G.porzadki = { x:70, kier:1, faza:0, niesie:null, rzeczy:PORZ_RZECZY.map(r => ({...r, gdzie:'podloga'})),
+  G.porzadki = { x:70, kier:1, faza:0, niesie:null,
+                 rzeczy:PORZ_RZECZY.slice(0, ile(4, PORZ_RZECZY.length)).map(r => ({...r, gdzie:'podloga'})),
                  zrobione:0, koniecT:0, t:0, info:0 };
   G.czastki = []; G.ekran = 'porzadki';
   graj('muz_gra'); mow('porz_jak');
@@ -6897,7 +7603,7 @@ const KSZ_FIGURY = [
   {co:'kwadrat',  glos:'ksz_kwadrat', napis:'KWADRAT'},
   {co:'trojkat',  glos:'ksz_trojkat', napis:'TRÓJKĄT'}
 ];
-const KSZ_RUND = 5;
+let KSZ_RUND = 5;
 function startKsztaltow(){
   G.ksztalty = { runda:0, pytanie:null, figury:[], kursor:0, wynik:null, t:0, koniecT:0 };
   G.czastki = []; G.ekran = 'ksztalty';
@@ -7013,7 +7719,7 @@ const PANI = {imie:'PANI', gora:'#7527fe', goraJasna:'#a45cff', spodnie:'#4f4f4f
 const RYTM_KLAWISZE = ['ArrowLeft','ArrowRight','ArrowUp'];
 const RYTM_SFX = ['sfx_zbierz','sfx_skok','sfx_bum'];
 const RYTM_ZNAKI = ['<', '>', '^'];
-const RYTM_RUND = 4;
+let RYTM_RUND = 4;
 function startRytmu(){
   G.rytm = { runda:0, sekw:[], i:0, faza:'pokaz', t:0, blysk:-1, koniecT:0, zle:0 };
   G.czastki = []; G.ekran = 'rytm';
@@ -7119,7 +7825,7 @@ function rysujRytm(){
 /* ==================== MINIGRA: ZUPA NA OBIAD ====================
    Najpierw za gorąca – trzymaj ▲ i dmuchaj, aż para przestanie lecieć.
    Potem łyżka po łyżce: ◀ ▶ na zmianę, aż talerz pusty. */
-const ZUPA_LYZEK = 6;
+let ZUPA_LYZEK = 6;
 function startZupy(){
   G.zupa = { goraco:1, faza:'dmuchanie', lyzki:0, pasek:0, ostatni:0, dmucha:0,
              koniecT:0, t:0, para:[] };
@@ -7226,7 +7932,8 @@ const SZUK_KURTKI = [
   {kol:'#fc9838', jasny:'#f7d8a5', wzor:'paski'},
   {kol:'#4f4f4f', jasny:'#bcbcbc', wzor:'kropki'}
 ];
-const SZUK_ILE = 6, SZUK_RUND = 3;
+const SZUK_ILE = 6;
+let SZUK_RUND = 3;
 function startSzukania(){
   G.szukanie = { runda:0, kurtki:[], moja:0, kursor:0, wynik:null, t:0, koniecT:0, pokaz:150 };
   G.czastki = []; G.ekran = 'szukanie';
@@ -7325,7 +8032,7 @@ function rysujSzukanie(){
 /* ==================== MINIGRA: BAŃKI W KĄPIELI ====================
    Z wanny lecą bańki mydlane. ◀ ▶ przesuwają rączkę, a bańka pęka od
    samego dotknięcia – nie trzeba nic naciskać. */
-const BANIEK = 12;
+let BANIEK = 12;
 function startBaniek(){
   G.banki = { reka:W/2, zbite:0, banki:[], koniecT:0, t:0 };
   G.czastki = []; G.ekran = 'banki';
@@ -7517,7 +8224,7 @@ function rysujCienie(){
 /* ==================== MINIGRA: LICZYMY OWIECZKI ====================
    Owca podchodzi do płotu i czeka. ▲ – skacze, a narrator liczy na głos.
    Po dziesiątej owcy Franek zasypia, a ekran gaśnie razem z nim. */
-const OWIEC = 10;
+let OWIEC = 10;
 function startOwiec(){
   G.owce = { policzone:0, owca:{x:-40, y:0, skok:0, stan:'idzie'}, koniecT:0, t:0, powieki:0 };
   G.czastki = []; G.ekran = 'owce';
@@ -7721,6 +8428,509 @@ function rysujIgloo(){
   rysujDebug();
 }
 
+
+/* ==================== MINIGRA: ALFABET ====================
+   „Na jaką literę zaczyna się kot?" – obrazek i trzy litery do wyboru.
+   Zestaw słów zależy od języka, bo po angielsku kot zaczyna się na C. */
+const ALFABET_PL = [
+  {ik:'kot',      lit:'K', glos:'alf_kot'},
+  {ik:'rybka',    lit:'R', glos:'alf_rybka'},
+  {ik:'czapka',   lit:'C', glos:'alf_czapka'},
+  {ik:'mleko',    lit:'M', glos:'alf_mleko'},
+  {ik:'buty',     lit:'B', glos:'alf_buty'},
+  {ik:'lyzka',    lit:'Ł', glos:'alf_lyzka'}
+];
+const ALFABET_EN = [
+  {ik:'kot',       lit:'C', glos:'alf_kot'},
+  {ik:'rybka',     lit:'F', glos:'alf_rybka'},
+  {ik:'czapka',    lit:'H', glos:'alf_czapka'},
+  {ik:'mleko',     lit:'M', glos:'alf_mleko'},
+  {ik:'krolik',    lit:'R', glos:'alf_krolik'},
+  {ik:'marchewka', lit:'C', glos:'alf_marchewka'}
+];
+const LITERY_PULA = 'ABCDEFGHIJKLMNOPRSTUW'.split('');
+function startAlfabetu(){
+  const slowa = (JEZYK === 'en' ? ALFABET_EN : ALFABET_PL).slice();
+  for(let i=slowa.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const x=slowa[i]; slowa[i]=slowa[j]; slowa[j]=x; }
+  G.alfabet = { slowa, runda:0, rund:ile(3,5), litery:[], kursor:0, wynik:null, t:0, koniecT:0 };
+  G.czastki = []; G.ekran = 'alfabet';
+  graj('muz_gra');
+  noweSlowo(true);
+}
+function noweSlowo(pierwsze){
+  const a = G.alfabet;
+  const s = a.slowa[a.runda % a.slowa.length];
+  const litery = [s.lit];
+  while(litery.length < 3){
+    const l = LITERY_PULA[(Math.random()*LITERY_PULA.length)|0];
+    if(!litery.includes(l)) litery.push(l);
+  }
+  for(let i=litery.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const x=litery[i]; litery[i]=litery[j]; litery[j]=x; }
+  a.slowo = s; a.litery = litery; a.dobra = litery.indexOf(s.lit);
+  a.kursor = 0; a.wynik = null; a.t = 0;
+  pytajOLitere(pierwsze);
+}
+function pytajOLitere(zInstrukcja){
+  const a = G.alfabet;
+  mow(...(zInstrukcja ? ['alf_jak'] : []), 'alf_pytanie', a.slowo.glos);
+}
+function literaGlos(l){ return 'lit_' + l.toLowerCase(); }
+function aktualizujAlfabet(){
+  const a = G.alfabet;
+  a.t++;
+  if(a.koniecT > 0){
+    a.koniecT--;
+    if(a.koniecT === 0) dalejPoPoziomie();
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(a.wynik === 'dobrze'){
+    if(a.t > 110){
+      a.runda++;
+      if(a.runda >= a.rund){ a.koniecT = 215; sfx('sfx_sukces'); cisza(); mow('alf_koniec'); }
+      else noweSlowo(false);
+    }
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(nowy('ArrowLeft')  && a.kursor > 0){ a.kursor--; sfx('sfx_zbierz'); mow(literaGlos(a.litery[a.kursor])); }
+  if(nowy('ArrowRight') && a.kursor < 2){ a.kursor++; sfx('sfx_zbierz'); mow(literaGlos(a.litery[a.kursor])); }
+  if(nowy('ArrowUp')){
+    if(a.kursor === a.dobra){
+      a.wynik = 'dobrze'; a.t = 0; sfx('sfx_sukces');
+      iskry(110 + a.kursor*130, 196, ['#f8d878','#fffeff','#58d854'], 20);
+      mow('alf_brawo', literaGlos(a.slowo.lit), a.slowo.glos);
+    } else { sfx('sfx_zle'); mow('alf_nie'); pytajOLitere(false); }
+  }
+  aktualizujEfekty(); czyscNowe();
+}
+function rysujAlfabet(){
+  const a = G.alfabet;
+  pr(0,0,W,H,'#3cbcfc');
+  pr(0,224,W,46,'#00a800'); pr(0,224,W,4,'#58d854');
+  pr(60,44,360,120,'#f7d8a5'); obrys(60,44,360,120);          // tablica z obrazkiem
+  pr(66,50,348,108,'#e4c08a');
+  ctx.save(); ctx.translate(240, 104); ctx.scale(5,5);
+  rysujIkone(a.slowo.ik, 0, 0, false);
+  ctx.restore();
+
+  for(let i=0;i<3;i++){                                        // trzy litery
+    const x = 110 + i*130, wybrana = i === a.kursor;
+    const dobra = a.wynik === 'dobrze' && wybrana;
+    ramka(x-42, 172, 84, 56, dobra ? '#007800' : (wybrana ? '#a80020' : '#000000'));
+    napis(a.litery[i], x, 202, wybrana ? '#f8d878' : '#bcbcbc', '#000000', 4);
+    if(wybrana && !a.wynik && Math.floor(G.t/12)%2===0) strzalka(x, 164, G.t);
+  }
+  rysujEfekty();
+
+  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+  napisL('ALFABET', 4, 10, '#fffeff', null, 1);
+  napisL('ZADANIE ' + Math.min(a.rund, a.runda+1) + '/' + a.rund, W-104, 10, '#f8d878', null, 1);
+  const t = 'NA JAKĄ LITERĘ SIĘ ZACZYNA?';
+  const tw = szerTekstu(t, 2);
+  pr(W/2-tw/2-6, 24, tw+12, 22, '#a80020');
+  napis(t, W/2, 35, '#f8d878', '#000000', 2);
+  napis(a.wynik === 'dobrze' ? 'BRAWO!' : '<  >  WYBIERAJ     ^  TA LITERA', W/2, 248, '#fffeff', '#000000', 1);
+  if(a.koniecT > 0){
+    ctx.globalAlpha = 0.65; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+    napis('ZNASZ LITERKI!', W/2, 118, '#f8d878', '#000000', 3);
+    napis('BRAWO FRANEK!', W/2, 152, '#fffeff', '#000000', 2);
+  }
+  rysujDebug();
+}
+
+/* ==================== MINIGRA: MEMORY ====================
+   Karty leżą obrazkiem do dołu, trzeba znaleźć pary. ◀ ▶ przesuwają
+   rączkę, ▲ odwraca kartę. Klasyka na pamięć dla przedszkolaka. */
+const MEM_OBRAZKI = ['kot','rybka','mis','marchewka','czapka'];
+function startMemory(){
+  const par = ile(3, 4);
+  const karty = [];
+  for(let i=0;i<par;i++){ karty.push({ik:MEM_OBRAZKI[i]}, {ik:MEM_OBRAZKI[i]}); }
+  for(let i=karty.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const x=karty[i]; karty[i]=karty[j]; karty[j]=x; }
+  karty.forEach(k => { k.odkryta = false; k.zdjeta = false; });
+  G.memory = { karty, par, znalezione:0, kursor:0, pierwsza:null, czekanie:0, koniecT:0, t:0 };
+  G.czastki = []; G.ekran = 'memory';
+  graj('muz_gra'); mow('mem_jak');
+}
+function aktualizujMemory(){
+  const m = G.memory;
+  m.t++;
+  if(m.koniecT > 0){
+    m.koniecT--;
+    if(m.koniecT === 0) dalejPoPoziomie();
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(m.czekanie > 0){                                   // dwie odkryte – chwila na popatrzenie
+    m.czekanie--;
+    if(m.czekanie === 0){
+      const [a,b] = m.odkryte;
+      if(m.karty[a].ik === m.karty[b].ik){
+        m.karty[a].zdjeta = m.karty[b].zdjeta = true;
+        m.znalezione++;
+        sfx('sfx_sukces');
+        iskry(240, 130, ['#f8d878','#58d854','#fffeff'], 16);
+        if(m.znalezione >= m.par){ m.koniecT = 215; cisza(); mow('mem_koniec'); }
+        else mow('mem_para');
+      } else {
+        m.karty[a].odkryta = m.karty[b].odkryta = false;
+        sfx('sfx_zle'); mow('mem_nie');
+      }
+      m.pierwsza = null; m.odkryte = null;
+    }
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  const ostatnia = m.karty.length - 1;
+  if(nowy('ArrowLeft')  && m.kursor > 0){ m.kursor--; sfx('sfx_zbierz'); }
+  if(nowy('ArrowRight') && m.kursor < ostatnia){ m.kursor++; sfx('sfx_zbierz'); }
+  if(nowy('ArrowUp')){
+    const k = m.karty[m.kursor];
+    if(k.zdjeta || k.odkryta){ sfx('sfx_zle'); }
+    else {
+      k.odkryta = true; sfx('sfx_skok');
+      if(m.pierwsza === null) m.pierwsza = m.kursor;
+      else { m.odkryte = [m.pierwsza, m.kursor]; m.czekanie = 55; }
+    }
+  }
+  aktualizujEfekty(); czyscNowe();
+}
+function rysujKarteMemory(x, y, w, h, k, podswietl){
+  if(k.zdjeta){
+    ctx.globalAlpha = 0.25;
+    pr(x, y, w, h, '#4f4f4f'); obrys(x, y, w, h);
+    ctx.globalAlpha = 1;
+    return;
+  }
+  if(k.odkryta){
+    pr(x, y, w, h, '#fffeff'); obrys(x, y, w, h);
+    ctx.save(); ctx.translate(x + w/2, y + h/2); ctx.scale(2.6,2.6);
+    rysujIkone(k.ik, 0, 0, false);
+    ctx.restore();
+  } else {
+    pr(x, y, w, h, '#0058f8'); obrys(x, y, w, h);
+    pr(x+5, y+5, w-10, h-10, '#3cbcfc');
+    for(let i=0;i<3;i++) for(let j=0;j<4;j++) pr(x+11+i*14, y+13+j*16, 7, 7, '#0000bc');
+  }
+  if(podswietl && Math.floor(G.t/8)%2===0){
+    ctx.strokeStyle = '#f8d878'; ctx.lineWidth = 3;
+    ctx.strokeRect(x-2.5, y-2.5, w+5, h+5);
+  }
+}
+function rysujMemory(){
+  const m = G.memory;
+  pr(0,0,W,H,'#007800');
+  for(let x=0;x<W;x+=32) for(let y=24;y<H;y+=32) pr(x, y, 16, 16, '#00a800');
+
+  const kol = Math.ceil(m.karty.length/2), kw = 86, kh = 92;
+  const startX = W/2 - (kol*kw + (kol-1)*8)/2;
+  for(let i=0;i<m.karty.length;i++){
+    const c = i % kol, r = Math.floor(i / kol);
+    rysujKarteMemory(startX + c*(kw+8), 52 + r*(kh+10), kw, kh, m.karty[i], i === m.kursor);
+  }
+  rysujEfekty();
+
+  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+  napisL('PARY OBRAZKÓW', 4, 10, '#fffeff', null, 1);
+  napisL('PARY: ' + m.znalezione + '/' + m.par, W-92, 10, '#f8d878', null, 1);
+  napis('<  >  KARTA     ^  ODKRYJ', W/2, 258, '#fffeff', '#000000', 2);
+  if(m.koniecT > 0){
+    ctx.globalAlpha = 0.65; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+    napis('WSZYSTKIE PARY!', W/2, 118, '#f8d878', '#000000', 3);
+    napis('ALE PAMIĘĆ!', W/2, 152, '#fffeff', '#000000', 2);
+  }
+  rysujDebug();
+}
+
+/* ==================== MINIGRA: CO DALEJ? (WZORY) ====================
+   Rytmiczny ciąg figur, ostatniej brakuje. ◀ ▶ wybierają, ▲ zatwierdza.
+   Czysta logika: dziecko widzi powtórzenie i przewiduje, co będzie dalej. */
+const WZOR_FIGURY = [
+  {co:'kolo',    kol:'#d82800'},
+  {co:'kwadrat', kol:'#0058f8'},
+  {co:'trojkat', kol:'#f8d878'},
+  {co:'kolo',    kol:'#00a800'}
+];
+function startWzoru(){
+  G.wzor = { runda:0, rund:ile(3,4), ciag:[], opcje:[], dobra:0, kursor:0, wynik:null, t:0, koniecT:0 };
+  G.czastki = []; G.ekran = 'wzor';
+  graj('muz_gra');
+  nowyWzor(true);
+}
+function nowyWzor(pierwszy){
+  const w = G.wzor;
+  const pula = WZOR_FIGURY.map((f,i)=>i);
+  for(let i=pula.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const x=pula[i]; pula[i]=pula[j]; pula[j]=x; }
+  const dlWzoru = w.runda < 2 ? 2 : 3;              // AB AB, potem ABC ABC
+  const wzor = pula.slice(0, dlWzoru);
+  const ciag = [];
+  for(let i=0;i<5;i++) ciag.push(wzor[i % dlWzoru]);
+  const brakujaca = wzor[5 % dlWzoru];
+  const opcje = [brakujaca];
+  while(opcje.length < 3){
+    const k = (Math.random()*WZOR_FIGURY.length)|0;
+    if(!opcje.includes(k)) opcje.push(k);
+  }
+  for(let i=opcje.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const x=opcje[i]; opcje[i]=opcje[j]; opcje[j]=x; }
+  w.ciag = ciag; w.opcje = opcje; w.dobra = opcje.indexOf(brakujaca);
+  w.kursor = 0; w.wynik = null; w.t = 0;
+  mow(...(pierwszy ? ['wzor_jak'] : []), 'wzor_co_dalej');
+}
+function aktualizujWzor(){
+  const w = G.wzor;
+  w.t++;
+  if(w.koniecT > 0){
+    w.koniecT--;
+    if(w.koniecT === 0) dalejPoPoziomie();
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(w.wynik === 'dobrze'){
+    if(w.t > 110){
+      w.runda++;
+      if(w.runda >= w.rund){ w.koniecT = 215; sfx('sfx_sukces'); cisza(); mow('wzor_koniec'); }
+      else nowyWzor(false);
+    }
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(nowy('ArrowLeft')  && w.kursor > 0){ w.kursor--; sfx('sfx_zbierz'); }
+  if(nowy('ArrowRight') && w.kursor < 2){ w.kursor++; sfx('sfx_zbierz'); }
+  if(nowy('ArrowUp')){
+    if(w.kursor === w.dobra){
+      w.wynik = 'dobrze'; w.t = 0; sfx('sfx_sukces');
+      iskry(110 + w.kursor*130, 206, ['#f8d878','#fffeff','#58d854'], 20);
+      mow('wzor_brawo');
+    } else { sfx('sfx_zle'); mow('wzor_nie'); }
+  }
+  aktualizujEfekty(); czyscNowe();
+}
+function rysujWzor(){
+  const w = G.wzor;
+  pr(0,0,W,H,'#d3d2ff');
+  pr(0,236,W,34,'#7527fe'); pr(0,236,W,3,'#a45cff');
+  pr(24,60,432,84,'#fffeff'); obrys(24,60,432,84);           // taśma ze wzorem
+
+  for(let i=0;i<w.ciag.length;i++){
+    const f = WZOR_FIGURY[w.ciag[i]];
+    rysujFigure(f.co, 66 + i*72, 102, 24, f.kol);
+  }
+  const bx = 66 + w.ciag.length*72;                          // puste miejsce
+  ctx.strokeStyle = '#a80020'; ctx.lineWidth = 3;
+  ctx.setLineDash([6,5]); ctx.strokeRect(bx-26, 76, 52, 52); ctx.setLineDash([]);
+  if(w.wynik === 'dobrze'){
+    const f = WZOR_FIGURY[w.opcje[w.dobra]];
+    rysujFigure(f.co, bx, 102, 24, f.kol);
+  } else napis('?', bx, 102, '#a80020', '#000000', 3);
+
+  for(let i=0;i<3;i++){                                      // trzy odpowiedzi
+    const x = 110 + i*130, wybrana = i === w.kursor;
+    const f = WZOR_FIGURY[w.opcje[i]];
+    ramka(x-40, 168, 80, 76, wybrana ? '#a80020' : '#000000');
+    rysujFigure(f.co, x, 206, 24, f.kol);
+    if(wybrana && !w.wynik && Math.floor(G.t/12)%2===0) strzalka(x, 160, G.t);
+  }
+  rysujEfekty();
+
+  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+  napisL('CO BĘDZIE DALEJ?', 4, 10, '#fffeff', null, 1);
+  napisL('ZADANIE ' + Math.min(w.rund, w.runda+1) + '/' + w.rund, W-104, 10, '#f8d878', null, 1);
+  const t = w.wynik === 'dobrze' ? 'BRAWO! TAKI JEST WZÓR' : 'CO BĘDZIE DALEJ?';
+  const tw = szerTekstu(t, 2);
+  pr(W/2-tw/2-6, 24, tw+12, 22, '#a80020');
+  napis(t, W/2, 35, '#f8d878', '#000000', 2);
+  napis('<  >  WYBIERAJ     ^  TO TO', W/2, 258, '#fffeff', '#000000', 1);
+  if(w.koniecT > 0){
+    ctx.globalAlpha = 0.65; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+    napis('WSZYSTKIE WZORY ZGADNIĘTE!', W/2, 118, '#f8d878', '#000000', 2);
+    napis('ALE Z CIEBIE DETEKTYW!', W/2, 152, '#fffeff', '#000000', 2);
+  }
+  rysujDebug();
+}
+
+/* ==================== MINIGRA: CO NIE PASUJE? ====================
+   Cztery obrazki, trzy z jednej rodziny, jeden z zupełnie innej.
+   ◀ ▶ przesuwają wybór, ▲ zatwierdza. Grupowanie i logika. */
+const GRUPY_NIEPASUJE = [
+  {pasuja:['kot','krolik','rybka'],        obcy:'marchewka', glos:'nie_zwierzeta'},
+  {pasuja:['sniadanie','mleko','marchewka'], obcy:'buty',    glos:'nie_jedzenie'},
+  {pasuja:['czapka','buty','koszulka'],    obcy:'kot',       glos:'nie_ubrania'},
+  {pasuja:['mis','lego','tory'],           obcy:'mleko',     glos:'nie_zabawki'},
+  {pasuja:['lyzka','miska','kolacja'],     obcy:'mis',       glos:'nie_kuchnia'}
+];
+function startNiepasuje(){
+  const grupy = GRUPY_NIEPASUJE.filter(g => g.pasuja.every(i => IKONY[i]) && IKONY[g.obcy]);
+  for(let i=grupy.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const x=grupy[i]; grupy[i]=grupy[j]; grupy[j]=x; }
+  G.niepasuje = { grupy, runda:0, rund:ile(3,4), pola:[], dobra:0, kursor:0, wynik:null, t:0, koniecT:0 };
+  G.czastki = []; G.ekran = 'niepasuje';
+  graj('muz_gra');
+  nowaGrupa(true);
+}
+function nowaGrupa(pierwsza){
+  const n = G.niepasuje;
+  const g = n.grupy[n.runda % n.grupy.length];
+  const pola = g.pasuja.concat([g.obcy]);
+  for(let i=pola.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const x=pola[i]; pola[i]=pola[j]; pola[j]=x; }
+  n.grupa = g; n.pola = pola; n.dobra = pola.indexOf(g.obcy);
+  n.kursor = 0; n.wynik = null; n.t = 0;
+  mow(...(pierwsza ? ['nie_jak'] : []), 'nie_ktore');
+}
+function aktualizujNiepasuje(){
+  const n = G.niepasuje;
+  n.t++;
+  if(n.koniecT > 0){
+    n.koniecT--;
+    if(n.koniecT === 0) dalejPoPoziomie();
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(n.wynik === 'dobrze'){
+    if(n.t > 120){
+      n.runda++;
+      if(n.runda >= n.rund){ n.koniecT = 215; sfx('sfx_sukces'); cisza(); mow('nie_koniec'); }
+      else nowaGrupa(false);
+    }
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(nowy('ArrowLeft')  && n.kursor > 0){ n.kursor--; sfx('sfx_zbierz'); }
+  if(nowy('ArrowRight') && n.kursor < 3){ n.kursor++; sfx('sfx_zbierz'); }
+  if(nowy('ArrowUp')){
+    if(n.kursor === n.dobra){
+      n.wynik = 'dobrze'; n.t = 0; sfx('sfx_sukces');
+      iskry(70 + n.kursor*114, 140, ['#f8d878','#fffeff','#58d854'], 20);
+      mow('nie_brawo', n.grupa.glos);
+    } else { sfx('sfx_zle'); mow('nie_nie'); }
+  }
+  aktualizujEfekty(); czyscNowe();
+}
+function rysujNiepasuje(){
+  const n = G.niepasuje;
+  pr(0,0,W,H,'#b3f3cc');
+  pr(0,232,W,38,'#00a800'); pr(0,232,W,4,'#58d854');
+
+  for(let i=0;i<4;i++){
+    const x = 70 + i*114, wybrane = i === n.kursor;
+    const zle = n.wynik === 'dobrze' && i === n.dobra;
+    ramka(x-48, 72, 96, 110, zle ? '#a80020' : (wybrane ? '#0058f8' : '#000000'));
+    ctx.save(); ctx.translate(x, 128); ctx.scale(3.4,3.4);
+    rysujIkone(n.pola[i], 0, 0, false);
+    ctx.restore();
+    if(zle && Math.floor(G.t/8)%2===0){
+      ctx.strokeStyle = '#d82800'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.moveTo(x-38, 84); ctx.lineTo(x+38, 170);
+      ctx.moveTo(x+38, 84); ctx.lineTo(x-38, 170); ctx.stroke();
+    }
+    if(wybrane && !n.wynik && Math.floor(G.t/12)%2===0) strzalka(x, 64, G.t);
+  }
+  rysujEfekty();
+
+  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+  napisL('CO NIE PASUJE?', 4, 10, '#fffeff', null, 1);
+  napisL('ZADANIE ' + Math.min(n.rund, n.runda+1) + '/' + n.rund, W-104, 10, '#f8d878', null, 1);
+  const t = n.wynik === 'dobrze' ? 'TO NIE PASUJE! BRAWO' : 'KTÓRE NIE PASUJE?';
+  const tw = szerTekstu(t, 2);
+  pr(W/2-tw/2-6, 24, tw+12, 22, '#a80020');
+  napis(t, W/2, 35, '#f8d878', '#000000', 2);
+  napis('<  >  WYBIERAJ     ^  TO TO', W/2, 206, '#fffeff', '#000000', 1);
+  if(n.koniecT > 0){
+    ctx.globalAlpha = 0.65; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+    napis('WSZYSTKO POSORTOWANE!', W/2, 118, '#f8d878', '#000000', 2);
+    napis('ALE Z CIEBIE MĄDRALA!', W/2, 152, '#fffeff', '#000000', 2);
+  }
+  rysujDebug();
+}
+
+/* ==================== MINIGRA: WYŻSZA KARTA ====================
+   Dwie karty do gry, trzeba wskazać tę z większą liczbą. Porównywanie
+   liczb – i nauka, że siedem to więcej niż trzy. */
+function startKart(){
+  G.karty = { runda:0, rund:ile(4,6), a:1, b:2, kursor:0, wynik:null, t:0, koniecT:0, punkty:0 };
+  G.czastki = []; G.ekran = 'karty';
+  graj('muz_gra');
+  noweKarty(true);
+}
+function noweKarty(pierwsze){
+  const k = G.karty;
+  const max = k.runda < 2 ? 6 : 10;                 // na początek małe liczby
+  let a = 1 + ((Math.random()*max)|0), b = 1 + ((Math.random()*max)|0);
+  while(b === a) b = 1 + ((Math.random()*max)|0);
+  k.a = a; k.b = b; k.kursor = 0; k.wynik = null; k.t = 0;
+  mow(...(pierwsze ? ['karty_jak'] : []), 'karty_ktora');
+}
+function aktualizujKarty(){
+  const k = G.karty;
+  k.t++;
+  if(k.koniecT > 0){
+    k.koniecT--;
+    if(k.koniecT === 0) dalejPoPoziomie();
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(k.wynik === 'dobrze'){
+    if(k.t > 120){
+      k.runda++;
+      if(k.runda >= k.rund){ k.koniecT = 215; sfx('sfx_sukces'); cisza(); mow('karty_koniec'); }
+      else noweKarty(false);
+    }
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(nowy('ArrowLeft')  && k.kursor > 0){ k.kursor--; sfx('sfx_zbierz'); mow('licz_' + k.a); }
+  if(nowy('ArrowRight') && k.kursor < 1){ k.kursor++; sfx('sfx_zbierz'); mow('licz_' + k.b); }
+  if(nowy('ArrowUp')){
+    const wieksza = k.a > k.b ? 0 : 1;
+    if(k.kursor === wieksza){
+      k.wynik = 'dobrze'; k.t = 0; k.punkty++;
+      sfx('sfx_sukces');
+      iskry(150 + k.kursor*180, 140, ['#f8d878','#fffeff','#58d854'], 20);
+      mow('karty_brawo', 'licz_' + Math.max(k.a, k.b));
+    } else { sfx('sfx_zle'); mow('karty_nie'); }
+  }
+  aktualizujEfekty(); czyscNowe();
+}
+/* prawdziwa karta do gry: rogi z liczbą i tyle serduszek, ile wynosi liczba */
+function rysujKarteDoGry(x, y, w, h, n, czerwona, podswietl){
+  pr(x, y, w, h, '#fffeff'); obrys(x, y, w, h);
+  pr(x+4, y+4, w-8, h-8, '#fffeff');
+  const kol = czerwona ? '#d82800' : '#2b2b33';
+  napis(String(n), x+16, y+18, kol, null, 2);
+  napis(String(n), x+w-16, y+h-18, kol, null, 2);
+  const kol_ = Math.min(3, n), wier = Math.ceil(n/3);
+  for(let i=0;i<n;i++){
+    const c = i % 3, r = Math.floor(i/3);
+    const cx = x + w/2 + (c - (Math.min(3, n-r*3)-1)/2)*22;
+    const cy = y + h/2 + (r - (wier-1)/2)*24;
+    if(czerwona) rysujSpr('serduszko', SERDUSZKO, cx-4, cy-4, false);
+    else { pr(cx-6, cy-7, 12, 12, kol); pr(cx-2, cy+5, 4, 4, kol); }
+  }
+  if(podswietl && Math.floor(G.t/8)%2===0){
+    ctx.strokeStyle = '#f8d878'; ctx.lineWidth = 3;
+    ctx.strokeRect(x-3.5, y-3.5, w+7, h+7);
+  }
+}
+function rysujKarty(){
+  const k = G.karty;
+  pr(0,0,W,H,'#007800');
+  for(let x=0;x<W;x+=40) for(let y=24;y<H;y+=40) pr(x+8, y+8, 6, 6, '#00a800');
+  pr(0,240,W,30,'#503000');
+
+  rysujKarteDoGry(94, 62, 112, 150, k.a, true,  k.kursor === 0);
+  rysujKarteDoGry(274, 62, 112, 150, k.b, false, k.kursor === 1);
+  if(k.wynik === 'dobrze'){
+    const x = k.a > k.b ? 150 : 330;
+    napis('>', 240, 136, '#f8d878', '#000000', 4);
+    iskry(x, 220, ['#f8d878'], 1);
+  } else napis('?', 240, 136, '#f8d878', '#000000', 4);
+  rysujEfekty();
+
+  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+  napisL('WYŻSZA KARTA', 4, 10, '#fffeff', null, 1);
+  napisL('ZADANIE ' + Math.min(k.rund, k.runda+1) + '/' + k.rund, W-104, 10, '#f8d878', null, 1);
+  const t = k.wynik === 'dobrze' ? 'TAK! TA JEST WIĘKSZA' : 'KTÓRA KARTA JEST WIĘKSZA?';
+  const tw = szerTekstu(t, 2);
+  pr(W/2-tw/2-6, 24, tw+12, 22, '#a80020');
+  napis(t, W/2, 35, '#f8d878', '#000000', 2);
+  napis('<  >  WYBIERAJ     ^  TA WIĘKSZA', W/2, 230, '#fffeff', '#000000', 1);
+  if(k.koniecT > 0){
+    ctx.globalAlpha = 0.65; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+    napis('ZNASZ LICZBY!', W/2, 118, '#f8d878', '#000000', 3);
+    napis('WIESZ, KTÓRA WIĘKSZA!', W/2, 152, '#fffeff', '#000000', 2);
+  }
+  rysujDebug();
+}
+
 function petla(ts){
   requestAnimationFrame(petla);
   if(!ostatni) ostatni = ts;
@@ -7739,7 +8949,9 @@ function odswiezPrzyciski(){
   if(G.ekran === ostatniEkranPrzyciskow) return;
   ostatniEkranPrzyciskow = G.ekran;
   document.body.classList.toggle('wAucie', G.ekran === 'jazda');
-  document.body.classList.toggle('wMenu', G.ekran === 'wybor' || G.ekran === 'intro');
+  document.body.classList.toggle('wMenu', G.ekran === 'wybor' || G.ekran === 'intro'
+                                       || G.ekran === 'ustawienia' || G.ekran === 'opiekun');
+  document.body.classList.toggle('zDolem', G.ekran === 'ustawienia');
   // etapy, w których ◀ i ▶ idą do obu krawędzi – gra się dwoma kciukami
   document.body.classList.toggle('dwaKciuki', ETAPY_DWA_KCIUKI.includes(G.ekran));
   document.body.classList.toggle('strefy', G.ekran === 'mycie' || G.ekran === 'kapiel');
@@ -7748,6 +8960,20 @@ function krok(){
   G.t++;
   odswiezPrzyciski();
   switch(G.ekran){
+    case 'ustawienia':
+      // dwa przełączniki: ◀ ▶ zmieniają język, ▼ tryb, ▲ zaczyna grę
+      if(nowy('ArrowLeft') || nowy('ArrowRight')){
+        JEZYK = JEZYK === 'en' ? 'pl' : 'en';
+        zapiszUstawienia(); przeladujMowe(); sfx('sfx_zbierz');
+        setTimeout(() => mow('menu_jezyk'), 120);
+      }
+      if(nowy('ArrowDown')){
+        TRYB = TRYB === 'prosty' ? 'zaawansowany' : 'prosty';
+        zapiszUstawienia(); LISTA_POZIOMOW = null; ustawDlugosci(); sfx('sfx_zbierz');
+        mow(TRYB === 'prosty' ? 'menu_prosty' : 'menu_pelny');
+      }
+      if(nowy('ArrowUp')){ sfx('sfx_sukces'); G.ekran = 'wybor'; mow('wybor'); }
+      czyscNowe(); break;
     case 'wybor':
       // zmiana bohatera zeruje etap – Franek ma ich 27, Pola 12
       if(nowy('ArrowLeft') && G.kto !== 'franek'){ G.kto='franek'; G.poziom=0; sfx('sfx_zbierz'); }
@@ -7810,6 +9036,11 @@ function krok(){
     case 'cienie': aktualizujCienie(); break;
     case 'owce': aktualizujOwce(); break;
     case 'igloo': aktualizujIgloo(); break;
+    case 'alfabet': aktualizujAlfabet(); break;
+    case 'memory': aktualizujMemory(); break;
+    case 'wzor': aktualizujWzor(); break;
+    case 'niepasuje': aktualizujNiepasuje(); break;
+    case 'karty': aktualizujKarty(); break;
     case 'koniec':
       if(G.t % 5 === 0 && G.czastki.length < 120)
         G.czastki.push({x:Math.random()*W, y:-6, vx:(Math.random()-0.5)*1, vy:0.6+Math.random()*1.4,
@@ -7823,6 +9054,7 @@ function rysuj(){
   ctx.imageSmoothingEnabled = false;
   ctx.clearRect(0,0,W,H);
   switch(G.ekran){
+    case 'ustawienia': rysujUstawienia(); break;
     case 'wybor': rysujWybor(); break;
     case 'intro': rysujIntro(); break;
     case 'opiekun': rysujWyborOpiekuna(); break;
@@ -7861,13 +9093,20 @@ function rysuj(){
     case 'cienie': rysujCienie(); break;
     case 'owce': rysujOwce(); break;
     case 'igloo': rysujIgloo(); break;
+    case 'alfabet': rysujAlfabet(); break;
+    case 'memory': rysujMemory(); break;
+    case 'wzor': rysujWzor(); break;
+    case 'niepasuje': rysujNiepasuje(); break;
+    case 'karty': rysujKarty(); break;
     case 'koniec': rysujKoniec(); break;
   }
 }
 // muzyka menu + powitanie startują po pierwszym geście gracza
 let powitano = false;
-function powitaj(){ if(powitano) return; powitano = true; graj('muz_menu'); mow('wybor'); }
+function powitaj(){ if(powitano) return; powitano = true; graj('muz_menu');
+  mow(G.ekran === 'ustawienia' ? 'menu_jak' : 'wybor'); }
 ['keydown','pointerdown','touchstart'].forEach(z => addEventListener(z, powitaj, {once:false}));
+ustawDlugosci();
 requestAnimationFrame(petla);
 
 /* ==================== PWA: przycisk „zainstaluj" ====================
@@ -7876,6 +9115,7 @@ requestAnimationFrame(petla);
    komputerze otwiera prawdziwe okienko instalacji, a na iPhonie tłumaczy,
    gdzie kliknąć. Przycisk pokazuje się tylko w menu, żeby nie zasłaniać gry. */
 const przyciskInstaluj = document.getElementById('instaluj');
+if(JEZYK === 'en' && przyciskInstaluj) przyciskInstaluj.textContent = '📲 INSTALL THE GAME';
 const okienkoJak = document.getElementById('jakInstalowac');
 let zachetaInstalacji = null;
 
@@ -7892,6 +9132,22 @@ function pokazPrzyciskInstaluj(napisNaPrzycisku){
 const naIPhonie = /iPhone|iPad|iPod/.test(navigator.userAgent)
                || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 function tekstJakZainstalowac(){
+  if(JEZYK === 'en'){
+    const naglowek = document.querySelector('#jakInstalowac h2');
+    if(naglowek) naglowek.textContent = 'THE GAME ON YOUR DESKTOP';
+    const zamknij = document.getElementById('zamknijJak');
+    if(zamknij) zamknij.textContent = 'GOT IT';
+    if(naIPhonie) return 'On an iPhone or iPad you install it by hand, in <b>Safari</b>:<br><br>' +
+      '1. tap <b>Share</b> (the square with an arrow, at the bottom of the screen)<br>' +
+      '2. scroll the list and choose <b>Add to Home Screen</b><br>' +
+      '3. confirm with <b>Add</b><br><br>' +
+      'The game appears as an icon with Franek and runs full screen.';
+    return 'If your browser does not offer to install it by itself:<br><br>' +
+      '• <b>Android, Chrome:</b> the <b>⋮</b> menu in the top right corner → <b>Install app</b> ' +
+      '(or <b>Add to Home screen</b>)<br>' +
+      '• <b>Computer, Chrome / Edge:</b> the install icon on the right of the address bar<br><br>' +
+      'If it is not there, refresh the page – the game has to load fully once.';
+  }
   if(naIPhonie) return 'Na iPhonie i iPadzie instaluje się ręcznie, w <b>Safari</b>:<br><br>' +
     '1. dotknij <b>Udostępnij</b> (kwadracik ze strzałką w górę, na dole ekranu)<br>' +
     '2. przewiń listę i wybierz <b>Do ekranu początkowego</b><br>' +
@@ -7925,14 +9181,14 @@ document.getElementById('zamknijJak').addEventListener('click', e => {
 addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   zachetaInstalacji = e;
-  pokazPrzyciskInstaluj('📲 ZAINSTALUJ GRĘ');
+  pokazPrzyciskInstaluj(JEZYK === 'en' ? '📲 INSTALL THE GAME' : '📲 ZAINSTALUJ GRĘ');
 });
 addEventListener('appinstalled', () => {
   zachetaInstalacji = null;
   document.body.classList.remove('mozna');
 });
 // iPhone nigdy nie da zachęty; na innych czekamy chwilę i też podpowiadamy ręcznie
-if(naIPhonie) pokazPrzyciskInstaluj('📲 JAK ZAINSTALOWAĆ?');
+if(naIPhonie) pokazPrzyciskInstaluj(JEZYK === 'en' ? '📲 HOW TO INSTALL?' : '📲 JAK ZAINSTALOWAĆ?');
 else setTimeout(() => { if(!zachetaInstalacji) pokazPrzyciskInstaluj('📲 JAK ZAINSTALOWAĆ?'); }, 4000);
 
 /* ==================== PWA: zawsze świeża wersja ====================

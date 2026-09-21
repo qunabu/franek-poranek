@@ -527,7 +527,82 @@ NARRACJA = {
     'igloo_czekaj':  'Poczekaj, aż kotek machnie łapką!',
     'igloo_rosnie':  'Igloo rośnie! Rzucaj dalej!',
     'igloo_koniec':  'Igloo gotowe! Kotki idą spać do środka. Dobranoc Franek!',
+
+    # --- ekran ustawień: język i tryb ---
+    'menu_jak':    'Poranek Franka! Strzałka w lewo albo w prawo zmienia język, strzałka '
+                   'w dół zmienia tryb, a strzałka w górę zaczyna grę.',
+    'menu_jezyk':  'Polski.',
+    'menu_prosty': 'Tryb prosty. Krótsze etapy i nic się nie powtarza.',
+    'menu_pelny':  'Tryb pełny. Wszystkie etapy i cały długi dzień.',
+
+    # --- minigra: alfabet ---
+    'alf_poziom':  'Literki! Na jaką literę zaczyna się słowo?',
+    'alf_jak':     'Popatrz na obrazek i posłuchaj. Potem strzałki w lewo i w prawo pokazują '
+                   'litery, a strzałka w górę wybiera.',
+    'alf_pytanie': 'Na jaką literę się zaczyna?',
+    'alf_brawo':   'Tak! Zaczyna się na',
+    'alf_nie':     'To nie ta litera. Powiedz słowo powoli i posłuchaj początku.',
+    'alf_koniec':  'Znasz literki! Brawo Franek!',
+    'alf_kot':       'Kot.',
+    'alf_rybka':     'Rybka.',
+    'alf_czapka':    'Czapka.',
+    'alf_mleko':     'Mleko.',
+    'alf_buty':      'Buty.',
+    'alf_lyzka':     'Łyżka.',
+    'alf_krolik':    'Królik.',
+    'alf_marchewka': 'Marchewka.',
+
+    # --- minigra: pary obrazków ---
+    'mem_poziom': 'Pary obrazków. Znajdź dwa takie same.',
+    'mem_jak':    'Karty leżą obrazkiem do dołu. Strzałki w lewo i w prawo przesuwają rączkę, '
+                  'a strzałka w górę odwraca kartę. Znajdź dwie takie same.',
+    'mem_para':   'Para! Brawo!',
+    'mem_nie':    'To nie para. Zapamiętaj, gdzie leżą, i spróbuj jeszcze raz.',
+    'mem_koniec': 'Znalazłeś wszystkie pary! Ale pamięć!',
+
+    # --- minigra: co będzie dalej ---
+    'wzor_poziom':   'Wzory! Zgadnij, co będzie dalej.',
+    'wzor_jak':      'Figury układają się we wzór, który się powtarza. Zgadnij, co będzie dalej. '
+                     'Strzałki w lewo i w prawo wybierają, strzałka w górę zatwierdza.',
+    'wzor_co_dalej': 'Co będzie dalej?',
+    'wzor_brawo':    'Tak! Taki jest wzór. Brawo!',
+    'wzor_nie':      'To nie to. Popatrz na wzór od początku.',
+    'wzor_koniec':   'Wszystkie wzory zgadnięte! Ale z ciebie detektyw!',
+
+    # --- minigra: co nie pasuje ---
+    'nie_poziom': 'Które nie pasuje do reszty?',
+    'nie_jak':    'Trzy obrazki są z jednej rodziny, a jeden nie. Strzałki w lewo i w prawo '
+                  'wybierają, strzałka w górę zatwierdza.',
+    'nie_ktore':  'Które nie pasuje?',
+    'nie_brawo':  'Tak, to nie pasuje!',
+    'nie_nie':    'To akurat pasuje. Popatrz jeszcze raz.',
+    'nie_koniec': 'Wszystko posortowane! Ale z ciebie mądrala!',
+    'nie_zwierzeta': 'Reszta to zwierzątka.',
+    'nie_jedzenie':  'Reszta to jedzenie.',
+    'nie_ubrania':   'Reszta to ubranka.',
+    'nie_zabawki':   'Reszta to zabawki.',
+    'nie_kuchnia':   'Reszta jest z kuchni.',
+
+    # --- minigra: wyższa karta ---
+    'karty_poziom': 'Która karta jest większa?',
+    'karty_jak':    'Są dwie karty. Wybierz tę z większą liczbą. Strzałki w lewo i w prawo '
+                    'wybierają, strzałka w górę zatwierdza.',
+    'karty_ktora':  'Która karta jest większa?',
+    'karty_brawo':  'Tak! Większa liczba to',
+    'karty_nie':    'Nie, ta druga jest większa. Policz serduszka.',
+    'karty_koniec': 'Znasz liczby! Zawsze wiesz, która jest większa!',
 }
+
+# --- nazwy liter: po polsku „be, ce, ka", po angielsku „bee, see, kay" ---
+LITERY_PL = {'a':'a', 'b':'be', 'c':'ce', 'd':'de', 'e':'e', 'f':'ef', 'g':'gie', 'h':'ha',
+             'i':'i', 'j':'jot', 'k':'ka', 'l':'el', 'm':'em', 'n':'en', 'o':'o', 'p':'pe',
+             'r':'er', 's':'es', 't':'te', 'u':'u', 'w':'wu', 'ł':'eł'}
+LITERY_EN = {'a':'ay', 'b':'bee', 'c':'see', 'd':'dee', 'e':'ee', 'f':'eff', 'g':'jee',
+             'h':'aitch', 'i':'eye', 'j':'jay', 'k':'kay', 'l':'ell', 'm':'em', 'n':'en',
+             'o':'oh', 'p':'pee', 'r':'arr', 's':'ess', 't':'tee', 'u':'you', 'w':'double you',
+             'ł':'ell'}
+for _l, _n in LITERY_PL.items():
+    NARRACJA['lit_' + _l] = _n
 
 EFEKTY = {
     'sfx_skok':   ('8-bit chiptune jump sound effect, retro NES video game, short rising square wave blip', 0.6),
@@ -548,12 +623,47 @@ MUZYKA = {
     'muz_koniec': ('Triumphant 8-bit chiptune victory fanfare, NES style, celebratory, short, no vocals', 12000),
 }
 
+import re as _re
+from narracja_en import NARRACJA_EN
+for _l, _n in LITERY_EN.items():
+    NARRACJA_EN['lit_' + _l] = _n
+
+# --- wersje bez numeru poziomu (n_...) dla trybu uproszczonego ---
+# W trybie prostym etapy są przetasowane, więc nagrane „Poziom siódmy" by kłamało.
+BEZ_NUMERU = [
+    (_re.compile(r'^Poziom [\w ]+?\.\s*'), ''),
+    (_re.compile(r'^Ostatni poziom!\s*'), ''),
+    (_re.compile(r'^Etap bonusowy!\s*'), ''),
+]
+def bezNumeru(tekst):
+    nowy = tekst
+    for wzor, czym in BEZ_NUMERU:
+        nowy = wzor.sub(czym, nowy)
+    return nowy if nowy != tekst and nowy else None
+
 def main():
     wynik = {}
-    print('=== NARRATOR (glos %s) ===' % GLOS, flush=True)
+    print('=== NARRATOR PL (glos %s) ===' % GLOS, flush=True)
     for k, t in NARRACJA.items():
         wynik[k] = mowa(k + '.mp3', t)
         print('%-16s %s  "%s"' % (k, wynik[k], t), flush=True)
+
+    print('=== NARRATOR PL bez numerów poziomów ===', flush=True)
+    for k, t in NARRACJA.items():
+        t2 = bezNumeru(t)
+        if not t2:
+            continue
+        wynik['n_' + k] = mowa('n_' + k + '.mp3', t2)
+        print('%-18s %s  "%s"' % ('n_' + k, wynik['n_' + k], t2), flush=True)
+
+    print('=== NARRATOR EN ===', flush=True)
+    os.makedirs(os.path.join(KAT, 'en'), exist_ok=True)
+    brak = [k for k in NARRACJA if k not in NARRACJA_EN]
+    if brak:
+        print('BRAK TŁUMACZENIA: ' + ', '.join(sorted(brak)), flush=True)
+    for k, t in NARRACJA_EN.items():
+        wynik['en/' + k] = mowa(os.path.join('en', k + '.mp3'), t)
+        print('%-18s %s  "%s"' % ('en/' + k, wynik['en/' + k], t), flush=True)
     print('=== EFEKTY ===', flush=True)
     for k, (opis, sek) in EFEKTY.items():
         wynik[k] = efekt(k + '.mp3', opis, sek)

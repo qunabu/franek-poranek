@@ -1,17 +1,54 @@
 # Poranek Franka i Poli 🕷️
 
-Ośmiobitowa gra 2D dla 5–6 latków. Na pierwszym ekranie wybierasz, kim grasz:
-**Frankiem** albo **Polą**. Franek przechodzi **cały dzień** – od ciemnego pokoju
-rano, przez przedszkole i zabawę u sąsiada, po kolację, kąpiel, książkę
-na dobranoc i sen o kotkach. Pola ma **tyle samo etapów poranka** co Franek
-w swoim poranku. **Oboje wybierają na starcie, z kim jadą do przedszkola** —
-Franek z mamą Magdą albo z tatą, Pola z mamą Olą albo z tatą Adamem.
-**Sterowanie: same strzałki.**
+Ośmiobitowa gra edukacyjna 2D dla 5–6 latków. Dziecko przechodzi **cały dzień** –
+od ciemnego pokoju rano, przez przedszkole i zabawę, po kolację, kąpiel, książkę
+na dobranoc i sen o kotkach – a po drodze **liczy, poznaje litery, kolory,
+kształty, wzory i karty**. **Sterowanie: same strzałki.**
 
 ▶ **Zagraj: https://qunabu.github.io/franek-poranek/**
 
-Franek nie umie jeszcze czytać, więc **wszystko czyta narrator** — każde zadanie
-jest wypowiadane na głos po polsku.
+Dzieci w tym wieku nie czytają, więc **wszystko czyta narrator** — każde zadanie,
+każda liczba i każda litera jest wypowiadana na głos.
+
+## Pierwszy ekran: język i tryb
+
+Gra **startuje po angielsku w trybie uproszczonym** — tak, żeby służyła też jako
+osłuchanie się z angielskim. Na pierwszym ekranie stoją dwa przełączniki:
+
+| Przełącznik | Klawisz | Wartości |
+|---|---|---|
+| **Język** | ◀ ▶ | **ENGLISH** (domyślnie) albo **POLSKI** |
+| **Tryb** | ▼ | **PROSTY** (domyślnie) albo **PEŁNY** |
+| Start | ▲ | zaczyna grę |
+
+Wybór **zapamiętuje się** w przeglądarce, a narrator mówi w wybranym języku —
+każda kwestia jest nagrana dwa razy, po polsku i po angielsku.
+
+**Tryb prosty (35 etapów)** — żaden etap się nie powtarza: ząbki myje się raz,
+autem jedzie się raz, jeden wyścig, jedna kąpiel, jedna pogoń. Każda minigra
+jest krótsza (mniej rund, krótsze szorowanie, krótsza trasa). Zamiast numerów
+poziomów na ekranie jest zwykły licznik postępu, np. `12/35`.
+
+**Tryb pełny (50 etapów)** — cały dzień ze wszystkimi powtórkami: drugie mycie
+ząbków wieczorem, powrót autem, tankowanie, drugi wyścig, zabawa u Igora,
+kąpiel część po części, gra w grze i sen o kotkach z budową igloo.
+
+## Etapy edukacyjne
+
+Rdzeń gry — są w **obu trybach**:
+
+| Etap | Czego uczy |
+|---|---|
+| **Liczymy jabłuszka** | dodawanie do dziesięciu, z liczeniem na głos |
+| **Alfabet** | pierwsza litera słowa (inne słowa po polsku, inne po angielsku) |
+| **Kolory i kształty** | nazwy kolorów i figur |
+| **Co nie pasuje?** | grupowanie: zwierzęta, jedzenie, ubrania, zabawki |
+| **Co będzie dalej?** | wzory i ciągi — czysta logika |
+| **Pary obrazków** | memory, czyli pamięć |
+| **Wyższa karta** | porównywanie liczb na kartach do gry |
+| **Rytm i klaskanie** | powtarzanie sekwencji |
+| **Nakrywamy do stołu** | liczenie po jednym dla każdego |
+| **Liczymy owieczki** | liczenie do dziesięciu przed snem |
 
 ## Sterowanie
 
@@ -63,11 +100,14 @@ Przedmioty zbiera się samym dotknięciem. Świecąca rzecz ze strzałką to ta,
 po którą trzeba iść teraz. **Nie da się przegrać** — po spadnięciu Franek
 wraca w bezpieczne miejsce.
 
-## Poziomy Franka (27 + 18 bonusowych)
+## Poziomy Franka (27 + 23 bonusowe)
 
 Etapy **bonusowe** to zabawy wplecione między zwykłe poziomy. Nie mają numeru
 (na karcie i pasku pisze „BONUS"), więc numeracja pozostałych poziomów – i to,
 co mówi narrator – zostaje bez zmian.
+
+🎓 oznacza etap edukacyjny, a **(tylko pełny)** etap, którego nie ma w trybie
+uproszczonym, bo powtarza coś, co już było.
 
 1. **Ciemno!** — w pokoju jest noc, Franek leży w łóżku i wyciąga rączkę do
    ściany. ◀ ▶ przesuwają rączkę, ▲ naciska. Trzeba trafić w **kontakt**, a nie
@@ -96,7 +136,7 @@ co mówi narrator – zostaje bez zmian.
 - 🎁 **Karmimy zwierzaki** (bonus) — karma dla kotów → pierwszy kotek →
   **drugi kotek na półce** → marchewka → królik. Na koniec wszyscy mruczą
   i chrupią
-- 🎁 **Gra w grze** (bonus) — Franek dostaje tablet i gra w **Poranek Franka**:
+- 🎁 **Gra w grze** *(tylko pełny)* (bonus) — Franek dostaje tablet i gra w **Poranek Franka**:
   na ekraniku chodzi malutki Franek i zbiera trzy rzeczy (◀ ▶ chodzą, ▲ skacze)
 - 🎁 **Jaka dziś pogoda?** (bonus) — za oknem raz deszcz, raz śnieg, raz słońce.
   Trzy zestawy na wieszaku: kalosze z parasolem, czapka z szalikiem, kaszkiet
@@ -105,13 +145,13 @@ co mówi narrator – zostaje bez zmian.
 7. **Wychodzimy!** — czapka → kurtka → buty
 - 🎁 **Zawiązujemy buty** (bonus) — sznurówka idzie przez cztery pary dziurek
   (◀ ▶ na zmianę), a na końcu ▲ zaciąga kokardkę
-8. **Do samochodu!** — spacer z opiekunem do auta (z mamą: **do taksówki**)
+8. **Do samochodu!** *(tylko pełny)* — spacer z opiekunem do auta (z mamą: **do taksówki**)
 9. **Jedziemy do przedszkola** — omijanie przeszkód na ulicy; w oknach auta
    widać Franka i tatę, a gdy tata wlecze się wolno, Franek go popędza
 10. **Wyścig do furtki** — naciskaj ◀ ▶ na zmianę; Franek zawsze wygrywa z tatą
 11. **Szatnia** — zdejmij buty, powieś kurtkę, zdejmij czapkę i **przytul tatę**
     na do widzenia (tata staje i czeka, na jego piersi świeci serduszko)
-12. **Wyścig do okna** — korytarzem do okna, a tata idzie tą samą drogą za szybą;
+12. **Wyścig do okna** *(tylko pełny)* — korytarzem do okna, a tata idzie tą samą drogą za szybą;
     na mecie Franek macha mu przez okno „pa pa" (◀ ▶ na zmianę, jak przy furtce)
 13. **Kółko powitalne** — dzieci siedzą w kręgu na dywanie. ◀ ▶ obchodzą kółko,
     ▲ mówi „cześć". Trzeba przywitać się z każdym; nad tym, do kogo iść, świecą
@@ -124,60 +164,71 @@ co mówi narrator – zostaje bez zmian.
   figury do wyboru, a narrator mówi, na którą patrzysz. Pięć zadań
 - 🎁 **Rytm i klaskanie** (bonus) — pani klaszcze rytm strzałkami, dziecko
   powtarza. Cztery rytmy, coraz dłuższe
+- 🎁🎓 **Alfabet** (bonus) — obrazek i trzy litery: na jaką literę zaczyna się
+  słowo? Po polsku KOT na K, po angielsku CAT na C — zestaw słów zmienia się
+  razem z językiem
+- 🎁🎓 **Co nie pasuje?** (bonus) — cztery obrazki, trzy z jednej rodziny
+  (zwierzęta, jedzenie, ubrania, zabawki, kuchnia) i jeden z zupełnie innej
+- 🎁🎓 **Co będzie dalej?** (bonus) — wzór, który się powtarza, i brakująca
+  figura na końcu. Najpierw dwuelementowy, potem trzyelementowy
 - 🎁 **Baba Jaga patrzy** (bonus) — klasyczne „raz, dwa, trzy". Kiedy Baba Jaga
   stoi tyłem i śpiewa, biegnie się (◀ ▶ na zmianę); gdy się odwróci, trzeba
   **stać jak posąg**, bo odsyła kawałek do tyłu. Z każdą rundą śpiewa szybciej
 - 🎁 **Zupka na obiad** (bonus) — najpierw za gorąca: trzymaj ▲ i dmuchaj, aż
   przestanie parować. Potem sześć łyżek (◀ ▶ na zmianę) i pusty talerz
-14. **Cały dzień w przedszkolu** — pięć scenek (klocki, farby, obiadek,
+14. **Cały dzień w przedszkolu** *(tylko pełny)* — pięć scenek (klocki, farby, obiadek,
     leżakowanie, plac zabaw), słoneczko wędruje po pasku dnia, a Franek
     **robi się coraz brudniejszy** – plamy widać na ubranku
 - 🎁 **Szukamy kurtki** (bonus) — w szatni wisi sześć kurtek. Najpierw gra
   pokazuje twoją, potem trzeba ją znaleźć. Trzy rundy, za każdym razem inna
-15. **Tata cię łapie!** — tata pyta „idziemy się umyć?" i rusza w pogoń.
+15. **Tata cię łapie!** *(tylko pełny)* — tata pyta „idziemy się umyć?" i rusza w pogoń.
     ◀ ▶ na zmianę. **Kto ucieknie do furtki, nie musi się myć**; kogo tata
     dogoni, ten idzie myć rączki i buzię (i wraca do domu czysty)
-16. **Jedziemy do domu** — ta sama jazda, ale w radiu leci **Kocia szajka**,
+16. **Jedziemy do domu** *(tylko pełny)* — ta sama jazda, ale w radiu leci **Kocia szajka**,
     a meta to **stacja benzynowa** (z mamą: jedzie się **autobusem**
     na **przystanek**)
-17. **Tankujemy!** — ▲ trzyma pistolet, bak się napełnia. Trzeba dolać co
+17. **Tankujemy!** *(tylko pełny)* — ▲ trzyma pistolet, bak się napełnia. Trzeba dolać co
     najmniej do **zielonego pola**, ale puścić przed setką, bo benzyna leje
     się na ziemię (gra pokazuje, ile procent i ile kropel obok).
     Z mamą zamiast tego **kasujemy bilet** w autobusie — ta sama zasada,
     tylko zamiast rozlanej benzyny bilet się gniecie
-18. **Idziemy do domu** — ulicą do furtki; po drodze stoi **Igor**, trzeba
+18. **Idziemy do domu** *(tylko pełny)* — ulicą do furtki; po drodze stoi **Igor**, trzeba
     powiedzieć mu „cześć" (wtedy obaj machają)
 19. **Jesteśmy w domu** — mama czeka w drzwiach. **Umytemu** mówi „fajnie, że
     wróciliście, chłopaki", **brudnego** wita „ale brudas!" i goni go po domu
     (◀ ▶ na zmianę) – w końcu zawsze złapie, więc kończy się myciem
     i przebraniem w piżamkę
-20. **Zabawa w domu** — salon i trzy rzeczy po kolei: **tory z kolejką**,
+20. **Zabawa w domu** *(tylko pełny)* — salon i trzy rzeczy po kolei: **tory z kolejką**,
     **klocki lego** i **rebusy z gazetki**. Franek przebiera się na wieczór
     w domowe ciuszki
 - 🎁 **Porządki w pokoju** (bonus) — klocki do pudełka, misie na półkę.
   ◀ ▶ chodzą, ▲ podnosi i odkłada; źle odłożone wraca z komentarzem
+- 🎁🎓 **Pary obrazków** (bonus) — memory: karty leżą obrazkiem do dołu,
+  trzeba znaleźć takie same
+- 🎁🎓 **Wyższa karta** (bonus) — dwie karty do gry, wybierz większą liczbę.
+  Na początku do sześciu, potem do dziesięciu
 - 🎁 **Tory dla pociągu** (bonus) — prosty *rail maze*: tory leżą poprzekręcane,
   ◀ ▶ wybierają kawałek, ▲ go obraca. Gdy droga z dworca na dworzec jest cała,
   **pociąg rusza sam**
 - 🎁 **Podłoga to lawa** (bonus) — cała podłoga to lawa, skacze się po meblach
   (dywan → pufa → stolik → taboret → półka → **kanapa z misiem**). Dotknięcie
   lawy cofa na ostatni mebel, więc przegrać się nie da
-21. **Ścianka i płot** — do sąsiada nie ma drogi na skróty: najpierw
+21. **Ścianka i płot** *(tylko pełny)* — do sąsiada nie ma drogi na skróty: najpierw
     **ścianka do wspinania** (kolorowe chwyty, wchodzi się skokami coraz wyżej),
     potem zejście po drugiej stronie i **przejście w płocie** do Igora
-22. **Zabawa z Igorem** — trzy scenki w ogródku sąsiada: piłka, autka po trawie
+22. **Zabawa z Igorem** *(tylko pełny)* — trzy scenki w ogródku sąsiada: piłka, autka po trawie
     i chowanego za krzakiem. Po nich Franek jest porządnie brudny
 - 🎁 **Nakrywamy do stołu** (bonus) — trzy miejsca, każde dostaje talerz, kubek
   i widelec. ◀ ▶ wybierają miejsce, ▲ kładzie, narrator liczy nakrycia
-23. **Kolacja** — **fish and chips**: rybka w panierce → frytki → talerz.
+23. **Kolacja** *(tylko pełny)* — **fish and chips**: rybka w panierce → frytki → talerz.
     Na koniec „mniam, mniam!"
-24. **Kąpiel** — myjemy się **cały, część po części**, w tej samej kolejności co
+24. **Kąpiel** *(tylko pełny)* — myjemy się **cały, część po części**, w tej samej kolejności co
     naprawdę: **szyja → głowa → ręce → nogi → pupa → stopy**. Gąbka jeździ po
     ciele, ◀ ▶ na zmianę zmywa brud (▲ ▼ przeskakują na inną, jeszcze brudną
     część). Na koniec **wycieranie ręcznikiem** — i Franek chodzi w ręczniku
 - 🎁 **Bańki mydlane** (bonus) — z wanny lecą bańki, ◀ ▶ przesuwają rączkę,
   a bańka pęka od samego dotknięcia. Dwanaście baniek
-25. **Ząbki i piżamka** — pasta → szczoteczka → **znów dwie minuty szorowania**
+25. **Ząbki i piżamka** *(tylko pełny)* — pasta → szczoteczka → **znów dwie minuty szorowania**
     → piżamka z komody
 - 🎁 **Cienie na ścianie** (bonus) — lampka świeci na ścianę, a z rączek
   wychodzi pies, zajączek i ptak (każdy mówi swoje: hau hau, kic kic, ćwir)
@@ -190,7 +241,7 @@ co mówi narrator – zostaje bez zmian.
   a narrator liczy. Po dziesiątej owcy powieki same się zamykają
 27. **Sen o kotkach** — zaśnieżona dolina, choinki i księżyc, a **kotki rzucają
     się śnieżkami**. ▲ rzuca śnieżkę razem z nimi. Franek śpi w rogu ekranu
-- 🎁 **Kotki budują igloo** (bonus, ostatni etap dnia) — kotek macha łapką, gdy
+- 🎁 **Kotki budują igloo** *(tylko pełny)* (bonus, ostatni etap dnia) — kotek macha łapką, gdy
   czeka na śnieżkę; ▲ w dobrym momencie dokłada blok. Osiem bloków i igloo
   gotowe — kotki idą spać do środka
 
@@ -219,6 +270,25 @@ albo tata Adam. Wybór zmienia głowę i ubranie opiekuna, odmianę słów na ek
 12. **Wyścig do okna** — na mecie Pola macha przez okno „pa pa"
 
 Franek **ubiera się na oczach gracza** — każda zebrana rzecz pojawia się na postaci.
+
+## Dwa języki narratora
+
+Każda kwestia jest nagrana dwa razy: polska leży w `audio/`, angielska
+w `audio/en/` pod tym samym kluczem. Gra nie tworzy drugiego kompletu
+elementów `<audio>` — przy zmianie języka po prostu przestawia `src`
+(`przeladujMowe()`), więc przełączenie jest natychmiastowe i nic się nie
+dogrywa dwa razy.
+
+Napisy zostają w kodzie po polsku, a tłumaczy je jedna funkcja `tlum()`
+wpięta w `rysujTekst`, korzystając ze słownika `TLUM`. Zdania złożone
+(„Najpierw znajdź miskę!") składa z kawałków, a liczby przepuszcza bez zmian
+(„ZADANIE 3/5" → „TASK 3/5"). Dzięki temu nowa minigra nie wymaga
+przerabiania kodu — wystarczy dopisać kilka wpisów do słownika.
+
+W trybie uproszczonym narrator nie może mówić „poziom siódmy", bo etapy są
+przetasowane. Dlatego generator robi z każdej zapowiedzi drugą wersję,
+bez numeru (`n_...`), a gra sięga po nią sama. Angielskie zapowiedzi numerów
+nie mają w ogóle.
 
 ## Jak to zrobione
 
