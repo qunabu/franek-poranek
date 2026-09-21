@@ -2427,6 +2427,58 @@ function rysujZnaki(znaki, px, py, kol, skala){
    Klucze pisane tak jak w kodzie – wersje DUŻYMI i małymi dorabiają się same,
    a zdania złożone (np. „Najpierw znajdź miskę!") składają się z kawałków. */
 const TLUM = {
+  'DMUCHAJ! TRZYMAJ ^':'BLOW! HOLD ^',
+  'WSTAWAJ!':'GET UP!',
+  'RAZ, DWA, TRZY...':'ONE, TWO, THREE...',
+  'ALE BRUDAS!':'WHAT A MUCKY PUP!',
+  'ALE BRUDAS! IDZIEMY SIĘ MYĆ!':'WHAT A MUCKY PUP! TIME TO WASH!',
+  'FAJNIE, ŻE JUŻ JESTEŚCIE!':'GREAT TO SEE YOU BACK!',
+  'FAJNIE, ŻE WRÓCILIŚCIE, CHŁOPAKI!':'GREAT TO HAVE YOU BACK, BOYS!',
+  'CZEŚĆ,':'HELLO,',
+  'CIĘ ŁAPIE!':'IS CHASING YOU!',
+  'NIE TAK SZYBKO!':'NOT SO FAST!',
+  'POLA,':'POLA,',
+  'GDZIE JEST':'WHERE IS THE',
+  'KTÓRY JEST':'WHICH ONE IS',
+  'GDZIE SĄ KAPCIE?':'WHERE ARE YOUR SLIPPERS?',
+  'LECIMY DO KIBELKA!':'OFF TO THE TOILET!',
+  'WSTAŁEM!':'I AM UP!',
+  'WSTAŁAM!':'I AM UP!',
+  'IDŹ DO SAMOCHODU!':'GO TO THE CAR!',
+  'IDŹ DO TAKSÓWKI!':'GO TO THE TAXI!',
+  'IDŹ DO DRZWI!':'GO TO THE DOOR!',
+  'JEDZIEMY DO PRZEDSZKOLA':'OFF TO PRESCHOOL',
+  'JEDZIEMY NA PRZYSTANEK':'OFF TO THE BUS STOP',
+  'ROWEREM DO PRZEDSZKOLA':'CYCLING TO PRESCHOOL',
+  'JEDZ! <  >  NA ZMIANĘ':'EAT!  <  >  ONE BY ONE',
+  'PRZEWLEKAJ SZNURÓWKĘ!':'THREAD THE LACE!',
+  'TERAZ KOKARDKA!':'NOW THE BOW!',
+  'KAŻDY DOSTAJE TALERZ':'EVERYONE GETS A PLATE',
+  'TERAZ KUBKI':'NOW THE CUPS',
+  'TERAZ WIDELCE':'NOW THE FORKS',
+  'PODNIEŚ ZABAWKĘ!':'PICK UP A TOY!',
+  'ZANIEŚ NA MIEJSCE!':'PUT IT WHERE IT BELONGS!',
+  'SŁUCHAJ I PATRZ!':'LISTEN AND WATCH!',
+  'TERAZ TY!':'NOW YOU!',
+  'OJEJ, JESZCZE RAZ!':'OOPS, ONCE MORE!',
+  'KTÓRA JEST TWOJA?':'WHICH ONE IS YOURS?',
+  'TO TA! BRAWO!':'THAT IS THE ONE! WELL DONE!',
+  'TO TWOJA KURTKA - ZAPAMIĘTAJ!':'THIS IS YOUR COAT - REMEMBER IT!',
+  'PADA ŚNIEG!':'IT IS SNOWING!',
+  'PADA DESZCZ!':'IT IS RAINING!',
+  'ŚWIECI SŁOŃCE!':'THE SUN IS SHINING!',
+  'CZEKAJ NA ZNAK...':'WAIT FOR THE SIGN...',
+  'CZEKAJ, AŻ KOTEK MACHNIE!':'WAIT FOR THE CAT TO WAVE!',
+  'RZUCAJ TERAZ!':'THROW NOW!',
+  'WYTRZYJ RĘCZNIKIEM':'DRY OFF WITH THE TOWEL',
+  'DOLINA MUMINKÓW ŚPI POD ŚNIEGIEM...':'MOOMINVALLEY SLEEPS UNDER THE SNOW...',
+  'KOCIA SZAJKA RUSZA NA WYPRAWĘ!':'THE CAT GANG SETS OFF ON AN ADVENTURE!',
+  'PIRAT RABARBAR SZUKA SKARBU!':'PIRATE RHUBARB HUNTS FOR TREASURE!',
+  'ZYGZAK MCQUEEN PĘDZI PO TORZE!':'LIGHTNING MCQUEEN RACES ROUND THE TRACK!',
+  'KOCIA SZAJKA, ROZDZIAŁ 7':'THE CAT GANG, CHAPTER 7',
+  'MIAU! DO DZIEŁA, KOTY!':'MEOW! LET\'S GO, CATS!',
+  'RUDY, TY PILNUJ WEJŚCIA!':'GINGER, YOU WATCH THE DOOR!',
+  'MAMY GO! BRAWO SZAJKA!':'WE GOT IT! WELL DONE, GANG!',
   'POLSKI':'POLISH',
   'ZMIANA':'CHANGE',
   'ZMIANA:  U':'CHANGE:  U',
@@ -2991,6 +3043,14 @@ const TLUM_DUZE = {}, TLUM_MALE = {};
 for(const k in TLUM){
   TLUM_DUZE[k.toUpperCase()] = TLUM[k].toUpperCase();
   TLUM_MALE[k.toLowerCase()] = TLUM[k].toLowerCase();
+}
+/* Zdania składamy z kawałków, a kawałek bywa bez wykrzyknika („najpierw" +
+   „zdejmij buty"), więc do słownika dokładamy wersje bez końcowej interpunkcji. */
+for(const mapa of [TLUM, TLUM_DUZE, TLUM_MALE]){
+  for(const k of Object.keys(mapa)){
+    const bez = k.replace(/[!?.]+$/, '');
+    if(bez && bez !== k && mapa[bez] === undefined) mapa[bez] = mapa[k].replace(/[!?.]+$/, '');
+  }
 }
 function tlumSlownik(s){
   if(TLUM[s] !== undefined) return TLUM[s];
@@ -6269,7 +6329,7 @@ function rysujKsiazke(){
       pr(x+4, y+4, 88, 112, ks.kol2); obrys(x+4, y+4, 88, 112);
       pr(x+2, y, 5, 120, '#000000');                     // grzbiet
       ctx.save(); ctx.translate(x+22, y+16); ks.rysuj(0, 0); ctx.restore();
-      const linie = ks.tytul.split(' ');
+      const linie = tlum(ks.tytul).split(' ');
       linie.forEach((w, j) => napis(w, x+48, y+86 + j*11, '#fffeff', '#000000', 1));
       if(!wybrana){ ctx.globalAlpha = 0.45; pr(x, y, 96, 120, '#000000'); ctx.globalAlpha = 1; }
     }
