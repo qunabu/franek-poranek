@@ -379,7 +379,6 @@ NARRACJA_EN.update({
     'porz_zle_klocek': 'Bricks go in the box, not on the shelf.',
     'porz_zle_mis':    'Teddies sit on the shelf, not in the box.',
     'porz_koniec':     'Everything in its place! What a tidy room. Well done Franek!',
-    # --- kolory, rytm, zupa, szukanie, bańki, cienie, owce, igloo ---
     'ksz_poziom':      'We are playing with colours and shapes.',
     'ksz_jak':         'The left and right arrows show the shapes, and the up arrow picks one.',
     'ksz_ktory_kolor': 'Which one is',
@@ -419,16 +418,6 @@ NARRACJA_EN.update({
     'banki_jak':    'Catch the bubbles with your hand! The left and right arrows move your hand, '
                     'and a bubble pops the moment you touch it.',
     'banki_koniec': 'All the bubbles popped! What fun. Well done Franek!',
-    'cien_poziom': 'We are making shadows on the wall with our hands.',
-    'cien_jak':    'The lamp shines on the wall. The left and right arrows choose an animal, '
-                   'and the up arrow shows its shadow.',
-    'cien_pies':   'A dog!',
-    'cien_zajac':  'A bunny!',
-    'cien_ptak':   'A bird!',
-    'cien_hau':    'Woof, woof!',
-    'cien_kic':    'Hop, hop, hop!',
-    'cien_cwir':   'Tweet, tweet!',
-    'cien_koniec': 'A dog, a bunny and a bird. A whole zoo on the wall! Well done Franek!',
     'owce_poziom': 'Before we sleep we count sheep.',
     'owce_jak':    'A sheep walks up to the fence and waits. Press the up arrow to make it jump, '
                    'and I will count.',

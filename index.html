@@ -599,8 +599,6 @@ const KLUCZE_MOWA = [
   'zupa_poziom','zupa_jak','zupa_ostygla','zupa_koniec',
   'szuk_poziom','szuk_jak','szuk_patrz','szuk_szukaj','szuk_ok','szuk_zle','szuk_koniec',
   'banki_poziom','banki_jak','banki_koniec',
-  'cien_poziom','cien_jak','cien_pies','cien_zajac','cien_ptak','cien_hau','cien_kic','cien_cwir',
-  'cien_koniec',
   'owce_poziom','owce_jak','owce_koniec',
   'igloo_poziom','igloo_jak','igloo_czekaj','igloo_rosnie','igloo_koniec',
   'menu_jak','menu_jezyk','menu_prosty','menu_pelny',
@@ -1798,15 +1796,13 @@ const POZIOMY_FRANEK = [
     ],
     drzwi:{x:720,y:165,w:50,h:70,tekst:'Do łóżka!'}
   },
-  { typ:'cienie', bonus:true, nazwa:'Cienie na ścianie', podtytul:'Pies, zajączek i ptak',
-    glos:'cien_poziom' },
   { typ:'ksiazka', nazwa:'Książka na dobranoc', podtytul:'Kto czyta i jaką książkę',
     glos:'f_poziom26' },
   { typ:'owce', bonus:true, nazwa:'Liczymy owieczki', podtytul:'Dziesięć owiec przez płot',
     glos:'owce_poziom' },
   { typ:'sen', nazwa:'Sen o kotkach', podtytul:'Kotki rzucają śnieżkami',
     glos:'f_poziom27' },
-  { zaawansowany:true, typ:'igloo', bonus:true, nazwa:'Kotki budują igloo', podtytul:'Podawaj śnieżki kotkom',
+  { typ:'igloo', bonus:true, nazwa:'Kotki budują igloo', podtytul:'Podawaj śnieżki kotkom',
     glos:'igloo_poziom' }
 ];
 
@@ -2121,7 +2117,6 @@ const STARTY_MINIGIER = {
   zupa: () => startZupy(),
   szukanie: () => startSzukania(),
   banki: () => startBaniek(),
-  cienie: () => startCieni(),
   owce: () => startOwiec(),
   igloo: () => startIgloo(),
   alfabet: () => startAlfabetu(),
@@ -2175,7 +2170,7 @@ function podtytulEtapu(p){ const w = wariantEtapu(p); return (w && w.podtytul) |
    W trybie prostym etapy są przetasowane, więc nagrane „poziom siódmy" by kłamało.
    Pliki dociągają się dopiero wtedy, kiedy są potrzebne. */
 const KLUCZE_BEZ_NUMERU = new Set([
-  'baba_poziom','banki_poziom','cien_poziom','f_poziom10','f_poziom11','f_poziom12',
+  'baba_poziom','banki_poziom','f_poziom10','f_poziom11','f_poziom12',
   'f_poziom13','f_poziom14','f_poziom15','f_poziom16','f_poziom17','f_poziom18',
   'f_poziom19','f_poziom20','f_poziom21','f_poziom22','f_poziom23','f_poziom24',
   'f_poziom25','f_poziom26','f_poziom27','f_poziom4','f_poziom5','f_poziom6',
@@ -2241,7 +2236,7 @@ function debugEtap(kierunek){
   G.liczenie = null; G.gierka = null; G.kolejka = null; G.baba = null; G.lawa = null;
   G.pogoda = null; G.sznurowki = null; G.stol = null; G.porzadki = null;
   G.ksztalty = null; G.rytm = null; G.zupa = null; G.szukanie = null;
-  G.banki = null; G.cienie = null; G.owce = null; G.igloo = null;
+  G.banki = null; G.owce = null; G.igloo = null;
   G.alfabet = null; G.memory = null; G.wzor = null; G.niepasuje = null; G.karty = null;
   G.czastki = []; G.overlay = null;
   G.debug = 150;
@@ -2487,7 +2482,6 @@ const TLUM = {
   'KROPEL':'DROPS',
   '<  >  NA ZMIANĘ':'<  >  ONE BY ONE',
   '<  >  WYBIERAJ     ^  TO TEN!':'<  >  CHOOSE     ^  THAT ONE!',
-  '<  >  WYBIERZ     ^  POKAŻ CIEŃ':'<  >  CHOOSE     ^  SHOW SHADOW',
   'ANI KROPLI OBOK! BRAWO!':'NOT A DROP SPILLED! WELL DONE!',
   'CAŁY DZIEŃ ZA TOBĄ!':'A WHOLE DAY BEHIND YOU!',
   'CZYSTY!':'CLEAN!',
@@ -2628,7 +2622,6 @@ const TLUM = {
   'Biegnij i pomachaj mamie':'Run and wave to mum',
   'Biegnij i pomachaj tacie':'Run and wave to dad',
   'CAŁA ZUPKA ZJEDZONA!':'ALL THE SOUP IS GONE!',
-  'CAŁE ZOO NA ŚCIANIE!':'A WHOLE ZOO ON THE WALL!',
   'CAŁY DZIEŃ W PRZEDSZKOLU':'A WHOLE DAY AT PRESCHOOL',
   'CAŁY RYTM POWTÓRZONY!':'EVERY RHYTHM COPIED!',
   'CELUJ DO WODY:  <  BLIŻEJ    >  DALEJ':'AIM AT THE WATER:  <  NEARER    >  FURTHER',
@@ -2636,7 +2629,6 @@ const TLUM = {
   'CHOWANEGO ZA KRZAKIEM':'HIDE AND SEEK BEHIND THE BUSH',
   'CHRUP!':'CRUNCH!',
   'CIEMNO! ZAPAL ŚWIATŁO':'DARK! TURN ON THE LIGHT',
-  'CIENIE NA ŚCIANIE':'SHADOWS ON THE WALL',
   'CIUCH CIUCH!':'CHOO CHOO!',
   'CZAPKA I SZALIK':'HAT AND SCARF',
   'CZAS NA ZABAWĘ!':'PLAYTIME!',
@@ -2649,7 +2641,6 @@ const TLUM = {
   'CZYSTY I SUCHY!':'CLEAN AND DRY!',
   'Cały dzień w przedszkolu':'A whole day at preschool',
   'Ciemno!':'Dark!',
-  'Cienie na ścianie':'Shadows on the wall',
   'Czapka, kurtka i buty':'Hat, coat and shoes',
   'DESKA I PODŁOGA CZYSTE':'SEAT AND FLOOR ARE CLEAN',
   'DO ZOBACZENIA PO PODWIECZORKU!':'SEE YOU AFTER SNACK TIME!',
@@ -2806,7 +2797,6 @@ const TLUM = {
   'PANI':'TEACHER',
   'PEŁNY':'FULL',
   'PIES':'DOG',
-  'PIES, ZAJĄCZEK I PTAK!':'DOG, BUNNY AND BIRD!',
   'PIRAT RABARBAR':'PIRATE RHUBARB',
   'PIŁKA W OGRÓDKU':'BALL IN THE GARDEN',
   'PLAC ZABAW':'PLAYGROUND',
@@ -2827,7 +2817,6 @@ const TLUM = {
   'PUŚĆ  ^  TERAZ!':'LET GO OF  ^  NOW!',
   'PUŚĆ W ZIELONYM POLU!':'LET GO IN THE GREEN ZONE!',
   'PYSZNE ŁÓDECZKI!':'YUMMY CEREAL!',
-  'Pies, zajączek i ptak':'Dog, bunny and bird',
   'Piłka, autka i chowanego':'Ball, cars and hide and seek',
   'Po kolei!':'One by one!',
   'Podawaj śnieżki kotkom':'Pass snowballs to the cats',
@@ -8309,118 +8298,6 @@ function rysujBanki(){
   rysujDebug();
 }
 
-/* ==================== MINIGRA: CIENIE NA ŚCIANIE ====================
-   Lampka świeci, a z rączek robi się pies, zajączek i ptak.
-   ◀ ▶ wybierają zwierzaka, ▲ pokazuje cień na ścianie. */
-const CIENIE = [
-  {co:'pies',    napis:'PIES',     glos:'cien_pies',    dzwiek:'cien_hau'},
-  {co:'zajac',   napis:'ZAJĄCZEK', glos:'cien_zajac',   dzwiek:'cien_kic'},
-  {co:'ptak',    napis:'PTAK',     glos:'cien_ptak',    dzwiek:'cien_cwir'}
-];
-function startCieni(){
-  G.cienie = { kursor:0, pokazane:[false,false,false], pokaz:-1, t:0, koniecT:0 };
-  G.czastki = []; G.ekran = 'cienie';
-  graj('muz_gra'); mow('cien_jak');
-}
-function aktualizujCienie(){
-  const c = G.cienie;
-  c.t++;
-  if(c.koniecT > 0){
-    c.koniecT--;
-    if(c.koniecT === 0) dalejPoPoziomie();
-    aktualizujEfekty(); czyscNowe(); return;
-  }
-  if(c.pokaz >= 0){
-    if(c.t > 150){
-      c.pokaz = -1;
-      if(c.pokazane.every(Boolean)){ c.koniecT = 210; sfx('sfx_sukces'); cisza(); mow('cien_koniec'); }
-    }
-    aktualizujEfekty(); czyscNowe(); return;
-  }
-  if(nowy('ArrowLeft')  && c.kursor > 0){ c.kursor--; sfx('sfx_zbierz'); mow(CIENIE[c.kursor].glos); }
-  if(nowy('ArrowRight') && c.kursor < CIENIE.length-1){ c.kursor++; sfx('sfx_zbierz'); mow(CIENIE[c.kursor].glos); }
-  if(nowy('ArrowUp')){
-    c.pokaz = c.kursor; c.t = 0; c.pokazane[c.kursor] = true;
-    sfx('sfx_sukces');
-    mow(CIENIE[c.kursor].glos, CIENIE[c.kursor].dzwiek);
-    const nast = c.pokazane.findIndex(x => !x);
-    if(nast >= 0) c.kursor = nast;
-  }
-  aktualizujEfekty(); czyscNowe();
-}
-/* cień rysowany czernią na jasnym kręgu światła */
-function rysujCien(co, x, y, s, t){
-  const ruch = Math.round(Math.sin(t*0.12)*3);
-  ctx.fillStyle = '#000000';
-  if(co === 'pies'){
-    pr(x-40*s, y-10*s, 80*s, 34*s, '#000000');                       // głowa
-    pr(x-52*s, y-34*s, 20*s, 30*s, '#000000');                       // ucho
-    pr(x+22*s, y-30*s+ruch, 18*s, 26*s, '#000000');                  // drugie ucho
-    pr(x+34*s, y+2*s, 26*s, 16*s, '#000000');                        // pysk
-    pr(x+56*s, y+4*s, 8*s, 8*s, '#000000');                          // nos
-    pr(x-10*s, y+24*s+ruch, 14*s, 12*s, '#000000');                  // szczęka gada
-  } else if(co === 'zajac'){
-    pr(x-24*s, y-6*s, 56*s, 40*s, '#000000');
-    pr(x-18*s, y-56*s+ruch, 14*s, 52*s, '#000000');                  // uszy
-    pr(x+2*s, y-62*s-ruch, 14*s, 58*s, '#000000');
-    pr(x+30*s, y+10*s, 16*s, 14*s, '#000000');
-  } else {
-    pr(x-14*s, y-6*s, 40*s, 26*s, '#000000');                        // tułów
-    ctx.beginPath();                                                  // skrzydła machają
-    ctx.moveTo(x-10*s, y);
-    ctx.lineTo(x-64*s, y-30*s-ruch*3);
-    ctx.lineTo(x-8*s, y+16*s);
-    ctx.closePath(); ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(x+16*s, y);
-    ctx.lineTo(x+70*s, y-26*s+ruch*3);
-    ctx.lineTo(x+18*s, y+16*s);
-    ctx.closePath(); ctx.fill();
-    pr(x+22*s, y-2*s, 16*s, 10*s, '#000000');
-  }
-}
-function rysujCienie(){
-  const c = G.cienie;
-  pr(0,0,W,H,'#2b2b33');
-  const r = 150;
-  ctx.globalAlpha = 0.9;                                   // krąg światła na ścianie
-  kolo(250, 120, r, '#f7d8a5');
-  ctx.globalAlpha = 0.45; kolo(250, 120, r+18, '#c8a878'); ctx.globalAlpha = 1;
-  kolo(250, 120, r-4, '#f7d8a5');
-  pr(0,214,W,56,'#503000'); pr(0,214,W,3,'#883800');
-
-  pr(14, 150, 14, 66, '#4f4f4f'); pr(4, 138, 34, 14, '#f8d878');    // lampka
-  obrys(4, 138, 34, 14); kolo(21, 154, 6, '#fffeff');
-
-  if(c.pokaz >= 0) rysujCien(CIENIE[c.pokaz].co, 250, 120, 1, c.t);
-  else {
-    ctx.globalAlpha = 0.25;
-    rysujCien(CIENIE[c.kursor].co, 250, 120, 1, c.t);
-    ctx.globalAlpha = 1;
-  }
-  pr(180, 214, 40, 26, SKORA); obrys(180, 214, 40, 26);             // rączki pod światłem
-  pr(230, 214, 40, 26, SKORA); obrys(230, 214, 40, 26);
-
-  for(let i=0;i<CIENIE.length;i++){                                  // pasek wyboru
-    const x = 366, y = 48 + i*56;
-    ramka(x-52, y-20, 104, 42, i === c.kursor ? '#a80020' : '#000000');
-    napis(CIENIE[i].napis, x-8, y, c.pokazane[i] ? '#58d854' : '#fffeff', '#000000', 1);
-    if(c.pokazane[i]){ kolo(x+38, y, 6, '#58d854'); obrysKola(x+38, y, 6); }
-  }
-  rysujEfekty();
-
-  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
-  napisL('CIENIE NA ŚCIANIE', 4, 10, '#fffeff', null, 1);
-  napis(c.pokaz >= 0 ? CIENIE[c.pokaz].napis + '!' : '<  >  WYBIERZ     ^  POKAŻ CIEŃ',
-        W/2, 256, '#fffeff', '#000000', c.pokaz >= 0 ? 2 : 1);
-  if(c.koniecT > 0){
-    ctx.globalAlpha = 0.65; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
-    napis('PIES, ZAJĄCZEK I PTAK!', W/2, 118, '#f8d878', '#000000', 2);
-    napis('CAŁE ZOO NA ŚCIANIE!', W/2, 152, '#fffeff', '#000000', 2);
-  }
-  rysujDebug();
-}
-
 /* ==================== MINIGRA: LICZYMY OWIECZKI ====================
    Owca podchodzi do płotu i czeka. ▲ – skacze, a narrator liczy na głos.
    Po dziesiątej owcy Franek zasypia, a ekran gaśnie razem z nim. */
@@ -9227,7 +9104,6 @@ function krok(){
     case 'zupa': aktualizujZupe(); break;
     case 'szukanie': aktualizujSzukanie(); break;
     case 'banki': aktualizujBanki(); break;
-    case 'cienie': aktualizujCienie(); break;
     case 'owce': aktualizujOwce(); break;
     case 'igloo': aktualizujIgloo(); break;
     case 'alfabet': aktualizujAlfabet(); break;
@@ -9283,7 +9159,6 @@ function rysuj(){
     case 'zupa': rysujZupe(); break;
     case 'szukanie': rysujSzukanie(); break;
     case 'banki': rysujBanki(); break;
-    case 'cienie': rysujCienie(); break;
     case 'owce': rysujOwce(); break;
     case 'igloo': rysujIgloo(); break;
     case 'alfabet': rysujAlfabet(); break;

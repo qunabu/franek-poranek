@@ -35,9 +35,9 @@ autem jedzie się raz, jeden wyścig, jedna kąpiel, jedna pogoń. Każda minigr
 jest krótsza (mniej rund, krótsze szorowanie, krótsza trasa). Zamiast numerów
 poziomów na ekranie jest zwykły licznik postępu, np. `12/35`.
 
-**Tryb pełny (50 etapów)** — cały dzień ze wszystkimi powtórkami: drugie mycie
+**Tryb pełny (49 etapów)** — cały dzień ze wszystkimi powtórkami: drugie mycie
 ząbków wieczorem, powrót autem, tankowanie, drugi wyścig, zabawa u Igora,
-kąpiel część po części, gra w grze i sen o kotkach z budową igloo.
+kąpiel część po części i gra w grze. Na końcu, w obu trybach, kotki budują igloo.
 
 ## Etapy edukacyjne
 
@@ -107,7 +107,7 @@ Przedmioty zbiera się samym dotknięciem. Świecąca rzecz ze strzałką to ta,
 po którą trzeba iść teraz. **Nie da się przegrać** — po spadnięciu Franek
 wraca w bezpieczne miejsce.
 
-## Poziomy Franka (27 + 23 bonusowe)
+## Poziomy Franka (27 + 22 bonusowe)
 
 Etapy **bonusowe** to zabawy wplecione między zwykłe poziomy. Nie mają numeru
 (na karcie i pasku pisze „BONUS"), więc numeracja pozostałych poziomów – i to,
@@ -237,8 +237,6 @@ uproszczonym, bo powtarza coś, co już było.
   a bańka pęka od samego dotknięcia. Dwanaście baniek
 25. **Ząbki i piżamka** *(tylko pełny)* — pasta → szczoteczka → **znów dwie minuty szorowania**
     → piżamka z komody
-- 🎁 **Cienie na ścianie** (bonus) — lampka świeci na ścianę, a z rączek
-  wychodzi pies, zajączek i ptak (każdy mówi swoje: hau hau, kic kic, ćwir)
 26. **Książka na dobranoc** — najpierw Franek wybiera, **kto go kładzie spać**
     (◀ mama, ▶ tata), potem **wybiera książkę**: **Muminki**, **Kocia szajka**,
     **Pirat Rabarbar** albo **Zygzak McQueen**. Wybrany rodzic czyta trzy strony
@@ -248,7 +246,7 @@ uproszczonym, bo powtarza coś, co już było.
   a narrator liczy. Po dziesiątej owcy powieki same się zamykają
 27. **Sen o kotkach** — zaśnieżona dolina, choinki i księżyc, a **kotki rzucają
     się śnieżkami**. ▲ rzuca śnieżkę razem z nimi. Franek śpi w rogu ekranu
-- 🎁 **Kotki budują igloo** *(tylko pełny)* (bonus, ostatni etap dnia) — kotek macha łapką, gdy
+- 🎁 **Kotki budują igloo** (bonus, ostatni etap dnia) — kotek macha łapką, gdy
   czeka na śnieżkę; ▲ w dobrym momencie dokłada blok. Osiem bloków i igloo
   gotowe — kotki idą spać do środka
 

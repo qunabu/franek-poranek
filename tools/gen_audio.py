@@ -502,17 +502,6 @@ NARRACJA = {
                     'pęka od samego dotknięcia.',
     'banki_koniec': 'Wszystkie bańki pyk! Ale zabawa. Brawo Franek!',
 
-    # --- minigra: cienie na ścianie ---
-    'cien_poziom': 'Etap bonusowy! Z rączek robimy cienie na ścianie.',
-    'cien_jak':    'Lampka świeci na ścianę. Strzałki w lewo i w prawo wybierają zwierzaka, '
-                   'a strzałka w górę pokazuje jego cień.',
-    'cien_pies':   'Piesek!',
-    'cien_zajac':  'Zajączek!',
-    'cien_ptak':   'Ptaszek!',
-    'cien_hau':    'Hau, hau!',
-    'cien_kic':    'Kic, kic, kic!',
-    'cien_cwir':   'Ćwir, ćwir!',
-    'cien_koniec': 'Pies, zajączek i ptak. Całe zoo na ścianie! Brawo Franek!',
 
     # --- minigra: liczymy owieczki ---
     'owce_poziom': 'Etap bonusowy! Przed snem liczymy owieczki.',

@@ -12,7 +12,7 @@
    • nowy worker nie czeka w kolejce (skipWaiting + clients.claim), a strona
      sama się przeładuje, kiedy przejmie ją nowa wersja.                     */
 
-const WERSJA = '2026-09-21-pelne-tlumaczenie';
+const WERSJA = '2026-09-22-bez-cieni-igloo-na-koncu';
 const CACHE  = 'franek-' + WERSJA;
 
 /* to, co musi być dostępne offline od pierwszego uruchomienia */
