@@ -30,12 +30,12 @@ Na tablecie wystarczy dotknąć paska z językiem albo z trybem. Wybór
 **zapamiętuje się** w przeglądarce, a narrator mówi w wybranym języku —
 każda kwestia jest nagrana dwa razy, po polsku i po angielsku.
 
-**Tryb prosty (35 etapów)** — żaden etap się nie powtarza: ząbki myje się raz,
+**Tryb prosty (37 etapów)** — żaden etap się nie powtarza: ząbki myje się raz,
 autem jedzie się raz, jeden wyścig, jedna kąpiel, jedna pogoń. Każda minigra
 jest krótsza (mniej rund, krótsze szorowanie, krótsza trasa). Zamiast numerów
 poziomów na ekranie jest zwykły licznik postępu, np. `12/35`.
 
-**Tryb pełny (49 etapów)** — cały dzień ze wszystkimi powtórkami: drugie mycie
+**Tryb pełny (51 etapów)** — cały dzień ze wszystkimi powtórkami: drugie mycie
 ząbków wieczorem, powrót autem, tankowanie, drugi wyścig, zabawa u Igora,
 kąpiel część po części i gra w grze. Na końcu, w obu trybach, kotki budują igloo.
 
@@ -47,6 +47,8 @@ Rdzeń gry — są w **obu trybach**:
 |---|---|
 | **Liczymy jabłuszka** | dodawanie do dziesięciu, z liczeniem na głos |
 | **Alfabet** | pierwsza litera słowa (inne słowa po polsku, inne po angielsku) |
+| **Zgadywanie literek** | słyszysz literę, znajdujesz ją wśród czterech |
+| **Piszemy słowa** | układanie prostych słów z liter, litera po literze |
 | **Kolory i kształty** | nazwy kolorów i figur |
 | **Co nie pasuje?** | grupowanie: zwierzęta, jedzenie, ubrania, zabawki |
 | **Co będzie dalej?** | wzory i ciągi — czysta logika |
@@ -107,7 +109,7 @@ Przedmioty zbiera się samym dotknięciem. Świecąca rzecz ze strzałką to ta,
 po którą trzeba iść teraz. **Nie da się przegrać** — po spadnięciu Franek
 wraca w bezpieczne miejsce.
 
-## Poziomy Franka (27 + 22 bonusowe)
+## Poziomy Franka (27 + 24 bonusowe)
 
 Etapy **bonusowe** to zabawy wplecione między zwykłe poziomy. Nie mają numeru
 (na karcie i pasku pisze „BONUS"), więc numeracja pozostałych poziomów – i to,
@@ -174,6 +176,12 @@ uproszczonym, bo powtarza coś, co już było.
 - 🎁🎓 **Alfabet** (bonus) — obrazek i trzy litery: na jaką literę zaczyna się
   słowo? Po polsku KOT na K, po angielsku CAT na C — zestaw słów zmienia się
   razem z językiem
+- 🎁🎓 **Zgadywanie literek** (bonus) — narrator mówi literę, a dziecko szuka jej
+  wśród czterech. Bez podpowiedzi przy przesuwaniu: ▼ powtarza literę, a po
+  pomyłce gra mówi, którą literę wybrało dziecko i której szukamy
+- 🎁🎓 **Piszemy słowa** (bonus) — obrazek, puste kratki i literki pod spodem.
+  Trzeba ułożyć słowo litera po literze; po polsku KOT, BUTY, MLEKO i RYBKA,
+  po angielsku CAT, HAT, MILK i FISH
 - 🎁🎓 **Co nie pasuje?** (bonus) — cztery obrazki, trzy z jednej rodziny
   (zwierzęta, jedzenie, ubrania, zabawki, kuchnia) i jeden z zupełnie innej
 - 🎁🎓 **Co będzie dalej?** (bonus) — wzór, który się powtarza, i brakująca

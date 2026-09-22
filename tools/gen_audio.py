@@ -580,16 +580,35 @@ NARRACJA = {
     'karty_brawo':  'Tak! Większa liczba to',
     'karty_nie':    'Nie, ta druga jest większa. Policz serduszka.',
     'karty_koniec': 'Znasz liczby! Zawsze wiesz, która jest większa!',
+
+    # --- minigra: zgadywanie literek ze słuchu ---
+    'zgad_poziom':  'Zgadujemy literki! Posłuchaj i znajdź tę, którą mówię.',
+    'zgad_jak':     'Powiem literę, a ty ją znajdź. Strzałki w lewo i w prawo wybierają, '
+                    'strzałka w górę zatwierdza, a strzałka w dół powtarza literę.',
+    'zgad_szukamy': 'Szukamy litery',
+    'zgad_brawo':   'Tak, to ta litera! Brawo!',
+    'zgad_nie':     'To nie ta. Wybrałeś literę',
+    'zgad_a_szukamy': 'A my szukamy litery',
+    'zgad_koniec':  'Znasz wszystkie literki! Brawo!',
+
+    # --- minigra: układanie słów z liter ---
+    'pisz_poziom': 'Piszemy słowa! Ułóż słowo z literek.',
+    'pisz_jak':    'Popatrz na obrazek i ułóż słowo. Strzałki w lewo i w prawo wybierają '
+                   'literę, strzałka w górę ją dokłada, a strzałka w dół powtarza słowo.',
+    'pisz_slowo':  'Ułóż słowo:',
+    'pisz_brawo':  'Całe słowo gotowe! Brawo!',
+    'pisz_nie':    'To nie ta litera. Posłuchaj słowa jeszcze raz.',
+    'pisz_koniec': 'Wszystkie słowa napisane! Ale z ciebie pisarz!',
 }
 
 # --- nazwy liter: po polsku „be, ce, ka", po angielsku „bee, see, kay" ---
 LITERY_PL = {'a':'a', 'b':'be', 'c':'ce', 'd':'de', 'e':'e', 'f':'ef', 'g':'gie', 'h':'ha',
              'i':'i', 'j':'jot', 'k':'ka', 'l':'el', 'm':'em', 'n':'en', 'o':'o', 'p':'pe',
-             'r':'er', 's':'es', 't':'te', 'u':'u', 'w':'wu', 'ł':'eł'}
+             'r':'er', 's':'es', 't':'te', 'u':'u', 'w':'wu', 'y':'igrek', 'z':'zet', 'ł':'eł'}
 LITERY_EN = {'a':'ay', 'b':'bee', 'c':'see', 'd':'dee', 'e':'ee', 'f':'eff', 'g':'jee',
              'h':'aitch', 'i':'eye', 'j':'jay', 'k':'kay', 'l':'ell', 'm':'em', 'n':'en',
              'o':'oh', 'p':'pee', 'r':'arr', 's':'ess', 't':'tee', 'u':'you', 'w':'double you',
-             'ł':'ell'}
+             'y':'why', 'z':'zed', 'ł':'ell'}
 for _l, _n in LITERY_PL.items():
     NARRACJA['lit_' + _l] = _n
 

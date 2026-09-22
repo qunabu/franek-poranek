@@ -611,6 +611,9 @@ const KLUCZE_MOWA = [
   'nie_poziom','nie_jak','nie_ktore','nie_brawo','nie_nie','nie_koniec',
   'nie_zwierzeta','nie_jedzenie','nie_ubrania','nie_zabawki','nie_kuchnia',
   'karty_poziom','karty_jak','karty_ktora','karty_brawo','karty_nie','karty_koniec',
+  'lit_y','lit_z',
+  'zgad_poziom','zgad_jak','zgad_szukamy','zgad_brawo','zgad_nie','zgad_a_szukamy','zgad_koniec',
+  'pisz_poziom','pisz_jak','pisz_slowo','pisz_brawo','pisz_nie','pisz_koniec',
   'zad_zdejmij_kurtke','zad_zeby','zeby_20','zeby_dol_przod','zeby_dol_tyl','zeby_gora_przod',
   'zeby_gora_tyl','zeby_minuta','zeby_pol','zeby_strefa_ok','zle'];
 
@@ -1664,6 +1667,10 @@ const POZIOMY_FRANEK = [
     glos:'ksz_poziom' },
   { typ:'alfabet', bonus:true, nazwa:'Alfabet', podtytul:'Na jaką literę się zaczyna?',
     glos:'alf_poziom' },
+  { typ:'zgadywanie', bonus:true, nazwa:'Zgadywanie literek', podtytul:'Posłuchaj i znajdź literę',
+    glos:'zgad_poziom' },
+  { typ:'pisanie', bonus:true, nazwa:'Piszemy słowa', podtytul:'Ułóż słowo z literek',
+    glos:'pisz_poziom' },
   { typ:'niepasuje', bonus:true, nazwa:'Co nie pasuje?', podtytul:'Trzy z jednej rodziny, jedno z innej',
     glos:'nie_poziom' },
   { typ:'wzor', bonus:true, nazwa:'Co będzie dalej?', podtytul:'Dokończ wzór',
@@ -2123,7 +2130,9 @@ const STARTY_MINIGIER = {
   memory: () => startMemory(),
   wzor: () => startWzoru(),
   niepasuje: () => startNiepasuje(),
-  karty: () => startKart()
+  karty: () => startKart(),
+  zgadywanie: () => startZgadywania(),
+  pisanie: () => startPisania()
 };
 function startPoziomu(i){
   G.poziom = i;
@@ -2238,6 +2247,7 @@ function debugEtap(kierunek){
   G.ksztalty = null; G.rytm = null; G.zupa = null; G.szukanie = null;
   G.banki = null; G.owce = null; G.igloo = null;
   G.alfabet = null; G.memory = null; G.wzor = null; G.niepasuje = null; G.karty = null;
+  G.zgadywanie = null; G.pisanie = null;
   G.czastki = []; G.overlay = null;
   G.debug = 150;
   startPoziomu(i);
@@ -2422,6 +2432,22 @@ function rysujZnaki(znaki, px, py, kol, skala){
    Klucze pisane tak jak w kodzie – wersje DUŻYMI i małymi dorabiają się same,
    a zdania złożone (np. „Najpierw znajdź miskę!") składają się z kawałków. */
 const TLUM = {
+  'ZGADYWANIE LITEREK':'GUESS THE LETTER',
+  'Zgadywanie literek':'Guess the letter',
+  'Posłuchaj i znajdź literę':'Listen and find the letter',
+  'POSŁUCHAJ I ZNAJDŹ LITERĘ':'LISTEN AND FIND THE LETTER',
+  'TAK, TO TA LITERA!':'YES, THAT IS THE LETTER!',
+  'ZNASZ WSZYSTKIE LITERKI!':'YOU KNOW ALL YOUR LETTERS!',
+  '<  >  WYBIERAJ   ^  TA LITERA   v  POWTÓRZ':'<  >  CHOOSE   ^  THIS ONE   v  AGAIN',
+  'PISZEMY SŁOWA':'WRITING WORDS',
+  'Piszemy słowa':'Writing words',
+  'Ułóż słowo z literek':'Build the word from letters',
+  'UŁÓŻ SŁOWO Z LITEREK':'BUILD THE WORD FROM LETTERS',
+  'CAŁE SŁOWO! BRAWO!':'THE WHOLE WORD! WELL DONE!',
+  'WSZYSTKIE SŁOWA NAPISANE!':'EVERY WORD WRITTEN!',
+  'ALE Z CIEBIE PISARZ!':'YOU ARE A REAL WRITER!',
+  '<  >  LITERA   ^  DOKŁADAJ   v  POWTÓRZ':'<  >  LETTER   ^  ADD IT   v  AGAIN',
+  'SŁOWO':'WORD',
   'DMUCHAJ! TRZYMAJ ^':'BLOW! HOLD ^',
   'WSTAWAJ!':'GET UP!',
   'RAZ, DWA, TRZY...':'ONE, TWO, THREE...',
@@ -8525,7 +8551,7 @@ const ALFABET_EN = [
   {ik:'krolik',    lit:'R', glos:'alf_krolik'},
   {ik:'marchewka', lit:'C', glos:'alf_marchewka'}
 ];
-const LITERY_PULA = 'ABCDEFGHIJKLMNOPRSTUW'.split('');
+const LITERY_PULA = 'ABCDEFGHIJKLMNOPRSTUWYZ'.split('');
 function startAlfabetu(){
   const slowa = (JEZYK === 'en' ? ALFABET_EN : ALFABET_PL).slice();
   for(let i=slowa.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const x=slowa[i]; slowa[i]=slowa[j]; slowa[j]=x; }
@@ -9008,6 +9034,241 @@ function rysujKarty(){
   rysujDebug();
 }
 
+
+/* ==================== MINIGRA: ZGADYWANIE LITEREK ====================
+   Narrator mówi literę, a dziecko ma ją znaleźć wśród czterech. Czysty
+   trening „słyszę głoskę – widzę znak". ▼ powtarza literę. */
+function startZgadywania(){
+  G.zgadywanie = { runda:0, rund:ile(4,6), litery:[], dobra:0, kursor:0, wynik:null,
+                   t:0, koniecT:0, fala:0 };
+  G.czastki = []; G.ekran = 'zgadywanie';
+  graj('muz_gra');
+  nowaLitera(true);
+}
+function nowaLitera(pierwsza){
+  const z = G.zgadywanie;
+  const pula = LITERY_PULA.filter(l => gotoweLitery(l));
+  const litery = [];
+  while(litery.length < 4){
+    const l = pula[(Math.random()*pula.length)|0];
+    if(!litery.includes(l)) litery.push(l);
+  }
+  z.litery = litery;
+  z.dobra = (Math.random()*4)|0;
+  z.kursor = 0; z.wynik = null; z.t = 0;
+  mow(...(pierwsza ? ['zgad_jak'] : []), 'zgad_szukamy', literaGlos(litery[z.dobra]));
+}
+/* litery bez nagrania (np. Q, V, X) w grze nie startują */
+function gotoweLitery(l){ return gotowe[literaGlos(l)] !== false; }
+function aktualizujZgadywanie(){
+  const z = G.zgadywanie;
+  z.t++; z.fala++;
+  if(z.koniecT > 0){
+    z.koniecT--;
+    if(z.koniecT === 0) dalejPoPoziomie();
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(z.wynik === 'dobrze'){
+    if(z.t > 110){
+      z.runda++;
+      if(z.runda >= z.rund){ z.koniecT = 215; sfx('sfx_sukces'); cisza(); mow('zgad_koniec'); }
+      else nowaLitera(false);
+    }
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(nowy('ArrowLeft')  && z.kursor > 0){ z.kursor--; sfx('sfx_zbierz'); }
+  if(nowy('ArrowRight') && z.kursor < 3){ z.kursor++; sfx('sfx_zbierz'); }
+  if(nowy('ArrowDown')) mow('zgad_szukamy', literaGlos(z.litery[z.dobra]));   // powtórz
+  if(nowy('ArrowUp')){
+    if(z.kursor === z.dobra){
+      z.wynik = 'dobrze'; z.t = 0; sfx('sfx_sukces');
+      iskry(88 + z.kursor*102, 178, ['#f8d878','#fffeff','#58d854'], 20);
+      mow('zgad_brawo', literaGlos(z.litery[z.dobra]));
+    } else {
+      sfx('sfx_zle');
+      mow('zgad_nie', literaGlos(z.litery[z.kursor]), 'zgad_a_szukamy', literaGlos(z.litery[z.dobra]));
+    }
+  }
+  aktualizujEfekty(); czyscNowe();
+}
+/* głośniczek z falami – znak, że trzeba słuchać, a nie czytać */
+function rysujGlosnik(x, y, t){
+  pr(x-16, y-10, 12, 20, '#f8d878'); obrys(x-16, y-10, 12, 20);
+  ctx.fillStyle = '#f8d878';
+  ctx.beginPath(); ctx.moveTo(x-4, y-10); ctx.lineTo(x+10, y-24); ctx.lineTo(x+10, y+24);
+  ctx.lineTo(x-4, y+10); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = '#000000'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.strokeStyle = '#fffeff'; ctx.lineWidth = 3;
+  for(let i=0;i<3;i++){
+    if(Math.floor(t/12) % 4 <= i) continue;
+    ctx.beginPath();
+    ctx.arc(x+12, y, 14 + i*11, -0.9, 0.9);
+    ctx.stroke();
+  }
+  ctx.lineWidth = 1;
+}
+function rysujZgadywanie(){
+  const z = G.zgadywanie;
+  pr(0,0,W,H,'#3cbcfc');
+  pr(0,232,W,38,'#00a800'); pr(0,232,W,4,'#58d854');
+  pr(40,52,400,76,'#f7d8a5'); obrys(40,52,400,76);           // tablica
+  pr(46,58,388,64,'#e4c08a');
+  rysujGlosnik(240, 90, z.fala);
+
+  for(let i=0;i<4;i++){
+    const x = 88 + i*102, wybrana = i === z.kursor;
+    const dobra = z.wynik === 'dobrze' && i === z.dobra;
+    ramka(x-40, 148, 80, 60, dobra ? '#007800' : (wybrana ? '#a80020' : '#000000'));
+    napis(z.litery[i], x, 180, wybrana || dobra ? '#f8d878' : '#bcbcbc', '#000000', 4);
+    if(wybrana && !z.wynik && Math.floor(G.t/12)%2===0) strzalka(x, 140, G.t);
+  }
+  rysujEfekty();
+
+  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+  napisL('ZGADYWANIE LITEREK', 4, 10, '#fffeff', null, 1);
+  napisL('ZADANIE ' + Math.min(z.rund, z.runda+1) + '/' + z.rund, W-104, 10, '#f8d878', null, 1);
+  const t = z.wynik === 'dobrze' ? 'TAK, TO TA LITERA!' : 'POSŁUCHAJ I ZNAJDŹ LITERĘ';
+  const tw = szerTekstu(t, 2);
+  pr(W/2-tw/2-6, 24, tw+12, 22, '#a80020');
+  napis(t, W/2, 35, '#f8d878', '#000000', 2);
+  napis('<  >  WYBIERAJ   ^  TA LITERA   v  POWTÓRZ', W/2, 252, '#fffeff', '#000000', 1);
+  if(z.koniecT > 0){
+    ctx.globalAlpha = 0.65; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+    napis('ZNASZ WSZYSTKIE LITERKI!', W/2, 118, '#f8d878', '#000000', 2);
+    napis('BRAWO FRANEK!', W/2, 152, '#fffeff', '#000000', 2);
+  }
+  rysujDebug();
+}
+
+/* ==================== MINIGRA: PISZEMY SŁOWA ====================
+   Obrazek i puste kratki, a pod spodem literki. Trzeba ułożyć słowo
+   litera po literze. Słowa inne po polsku, inne po angielsku. */
+const SLOWA_PL = [
+  {ik:'kot',   slowo:'KOT',   glos:'alf_kot'},
+  {ik:'buty',  slowo:'BUTY',  glos:'alf_buty'},
+  {ik:'mleko', slowo:'MLEKO', glos:'alf_mleko'},
+  {ik:'rybka', slowo:'RYBKA', glos:'alf_rybka'}
+];
+const SLOWA_EN = [
+  {ik:'kot',    slowo:'CAT',  glos:'alf_kot'},
+  {ik:'czapka', slowo:'HAT',  glos:'alf_czapka'},
+  {ik:'mleko',  slowo:'MILK', glos:'alf_mleko'},
+  {ik:'rybka',  slowo:'FISH', glos:'alf_rybka'}
+];
+function startPisania(){
+  const slowa = (JEZYK === 'en' ? SLOWA_EN : SLOWA_PL).slice();
+  for(let i=slowa.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const x=slowa[i]; slowa[i]=slowa[j]; slowa[j]=x; }
+  G.pisanie = { slowa, runda:0, rund:ile(3,4), ulozone:'', klocki:[], kursor:0,
+                wynik:null, t:0, koniecT:0, trzesie:0 };
+  G.czastki = []; G.ekran = 'pisanie';
+  graj('muz_gra');
+  noweSlowoDoPisania(true);
+}
+function noweSlowoDoPisania(pierwsze){
+  const p = G.pisanie;
+  const s = p.slowa[p.runda % p.slowa.length];
+  const litery = [...s.slowo];
+  const pula = LITERY_PULA.filter(l => !litery.includes(l) && gotoweLitery(l));
+  while(litery.length < Math.min(7, s.slowo.length + 2)){          // dwie litery na zmyłkę
+    const l = pula[(Math.random()*pula.length)|0];
+    if(!litery.includes(l)) litery.push(l);
+  }
+  for(let i=litery.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const x=litery[i]; litery[i]=litery[j]; litery[j]=x; }
+  p.slowo = s; p.klocki = litery.map(l => ({litera:l, uzyta:false}));
+  p.ulozone = ''; p.kursor = 0; p.wynik = null; p.t = 0; p.trzesie = 0;
+  mow(...(pierwsze ? ['pisz_jak'] : []), 'pisz_slowo', s.glos);
+}
+function aktualizujPisanie(){
+  const p = G.pisanie;
+  p.t++;
+  if(p.trzesie > 0) p.trzesie--;
+  if(p.koniecT > 0){
+    p.koniecT--;
+    if(p.koniecT === 0) dalejPoPoziomie();
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(p.wynik === 'dobrze'){
+    if(p.t > 130){
+      p.runda++;
+      if(p.runda >= p.rund){ p.koniecT = 215; sfx('sfx_sukces'); cisza(); mow('pisz_koniec'); }
+      else noweSlowoDoPisania(false);
+    }
+    aktualizujEfekty(); czyscNowe(); return;
+  }
+  if(nowy('ArrowLeft')  && p.kursor > 0){ p.kursor--; sfx('sfx_zbierz'); }
+  if(nowy('ArrowRight') && p.kursor < p.klocki.length-1){ p.kursor++; sfx('sfx_zbierz'); }
+  if(nowy('ArrowDown')) mow('pisz_slowo', p.slowo.glos);          // powtórz słowo
+  if(nowy('ArrowUp')){
+    const k = p.klocki[p.kursor];
+    const trzeba = p.slowo.slowo[p.ulozone.length];
+    if(k.uzyta){ sfx('sfx_zle'); }
+    else if(k.litera === trzeba){
+      k.uzyta = true;
+      p.ulozone += k.litera;
+      sfx('sfx_zbierz');
+      iskry(W/2 - (p.slowo.slowo.length-1)*17 + (p.ulozone.length-1)*34, 112, ['#f8d878','#fffeff'], 8);
+      if(p.ulozone === p.slowo.slowo){
+        p.wynik = 'dobrze'; p.t = 0; sfx('sfx_sukces');
+        mow('pisz_brawo', p.slowo.glos);
+      } else mow(literaGlos(k.litera));
+    } else {
+      p.trzesie = 24; sfx('sfx_zle');
+      mow('pisz_nie', 'pisz_slowo', p.slowo.glos);
+    }
+  }
+  aktualizujEfekty(); czyscNowe();
+}
+function rysujPisanie(){
+  const p = G.pisanie;
+  const slowo = p.slowo.slowo;
+  pr(0,0,W,H,'#fec4ea');
+  pr(0,244,W,26,'#7527fe');
+  pr(24,48,432,120,'#fffeff'); obrys(24,48,432,120);          // kartka
+
+  ctx.save(); ctx.translate(86, 108); ctx.scale(4,4);         // obrazek
+  rysujIkone(p.slowo.ik, 0, 0, false);
+  ctx.restore();
+
+  for(let i=0;i<slowo.length;i++){                            // kratki na litery
+    const x = 250 - (slowo.length-1)*17 + i*34;
+    const jest = i < p.ulozone.length;
+    const dr = (p.trzesie > 0 && i === p.ulozone.length) ? Math.round(Math.sin(p.trzesie*0.9)*3) : 0;
+    pr(x-14+dr, 128, 28, 4, jest ? '#00a800' : '#bcbcbc');
+    if(jest) napis(p.ulozone[i], x+dr, 112, '#000000', null, 3);
+  }
+
+  for(let i=0;i<p.klocki.length;i++){                         // literki do wzięcia
+    const k = p.klocki[i];
+    const x = W/2 - (p.klocki.length-1)*27 + i*54, wybrany = i === p.kursor;
+    if(k.uzyta){
+      ctx.globalAlpha = 0.25;
+      ramka(x-24, 186, 48, 48, '#000000');
+      napis(k.litera, x, 210, '#4f4f4f', null, 3);
+      ctx.globalAlpha = 1;
+    } else {
+      ramka(x-24, 186, 48, 48, wybrany ? '#a80020' : '#0000bc');
+      napis(k.litera, x, 210, wybrany ? '#f8d878' : '#fffeff', '#000000', 3);
+    }
+    if(wybrany && !p.wynik && Math.floor(G.t/12)%2===0) strzalka(x, 178, G.t);
+  }
+  rysujEfekty();
+
+  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
+  napisL('PISZEMY SŁOWA', 4, 10, '#fffeff', null, 1);
+  napisL('SŁOWO ' + Math.min(p.rund, p.runda+1) + '/' + p.rund, W-96, 10, '#f8d878', null, 1);
+  const t = p.wynik === 'dobrze' ? 'CAŁE SŁOWO! BRAWO!' : 'UŁÓŻ SŁOWO Z LITEREK';
+  const tw = szerTekstu(t, 2);
+  pr(W/2-tw/2-6, 24, tw+12, 22, '#a80020');
+  napis(t, W/2, 35, '#f8d878', '#000000', 2);
+  napis('<  >  LITERA   ^  DOKŁADAJ   v  POWTÓRZ', W/2, 258, '#fffeff', '#000000', 1);
+  if(p.koniecT > 0){
+    ctx.globalAlpha = 0.65; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
+    napis('WSZYSTKIE SŁOWA NAPISANE!', W/2, 118, '#f8d878', '#000000', 2);
+    napis('ALE Z CIEBIE PISARZ!', W/2, 152, '#fffeff', '#000000', 2);
+  }
+  rysujDebug();
+}
+
 function petla(ts){
   requestAnimationFrame(petla);
   if(!ostatni) ostatni = ts;
@@ -9111,6 +9372,8 @@ function krok(){
     case 'wzor': aktualizujWzor(); break;
     case 'niepasuje': aktualizujNiepasuje(); break;
     case 'karty': aktualizujKarty(); break;
+    case 'zgadywanie': aktualizujZgadywanie(); break;
+    case 'pisanie': aktualizujPisanie(); break;
     case 'koniec':
       if(G.t % 5 === 0 && G.czastki.length < 120)
         G.czastki.push({x:Math.random()*W, y:-6, vx:(Math.random()-0.5)*1, vy:0.6+Math.random()*1.4,
@@ -9166,6 +9429,8 @@ function rysuj(){
     case 'wzor': rysujWzor(); break;
     case 'niepasuje': rysujNiepasuje(); break;
     case 'karty': rysujKarty(); break;
+    case 'zgadywanie': rysujZgadywanie(); break;
+    case 'pisanie': rysujPisanie(); break;
     case 'koniec': rysujKoniec(); break;
   }
 }

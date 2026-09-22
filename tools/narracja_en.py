@@ -481,4 +481,21 @@ NARRACJA_EN.update({
     'karty_brawo':  'Yes! The bigger number is',
     'karty_nie':    'No, the other one is bigger. Count the hearts.',
     'karty_koniec': 'You know your numbers! You always know which one is bigger!',
+    # --- minigra: zgadywanie literek ze słuchu ---
+    'zgad_poziom':  'Guess the letters! Listen and find the one I say.',
+    'zgad_jak':     'I will say a letter and you find it. The left and right arrows choose, '
+                    'the up arrow picks it, and the down arrow says the letter again.',
+    'zgad_szukamy': 'We are looking for the letter',
+    'zgad_brawo':   'Yes, that is the letter! Well done!',
+    'zgad_nie':     'Not that one. You picked the letter',
+    'zgad_a_szukamy': 'And we are looking for the letter',
+    'zgad_koniec':  'You know all your letters! Well done!',
+    # --- minigra: układanie słów z liter ---
+    'pisz_poziom': 'Let us write words! Build the word out of letters.',
+    'pisz_jak':    'Look at the picture and build the word. The left and right arrows choose '
+                   'a letter, the up arrow adds it, and the down arrow says the word again.',
+    'pisz_slowo':  'Build the word:',
+    'pisz_brawo':  'The whole word is done! Well done!',
+    'pisz_nie':    'Not that letter. Listen to the word again.',
+    'pisz_koniec': 'Every word written! You are a real writer!',
 })
