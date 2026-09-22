@@ -616,6 +616,7 @@ const KLUCZE_MOWA = [
   'lit_y','lit_z',
   'zgad_poziom','zgad_jak','zgad_szukamy','zgad_brawo','zgad_nie','zgad_a_szukamy','zgad_koniec',
   'pisz_poziom','pisz_jak','pisz_slowo','pisz_brawo','pisz_nie','pisz_koniec',
+  'slowo_mama','slowo_tata','slowo_franek','slowo_tymek','slowo_hello',
   'zad_zdejmij_kurtke','zad_zeby','zeby_20','zeby_dol_przod','zeby_dol_tyl','zeby_gora_przod',
   'zeby_gora_tyl','zeby_minuta','zeby_pol','zeby_strefa_ok','zle'];
 
@@ -8581,6 +8582,17 @@ function startMemory(){
   G.czastki = []; G.ekran = 'memory';
   graj('muz_gra'); mow('mem_jak');
 }
+/* Zdjęte pary wypadają z obiegu: strzałki przeskakują je i zatrzymują się tylko
+   na kartach, które jeszcze leżą. Krok o kolumnę (▼) też pomija puste miejsca,
+   a gdy w całej kolumnie nic nie zostało, szuka najbliższej karty po kolei. */
+function nastepnaKarta(m, od, krok){
+  const n = m.karty.length;
+  for(let i=1;i<=n;i++){
+    const idx = ((od + krok*i) % n + n) % n;
+    if(!m.karty[idx].zdjeta) return idx;
+  }
+  return Math.abs(krok) === 1 ? od : nastepnaKarta(m, od, krok > 0 ? 1 : -1);
+}
 function aktualizujMemory(){
   const m = G.memory;
   m.t++;
@@ -8598,6 +8610,7 @@ function aktualizujMemory(){
         m.znalezione++;
         sfx('sfx_sukces');
         iskry(240, 130, ['#f8d878','#58d854','#fffeff'], 16);
+        if(m.karty[m.kursor].zdjeta) m.kursor = nastepnaKarta(m, m.kursor, 1);
         if(m.znalezione >= m.par){ m.koniecT = 215; cisza(); mow('mem_koniec'); }
         else mow('mem_para', m.karty[a].glos);
       } else {
@@ -8608,10 +8621,9 @@ function aktualizujMemory(){
     }
     aktualizujEfekty(); czyscNowe(); return;
   }
-  const ile2 = m.karty.length;
-  if(nowy('ArrowLeft')){ m.kursor = (m.kursor - 1 + ile2) % ile2; sfx('sfx_zbierz'); }
-  if(nowy('ArrowRight')){ m.kursor = (m.kursor + 1) % ile2; sfx('sfx_zbierz'); }
-  if(nowy('ArrowDown')){ m.kursor = (m.kursor + m.kolumn) % ile2; sfx('sfx_zbierz'); }
+  if(nowy('ArrowLeft')){ m.kursor = nastepnaKarta(m, m.kursor, -1); sfx('sfx_zbierz'); }
+  if(nowy('ArrowRight')){ m.kursor = nastepnaKarta(m, m.kursor, 1); sfx('sfx_zbierz'); }
+  if(nowy('ArrowDown')){ m.kursor = nastepnaKarta(m, m.kursor, m.kolumn); sfx('sfx_zbierz'); }
   if(nowy('ArrowUp')){
     const k = m.karty[m.kursor];
     if(k.zdjeta || k.odkryta){ sfx('sfx_zle'); }
@@ -9098,22 +9110,65 @@ function rysujZgadywanie(){
 /* ==================== MINIGRA: PISZEMY SŁOWA ====================
    Obrazek i puste kratki, a pod spodem literki. Trzeba ułożyć słowo
    litera po literze. Słowa inne po polsku, inne po angielsku. */
+/* Obrazek do słowa: ikonka z gry, zdjęcie-głowa albo własny rysunek. */
 const SLOWA_PL = [
   {ik:'kot',   slowo:'KOT',   glos:'alf_kot'},
   {ik:'buty',  slowo:'BUTY',  glos:'alf_buty'},
   {ik:'mleko', slowo:'MLEKO', glos:'alf_mleko'},
-  {ik:'rybka', slowo:'RYBKA', glos:'alf_rybka'}
+  {ik:'rybka', slowo:'RYBKA', glos:'alf_rybka'},
+  {glowa:'glowa_magda',  slowo:'MAMA',   glos:'slowo_mama'},
+  {glowa:'glowa_tata',   slowo:'TATA',   glos:'slowo_tata'},
+  {glowa:'glowa_franek', slowo:'FRANEK', glos:'slowo_franek'},
+  {kolega:1,             slowo:'TYMEK',  glos:'slowo_tymek'}
 ];
 const SLOWA_EN = [
   {ik:'kot',    slowo:'CAT',  glos:'alf_kot'},
   {ik:'czapka', slowo:'HAT',  glos:'alf_czapka'},
   {ik:'mleko',  slowo:'MILK', glos:'alf_mleko'},
-  {ik:'rybka',  slowo:'FISH', glos:'alf_rybka'}
+  {ik:'rybka',  slowo:'FISH', glos:'alf_rybka'},
+  {glowa:'glowa_magda',  slowo:'MUM',    glos:'slowo_mama'},
+  {glowa:'glowa_tata',   slowo:'DAD',    glos:'slowo_tata'},
+  {glowa:'glowa_franek', slowo:'FRANEK', glos:'slowo_franek'},
+  {kolega:1,             slowo:'TYMEK',  glos:'slowo_tymek'},
+  {machanie:true,        slowo:'HELLO',  glos:'slowo_hello'}
 ];
+/* machająca rączka do słowa HELLO – bo „cześć" nie ma ikonki */
+function rysujMachajacaRaczke(x, y, t){
+  const o = Math.round(Math.sin(t*0.18)*4);
+  pr(x-12+o, y-6, 24, 26, SKORA); obrys(x-12+o, y-6, 24, 26);
+  for(let i=0;i<4;i++) pr(x-10+o+i*6, y-20, 5, 15, SKORA);
+  for(let i=0;i<4;i++) obrys(x-10+o+i*6, y-20, 5, 15);
+  pr(x-16+o, y-2, 6, 12, SKORA); obrys(x-16+o, y-2, 6, 12);
+  ctx.strokeStyle = '#f8d878'; ctx.lineWidth = 2;
+  for(let i=0;i<2;i++){
+    ctx.beginPath();
+    ctx.arc(x+14+o, y+2, 16 + i*9, -0.8, 0.8);
+    ctx.stroke();
+  }
+  ctx.lineWidth = 1;
+}
+function rysujObrazekSlowa(s, x, y, t){
+  if(s.glowa){
+    const g = obraz(s.glowa);
+    if(g) ctx.drawImage(g, x-26, y-24, 52, 48); else pr(x-26, y-24, 52, 48, SKORA);
+    obrys(x-26, y-24, 52, 48);
+    return;
+  }
+  if(s.kolega !== undefined){                       // kolega z przedszkola
+    ctx.save(); ctx.translate(x, y); ctx.scale(2.2,2.2);
+    glowaDziecka(0, -11, DZIECI[s.kolega], false);
+    ctx.restore();
+    return;
+  }
+  if(s.machanie){ rysujMachajacaRaczke(x, y, t); return; }
+  ctx.save(); ctx.translate(x, y); ctx.scale(4,4);
+  rysujIkone(s.ik, 0, 0, false);
+  ctx.restore();
+}
 function startPisania(){
   const slowa = (JEZYK === 'en' ? SLOWA_EN : SLOWA_PL).slice();
   for(let i=slowa.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const x=slowa[i]; slowa[i]=slowa[j]; slowa[j]=x; }
-  G.pisanie = { slowa, runda:0, rund:ile(3,4), ulozone:'', klocki:[], kursor:0,
+  G.pisanie = { slowa, runda:0, rund:Math.min(4, slowa.length), ulozone:'', klocki:[], kursor:0,
                 wynik:null, t:0, koniecT:0, trzesie:0 };
   G.czastki = []; G.ekran = 'pisanie';
   graj('muz_gra');
@@ -9124,7 +9179,7 @@ function noweSlowoDoPisania(pierwsze){
   const s = p.slowa[p.runda % p.slowa.length];
   const litery = [...s.slowo];
   const pula = LITERY_PULA.filter(l => !litery.includes(l) && gotoweLitery(l));
-  while(litery.length < Math.min(7, s.slowo.length + 2)){          // dwie litery na zmyłkę
+  while(litery.length < Math.min(8, s.slowo.length + 2)){          // dwie litery na zmyłkę
     const l = pula[(Math.random()*pula.length)|0];
     if(!litery.includes(l)) litery.push(l);
   }
@@ -9180,21 +9235,21 @@ function rysujPisanie(){
   pr(0,244,W,26,'#7527fe');
   pr(24,48,432,120,'#fffeff'); obrys(24,48,432,120);          // kartka
 
-  ctx.save(); ctx.translate(86, 108); ctx.scale(4,4);         // obrazek
-  rysujIkone(p.slowo.ik, 0, 0, false);
-  ctx.restore();
+  rysujObrazekSlowa(p.slowo, 86, 108, G.t);                  // obrazek do słowa
 
+  const odstKratki = slowo.length > 5 ? 30 : 34;
   for(let i=0;i<slowo.length;i++){                            // kratki na litery
-    const x = 250 - (slowo.length-1)*17 + i*34;
+    const x = 254 - (slowo.length-1)*odstKratki/2 + i*odstKratki;
     const jest = i < p.ulozone.length;
     const dr = (p.trzesie > 0 && i === p.ulozone.length) ? Math.round(Math.sin(p.trzesie*0.9)*3) : 0;
-    pr(x-14+dr, 128, 28, 4, jest ? '#00a800' : '#bcbcbc');
+    pr(x-12+dr, 128, 24, 4, jest ? '#00a800' : '#bcbcbc');
     if(jest) napis(p.ulozone[i], x+dr, 112, '#000000', null, 3);
   }
 
   for(let i=0;i<p.klocki.length;i++){                         // literki do wzięcia
     const k = p.klocki[i];
-    const x = W/2 - (p.klocki.length-1)*27 + i*54, wybrany = i === p.kursor;
+    const odst = p.klocki.length > 7 ? 50 : 54;
+    const x = W/2 - (p.klocki.length-1)*odst/2 + i*odst, wybrany = i === p.kursor;
     if(k.uzyta){
       ctx.globalAlpha = 0.25;
       ramka(x-24, 186, 48, 48, '#000000');

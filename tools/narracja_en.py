@@ -474,6 +474,12 @@ NARRACJA_EN.update({
     'karty_nie':    'No, the other one is bigger. Count the hearts.',
     'karty_koniec': 'You know your numbers! You always know which one is bigger!',
     'karty_as':     'The ace! The ace beats every number.',
+    # --- słowa do układania z liter ---
+    'slowo_mama':   'Mum.',
+    'slowo_tata':   'Dad.',
+    'slowo_franek': 'Franek.',
+    'slowo_tymek':  'Tymek.',
+    'slowo_hello':  'Hello.',
     # --- minigra: zgadywanie literek ze słuchu ---
     'zgad_poziom':  'Guess the letters! Listen and find the one I say.',
     'zgad_jak':     'I will say a letter and you find it. The left and right arrows choose, '

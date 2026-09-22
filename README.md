@@ -48,7 +48,7 @@ Rdzeń gry — są w **obu trybach**:
 | **Liczymy jabłuszka** | dodawanie do dziesięciu, z liczeniem na głos |
 | **Alfabet** | pierwsza litera słowa (inne słowa po polsku, inne po angielsku) |
 | **Zgadywanie literek** | słyszysz literę, znajdujesz ją wśród czterech |
-| **Piszemy słowa** | układanie prostych słów z liter, litera po literze |
+| **Piszemy słowa** | układanie słów z liter: rzeczy, imiona i powitanie |
 | **Kolory i kształty** | nazwy kolorów i figur |
 | **Co nie pasuje?** | grupowanie: zwierzęta, jedzenie, ubrania, zabawki |
 | **Co będzie dalej?** | wzory i ciągi — czysta logika |
@@ -183,8 +183,11 @@ uproszczonym, bo powtarza coś, co już było.
   wśród czterech. Bez podpowiedzi przy przesuwaniu: ▼ powtarza literę, a po
   pomyłce gra mówi, którą literę wybrało dziecko i której szukamy
 - 🎁🎓 **Piszemy słowa** (bonus) — obrazek, puste kratki i literki pod spodem.
-  Trzeba ułożyć słowo litera po literze; po polsku KOT, BUTY, MLEKO i RYBKA,
-  po angielsku CAT, HAT, MILK i FISH
+  Trzeba ułożyć słowo litera po literze. Za każdym razem losują się **cztery
+  słowa z całej listy**: po polsku KOT, BUTY, MLEKO, RYBKA, MAMA, TATA, FRANEK
+  i TYMEK, po angielsku CAT, HAT, MILK, FISH, MUM, DAD, FRANEK, TYMEK i HELLO.
+  Przy imionach zamiast ikonki jest **prawdziwe zdjęcie** (Franek, mama, tata),
+  przy TYMEK kolega z przedszkola, a przy HELLO machająca rączka
 - 🎁🎓 **Co nie pasuje?** (bonus) — cztery obrazki, trzy z jednej rodziny
   (zwierzęta, jedzenie, ubrania, zabawki, kuchnia) i jeden z zupełnie innej
 - 🎁🎓 **Co będzie dalej?** (bonus) — wzór, który się powtarza, i brakująca
@@ -221,7 +224,8 @@ uproszczonym, bo powtarza coś, co już było.
   ◀ ▶ chodzą, ▲ podnosi i odkłada; źle odłożone wraca z komentarzem
 - 🎁🎓 **Pary obrazków** (bonus) — memory na **sześć par** (w pełnym trybie osiem).
   Każda odkryta karta jest **czytana na głos**, więc przy okazji wchodzą słówka:
-  po angielsku cat, fish, hat, milk, shoes, carrot, rabbit, spoon
+  po angielsku cat, fish, hat, milk, shoes, carrot, rabbit, spoon. Zdjęte pary
+  wypadają z obiegu — strzałki zatrzymują się tylko na kartach, które jeszcze leżą
 - 🎁🎓 **Wyższa karta** (bonus) — dwie karty do gry, wybierz większą. Liczby od
   dwójki do dziesiątki, a od drugiej rundy trafia się **as, który bije wszystko**.
   Na początku liczby do sześciu, potem do dziesięciu

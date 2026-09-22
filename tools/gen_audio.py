@@ -573,6 +573,13 @@ NARRACJA = {
     'karty_koniec': 'Znasz liczby! Zawsze wiesz, która jest większa!',
     'karty_as':     'As! As bije każdą liczbę.',
 
+    # --- słowa do układania z liter, których nie ma wśród ikonek ---
+    'slowo_mama':   'Mama.',
+    'slowo_tata':   'Tata.',
+    'slowo_franek': 'Franek.',
+    'slowo_tymek':  'Tymek.',
+    'slowo_hello':  'Hello. Po polsku: cześć.',
+
     # --- minigra: zgadywanie literek ze słuchu ---
     'zgad_poziom':  'Zgadujemy literki! Posłuchaj i znajdź tę, którą mówię.',
     'zgad_jak':     'Powiem literę, a ty ją znajdź. Strzałki w lewo i w prawo wybierają, '
