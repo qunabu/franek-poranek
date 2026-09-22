@@ -486,15 +486,6 @@ NARRACJA = {
                     'w lewo i w prawo na zmianę.',
     'zupa_koniec':  'Pusty talerz! Cała zupka zjedzona. Brawo Franek!',
 
-    # --- minigra: szukanie kurtki w szatni ---
-    'szuk_poziom': 'Etap bonusowy! W szatni wisi mnóstwo kurtek. Która jest twoja?',
-    'szuk_jak':    'Popatrz dobrze, to jest twoja kurtka. Zapamiętaj ją! Potem strzałki '
-                   'w lewo i w prawo szukają, a strzałka w górę zdejmuje.',
-    'szuk_patrz':  'Nowa kurtka do zapamiętania. Patrz uważnie!',
-    'szuk_szukaj': 'A teraz znajdź ją na wieszaku!',
-    'szuk_ok':     'To ta! Brawo, dobra pamięć!',
-    'szuk_zle':    'To nie twoja kurtka. Szukaj dalej!',
-    'szuk_koniec': 'Znalazłeś swoją kurtkę za każdym razem! Brawo Franek!',
 
     # --- minigra: bańki mydlane w kąpieli ---
     'banki_poziom': 'Etap bonusowy! W kąpieli lecą bańki mydlane.',
@@ -580,6 +571,7 @@ NARRACJA = {
     'karty_brawo':  'Tak! Większa liczba to',
     'karty_nie':    'Nie, ta druga jest większa. Policz serduszka.',
     'karty_koniec': 'Znasz liczby! Zawsze wiesz, która jest większa!',
+    'karty_as':     'As! As bije każdą liczbę.',
 
     # --- minigra: zgadywanie literek ze słuchu ---
     'zgad_poziom':  'Zgadujemy literki! Posłuchaj i znajdź tę, którą mówię.',

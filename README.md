@@ -30,12 +30,12 @@ Na tablecie wystarczy dotknąć paska z językiem albo z trybem. Wybór
 **zapamiętuje się** w przeglądarce, a narrator mówi w wybranym języku —
 każda kwestia jest nagrana dwa razy, po polsku i po angielsku.
 
-**Tryb prosty (37 etapów)** — żaden etap się nie powtarza: ząbki myje się raz,
+**Tryb prosty (36 etapów)** — żaden etap się nie powtarza: ząbki myje się raz,
 autem jedzie się raz, jeden wyścig, jedna kąpiel, jedna pogoń. Każda minigra
 jest krótsza (mniej rund, krótsze szorowanie, krótsza trasa). Zamiast numerów
 poziomów na ekranie jest zwykły licznik postępu, np. `12/35`.
 
-**Tryb pełny (51 etapów)** — cały dzień ze wszystkimi powtórkami: drugie mycie
+**Tryb pełny (50 etapów)** — cały dzień ze wszystkimi powtórkami: drugie mycie
 ząbków wieczorem, powrót autem, tankowanie, drugi wyścig, zabawa u Igora,
 kąpiel część po części i gra w grze. Na końcu, w obu trybach, kotki budują igloo.
 
@@ -52,8 +52,8 @@ Rdzeń gry — są w **obu trybach**:
 | **Kolory i kształty** | nazwy kolorów i figur |
 | **Co nie pasuje?** | grupowanie: zwierzęta, jedzenie, ubrania, zabawki |
 | **Co będzie dalej?** | wzory i ciągi — czysta logika |
-| **Pary obrazków** | memory, czyli pamięć |
-| **Wyższa karta** | porównywanie liczb na kartach do gry |
+| **Pary obrazków** | memory na 6–8 par; każda odkryta karta jest czytana na głos |
+| **Wyższa karta** | porównywanie liczb od 2 do 10 i as, który bije wszystko |
 | **Rytm i klaskanie** | powtarzanie sekwencji |
 | **Nakrywamy do stołu** | liczenie po jednym dla każdego |
 | **Liczymy owieczki** | liczenie do dziesięciu przed snem |
@@ -65,6 +65,7 @@ Rdzeń gry — są w **obu trybach**:
 | ◀ ▶ | chodzenie (w aucie: wolniej / szybciej; w minigrach: sterowanie) |
 | ▲ | skok (w aucie: pas wyżej), a także „zacznij / dalej" i „naciśnij" |
 | ▼ | w aucie: pas niżej, przy myciu ząbków i w kąpieli: następna strefa |
+| **spacja** | w aucie i na rowerze: skok nad przeszkodą (na dotyku przycisk ⤒) |
 | **U** | ustawienia: język i tryb (to samo co przycisk ⚙) |
 | **P** / **O** | **DEBUG**: następny / poprzedni etap (do podglądania planszy) |
 
@@ -109,7 +110,7 @@ Przedmioty zbiera się samym dotknięciem. Świecąca rzecz ze strzałką to ta,
 po którą trzeba iść teraz. **Nie da się przegrać** — po spadnięciu Franek
 wraca w bezpieczne miejsce.
 
-## Poziomy Franka (27 + 24 bonusowe)
+## Poziomy Franka (27 + 23 bonusowe)
 
 Etapy **bonusowe** to zabawy wplecione między zwykłe poziomy. Nie mają numeru
 (na karcie i pasku pisze „BONUS"), więc numeracja pozostałych poziomów – i to,
@@ -155,8 +156,10 @@ uproszczonym, bo powtarza coś, co już było.
 - 🎁 **Zawiązujemy buty** (bonus) — sznurówka idzie przez cztery pary dziurek
   (◀ ▶ na zmianę), a na końcu ▲ zaciąga kokardkę
 8. **Do samochodu!** *(tylko pełny)* — spacer z opiekunem do auta (z mamą: **do taksówki**)
-9. **Jedziemy do przedszkola** — omijanie przeszkód na ulicy; w oknach auta
-   widać Franka i tatę, a gdy tata wlecze się wolno, Franek go popędza
+9. **Jedziemy do przedszkola** — omijanie przeszkód na ulicy: ▲▼ zmieniają pas,
+   a **spacja przeskakuje przeszkodę** (w powietrzu nic nie szkodzi, ale skok
+   trwa swoje). W oknach auta widać Franka i tatę, a gdy tata wlecze się wolno,
+   Franek go popędza
 10. **Wyścig do furtki** — naciskaj ◀ ▶ na zmianę; Franek zawsze wygrywa z tatą
 11. **Szatnia** — zdejmij buty, powieś kurtkę, zdejmij czapkę i **przytul tatę**
     na do widzenia (tata staje i czeka, na jego piersi świeci serduszko)
@@ -194,8 +197,6 @@ uproszczonym, bo powtarza coś, co już było.
 14. **Cały dzień w przedszkolu** *(tylko pełny)* — pięć scenek (klocki, farby, obiadek,
     leżakowanie, plac zabaw), słoneczko wędruje po pasku dnia, a Franek
     **robi się coraz brudniejszy** – plamy widać na ubranku
-- 🎁 **Szukamy kurtki** (bonus) — w szatni wisi sześć kurtek. Najpierw gra
-  pokazuje twoją, potem trzeba ją znaleźć. Trzy rundy, za każdym razem inna
 15. **Tata cię łapie!** *(tylko pełny)* — tata pyta „idziemy się umyć?" i rusza w pogoń.
     ◀ ▶ na zmianę. **Kto ucieknie do furtki, nie musi się myć**; kogo tata
     dogoni, ten idzie myć rączki i buzię (i wraca do domu czysty)
@@ -218,10 +219,12 @@ uproszczonym, bo powtarza coś, co już było.
     w domowe ciuszki
 - 🎁 **Porządki w pokoju** (bonus) — klocki do pudełka, misie na półkę.
   ◀ ▶ chodzą, ▲ podnosi i odkłada; źle odłożone wraca z komentarzem
-- 🎁🎓 **Pary obrazków** (bonus) — memory: karty leżą obrazkiem do dołu,
-  trzeba znaleźć takie same
-- 🎁🎓 **Wyższa karta** (bonus) — dwie karty do gry, wybierz większą liczbę.
-  Na początku do sześciu, potem do dziesięciu
+- 🎁🎓 **Pary obrazków** (bonus) — memory na **sześć par** (w pełnym trybie osiem).
+  Każda odkryta karta jest **czytana na głos**, więc przy okazji wchodzą słówka:
+  po angielsku cat, fish, hat, milk, shoes, carrot, rabbit, spoon
+- 🎁🎓 **Wyższa karta** (bonus) — dwie karty do gry, wybierz większą. Liczby od
+  dwójki do dziesiątki, a od drugiej rundy trafia się **as, który bije wszystko**.
+  Na początku liczby do sześciu, potem do dziesięciu
 - 🎁 **Tory dla pociągu** (bonus) — prosty *rail maze*: tory leżą poprzekręcane,
   ◀ ▶ wybierają kawałek, ▲ go obraca. Gdy droga z dworca na dworzec jest cała,
   **pociąg rusza sam**

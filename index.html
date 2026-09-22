@@ -45,6 +45,9 @@
   #dotyk button[data-k="ArrowDown"] {right:calc(var(--pad) + var(--bw) + var(--luz));}
   /* ▼ zmienia pas tylko w samochodzie, a strefę tylko przy myciu ząbków */
   #dotyk button[data-k="ArrowDown"]{display:none;}
+  /* skok nad przeszkodą – tylko w aucie i na rowerze, na środku pod spodem */
+  #dotyk button.skok{display:none;left:50%;margin-left:calc(var(--bw) / -2);}
+  body.wAucie #dotyk button.skok{display:block;}
   body.wAucie #dotyk button[data-k="ArrowDown"],
   body.zDolem #dotyk button[data-k="ArrowDown"],
   body.strefy #dotyk button[data-k="ArrowDown"]{display:block;}
@@ -140,6 +143,7 @@
 <div id="dotyk">
   <button data-k="ArrowLeft">◀</button><button data-k="ArrowRight">▶</button>
   <button data-k="ArrowDown">▼</button><button data-k="ArrowUp">▲</button>
+  <button data-k=" " class="skok">⤒</button>
 </div>
 <script>
 "use strict";
@@ -166,7 +170,7 @@ ctx.imageSmoothingEnabled = false;
 
 /* ==================== WEJŚCIE ==================== */
 const klaw = {};
-const KLAWISZE = ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'];
+const KLAWISZE = ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '];   // ' ' = spacja (skok w aucie)
 addEventListener('keydown', e => {
   if (KLAWISZE.includes(e.key)) { e.preventDefault(); if(!klaw[e.key]) klaw[e.key+'_nowy']=true; klaw[e.key]=true; }
   odblokujDzwiek();
@@ -350,7 +354,6 @@ function ustawDlugosci(){
   KSZ_RUND = ile(3, 5);
   RYTM_RUND = ile(3, 4);
   ZUPA_LYZEK = ile(4, 6);
-  SZUK_RUND = ile(2, 3);
   BANIEK = ile(8, 12);
   OWIEC = ile(6, 10);
 }
@@ -597,7 +600,6 @@ const KLUCZE_MOWA = [
   'ksz_zolty','ksz_kolko','ksz_kwadrat','ksz_trojkat','ksz_brawo','ksz_nie','ksz_koniec',
   'rytm_poziom','rytm_jak','rytm_sluchaj','rytm_powtorz','rytm_dobrze','rytm_zle','rytm_koniec',
   'zupa_poziom','zupa_jak','zupa_ostygla','zupa_koniec',
-  'szuk_poziom','szuk_jak','szuk_patrz','szuk_szukaj','szuk_ok','szuk_zle','szuk_koniec',
   'banki_poziom','banki_jak','banki_koniec',
   'owce_poziom','owce_jak','owce_koniec',
   'igloo_poziom','igloo_jak','igloo_czekaj','igloo_rosnie','igloo_koniec',
@@ -610,7 +612,7 @@ const KLUCZE_MOWA = [
   'wzor_poziom','wzor_jak','wzor_co_dalej','wzor_brawo','wzor_nie','wzor_koniec',
   'nie_poziom','nie_jak','nie_ktore','nie_brawo','nie_nie','nie_koniec',
   'nie_zwierzeta','nie_jedzenie','nie_ubrania','nie_zabawki','nie_kuchnia',
-  'karty_poziom','karty_jak','karty_ktora','karty_brawo','karty_nie','karty_koniec',
+  'karty_poziom','karty_jak','karty_ktora','karty_brawo','karty_nie','karty_koniec','karty_as',
   'lit_y','lit_z',
   'zgad_poziom','zgad_jak','zgad_szukamy','zgad_brawo','zgad_nie','zgad_a_szukamy','zgad_koniec',
   'pisz_poziom','pisz_jak','pisz_slowo','pisz_brawo','pisz_nie','pisz_koniec',
@@ -1683,8 +1685,6 @@ const POZIOMY_FRANEK = [
     glos:'zupa_poziom' },
   { zaawansowany:true, typ:'dzien', nazwa:'Cały dzień w przedszkolu', podtytul:'Zabawa, obiadek, leżakowanie',
     glos:'f_poziom14' },
-  { typ:'szukanie', bonus:true, nazwa:'Szukamy kurtki', podtytul:'Która wisi twoja?',
-    glos:'szuk_poziom' },
   { zaawansowany:true, typ:'lapanie', nazwa:'Tata cię łapie!', podtytul:'Uciekniesz – nie myjesz się!',
     meta:1500, glos:'f_poziom15',
     wariant:{ mama:{ glos:'fm_poziom15' } } },
@@ -2122,7 +2122,6 @@ const STARTY_MINIGIER = {
   ksztalty: () => startKsztaltow(),
   rytm: () => startRytmu(),
   zupa: () => startZupy(),
-  szukanie: () => startSzukania(),
   banki: () => startBaniek(),
   owce: () => startOwiec(),
   igloo: () => startIgloo(),
@@ -2192,7 +2191,7 @@ const KLUCZE_BEZ_NUMERU = new Set([
   'pog_poziom','porz_poziom','poziom1','poziom2','poziom3','poziom4',
   'poziom5','poziom6','poziom7','poziom8','poziom9','poziom_siku',
   'poziom_swiatlo','poziom_wstawanie','pt2_poziom10','pt2_poziom11','pt2_poziom12','pt2_poziom8',
-  'rail_poziom','rytm_poziom','stol_poziom','szn_poziom','szuk_poziom','zupa_poziom',
+  'rail_poziom','rytm_poziom','stol_poziom','szn_poziom','zupa_poziom',
   'zwierzaki_poziom',
 ]);
 function glosEtapu(k){
@@ -2244,7 +2243,7 @@ function debugEtap(kierunek){
   G.igorek = null; G.kapiel = null; G.ksiazka = null; G.sen = null;
   G.liczenie = null; G.gierka = null; G.kolejka = null; G.baba = null; G.lawa = null;
   G.pogoda = null; G.sznurowki = null; G.stol = null; G.porzadki = null;
-  G.ksztalty = null; G.rytm = null; G.zupa = null; G.szukanie = null;
+  G.ksztalty = null; G.rytm = null; G.zupa = null;
   G.banki = null; G.owce = null; G.igloo = null;
   G.alfabet = null; G.memory = null; G.wzor = null; G.niepasuje = null; G.karty = null;
   G.zgadywanie = null; G.pisanie = null;
@@ -2432,6 +2431,10 @@ function rysujZnaki(znaki, px, py, kol, skala){
    Klucze pisane tak jak w kodzie – wersje DUŻYMI i małymi dorabiają się same,
    a zdania złożone (np. „Najpierw znajdź miskę!") składają się z kawałków. */
 const TLUM = {
+  '<  >  v  KARTA     ^  ODKRYJ':'<  >  v  CARD     ^  TURN IT OVER',
+  '^ v  ŚCIEŻKA    <  >  PEDAŁUJ    SPACJA  SKOK':'^ v  PATH    <  >  PEDAL    SPACE  JUMP',
+  '^ v  PAS    >  SZYBCIEJ    SPACJA  SKOK':'^ v  LANE    >  FASTER    SPACE  JUMP',
+  'SKOKI':'JUMPS',
   'ZGADYWANIE LITEREK':'GUESS THE LETTER',
   'Zgadywanie literek':'Guess the letter',
   'Posłuchaj i znajdź literę':'Listen and find the letter',
@@ -2482,9 +2485,6 @@ const TLUM = {
   'SŁUCHAJ I PATRZ!':'LISTEN AND WATCH!',
   'TERAZ TY!':'NOW YOU!',
   'OJEJ, JESZCZE RAZ!':'OOPS, ONCE MORE!',
-  'KTÓRA JEST TWOJA?':'WHICH ONE IS YOURS?',
-  'TO TA! BRAWO!':'THAT IS THE ONE! WELL DONE!',
-  'TO TWOJA KURTKA - ZAPAMIĘTAJ!':'THIS IS YOUR COAT - REMEMBER IT!',
   'PADA ŚNIEG!':'IT IS SNOWING!',
   'PADA DESZCZ!':'IT IS RAINING!',
   'ŚWIECI SŁOŃCE!':'THE SUN IS SHINING!',
@@ -2625,7 +2625,6 @@ const TLUM = {
   '<  >  MIEJSCE     ^  POŁÓŻ':'<  >  SEAT     ^  PUT IT',
   '<  >  NA ZMIANĘ - BIEGNIJ!':'<  >  ONE BY ONE - RUN!',
   '<  >  RUSZAJ RĄCZKĄ':'<  >  MOVE YOUR HAND',
-  '<  >  SZUKAJ     ^  ZDEJMIJ':'<  >  LOOK     ^  TAKE IT',
   '<  >  TAM I Z POWROTEM':'<  >  BACK AND FORTH',
   '<  >  WYBIERASZ,   ^  ZACZYNA':'<  >  CHOOSE,   ^  START',
   '<  >  WYBIERZ TOR   ^  OBRÓĆ':'<  >  PICK TRACK   ^  TURN',
@@ -2759,7 +2758,6 @@ const TLUM = {
   'Kotki rzucają śnieżkami':'Cats throwing snowballs',
   'Książka na dobranoc':'Bedtime book',
   'Kto czyta i jaką książkę':'Who reads and which book',
-  'Która wisi twoja?':'Which one is yours?',
   'Który jest czerwony?':'Which one is red?',
   'KÓŁKO':'CIRCLE',
   'KÓŁKO POWITALNE':'MORNING CIRCLE',
@@ -2885,14 +2883,12 @@ const TLUM = {
   'SZORUJ  <  >':'SCRUB  <  >',
   'SZORUJ  <  >  NA ZMIANĘ':'SCRUB  <  >  ONE BY ONE',
   'SZUKAJ KONTAKTU NA ŚCIANIE':'LOOK FOR THE SWITCH ON THE WALL',
-  'SZUKAMY KURTKI':'FINDING YOUR COAT',
   'SZYJA':'NECK',
   'Sen o kotkach':'A dream about cats',
   'Siku do kibelka':'Pee in the toilet',
   'Skacz po meblach na kanapę':'Jump on the furniture to the sofa',
   'Szatnia':'Cloakroom',
   'Sznurówki i kokardka':'Laces and a bow',
-  'Szukamy kurtki':'Finding your coat',
   'TANKUJEMY AUTO':'FILLING UP THE CAR',
   'TERAZ TRZEBA POSPRZĄTAĆ...':'NOW WE HAVE TO CLEAN UP...',
   'TERAZ ZĄBKI I PIŻAMKA':'NOW TEETH AND PYJAMAS',
@@ -2972,7 +2968,6 @@ const TLUM = {
   'ZJEŚĆ ŚNIADANKO, UMYĆ ZĄBKI':'EAT BREAKFAST, BRUSH TEETH',
   'ZMIEŃ STRZAŁKĄ W BOK':'CHANGE WITH LEFT OR RIGHT',
   'ZMIEŃ ZĄBKI  ^  v':'CHANGE TEETH  ^  v',
-  'ZNALAZŁEŚ SWOJĄ KURTKĘ!':'YOU FOUND YOUR COAT!',
   'ZUPKA NA OBIAD':'SOUP FOR LUNCH',
   'ZYGZAK MCQUEEN':'LIGHTNING MCQUEEN',
   'Zabawa w domu':'Playing at home',
@@ -4658,6 +4653,7 @@ function startJazdy(){
   const cel = (p.cel === 'stacja' && pojazd === 'autobus') ? 'przystanek' : (p.cel || 'przedszkole');
   const rower = pojazd === 'rower';
   G.jazda = { pas:1, y:PASY[1], predkosc:rower ? 1.2 : 2.5, dystans:0, przeszkody:[], nastepna:200,
+    skok:0, przeskoczone:0,
     stlucz:0, trzes:0, ups:0, koniecT:0, wolnoT:0, krzykT:0, dymek:0, pojazd, rower,
     ostatniPedal:0, obrotKola:0, fazaOp:0, szybkoT:0, odstepOp:60,
     dlugosc: p.dlugosc || DROGA_DO_PRZEDSZKOLA,
@@ -4673,6 +4669,12 @@ function startJazdy(){
 const KOCIA_SZAJKA = ['KOCIA SZAJKA, ROZDZIAŁ 7', 'MIAU! DO DZIEŁA, KOTY!',
                       'RUDY, TY PILNUJ WEJŚCIA!', 'MAMY GO! BRAWO SZAJKA!'];
 const TYPY_PRZESZKOD = ['kaluza','stozek','dziura','auto'];
+const SKOK_W_AUCIE = 46;                    // klatek trwa skok nad przeszkodą
+/* wysokość skoku w danej klatce – zwykły łuk, zero przy starcie i lądowaniu */
+function wysokoscSkoku(j){
+  if(!j.skok) return 0;
+  return Math.round(Math.sin(Math.PI * (j.skok / SKOK_W_AUCIE)) * 34);
+}
 function aktualizujJazde(){
   const j = G.jazda;
   if(j.koniecT>0){ j.koniecT--; if(j.koniecT===0){ kartaPoziomu(G.poziom+1); }
@@ -4680,6 +4682,14 @@ function aktualizujJazde(){
   if(nowy('ArrowUp') && j.pas>0){ j.pas--; ton(700,0.06,'square',0.03); }
   if(nowy('ArrowDown') && j.pas<2){ j.pas++; ton(500,0.06,'square',0.03); }
   j.y += (PASY[j.pas] - j.y) * 0.18;
+
+  // SPACJA: skok nad przeszkodą. W powietrzu nic nas nie dotyka, ale skok trwa
+  // swoje i dopóki się nie wyląduje, drugi raz nie podskoczysz.
+  if(nowy(' ') && j.skok === 0 && j.koniecT === 0){ j.skok = 1; sfx('sfx_skok'); }
+  if(j.skok > 0){
+    j.skok++;
+    if(j.skok > SKOK_W_AUCIE) j.skok = 0;
+  }
 
   if(j.rower){
     // rower jedzie tylko tak szybko, jak Pola pedałuje: ◀ ▶ na zmianę
@@ -4733,9 +4743,15 @@ function aktualizujJazde(){
     o.x -= j.predkosc * (o.typ==='auto' ? 0.7 : 1);
     if(o.x < -70){ j.przeszkody.splice(i,1); continue; }
     if(!o.trafiona && Math.abs(o.x - 100) < 32 && Math.abs(o.y - j.y) < 21){
-      o.trafiona = true; j.stlucz = 60; j.trzes = 22; j.ups = 90;
-      sfx('sfx_bum'); mow('ups');
-      iskry(100, j.y, ['#f8d878','#fc9838','#fffeff'], 16);
+      if(j.skok > 0){                                  // przeskoczone!
+        o.trafiona = true; j.przeskoczone++;
+        sfx('sfx_zbierz');
+        iskry(100, j.y + 8, ['#f8d878','#fffeff'], 8);
+      } else {
+        o.trafiona = true; j.stlucz = 60; j.trzes = 22; j.ups = 90;
+        sfx('sfx_bum'); mow('ups');
+        iskry(100, j.y, ['#f8d878','#fc9838','#fffeff'], 16);
+      }
     }
   }
   if(j.dystans >= j.dlugosc && j.koniecT === 0){
@@ -4962,20 +4978,27 @@ function rysujJazde(){
   if(j.trzes>0) ctx.translate(Math.round((Math.random()-0.5)*4), Math.round((Math.random()-0.5)*4));
   for(const o of j.przeszkody) rysujPrzeszkode(o);
   if(j.rower) rysujTate(Math.round(100 - j.odstepOp), Math.round(j.y) - 36, 1, j.fazaOp, true);
-  rysujAutoFranka(100, j.y, G.t);
+  const hSkok = wysokoscSkoku(j);
+  if(hSkok > 0){                                   // cień na jezdni, żeby skok było widać
+    ctx.globalAlpha = 0.3;
+    pr(100 - 22 + hSkok/6, Math.round(j.y) + 12, 44 - hSkok/3, 5, '#000000');
+    ctx.globalAlpha = 1;
+  }
+  rysujAutoFranka(100, j.y - hSkok, G.t);
   ctx.restore();
   rysujEfekty();
 
   pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
   napisL(j.tytul, 4, 10, '#fffeff', null, 1);
+  if(j.przeskoczone > 0) napisL('SKOKI: ' + j.przeskoczone, W-84, 10, '#f8d878', null, 1);
   const post = Math.min(1, j.dystans/j.dlugosc);
   pr(W/2-90,26,180,12,'#000000'); pr(W/2-88,28,176,8,'#4f4f4f');
   pr(W/2-88,28,Math.round(176*post),8,'#58d854');
   const ikonaCelu = j.cel === 'stacja' ? 'benzyna' : (j.cel === 'przystanek' ? 'bilet' : 'czapka');
   ctx.drawImage(spr('ik_'+ikonaCelu, IKONY[ikonaCelu]),
                 Math.round(W/2-96+176*post), 24, 16, 16);
-  napis(j.rower ? '^ v  ZMIEŃ ŚCIEŻKĘ      <  >  PEDAŁUJ NA ZMIANĘ'
-                : '^ v  ZMIEŃ PAS      >  SZYBCIEJ', W/2, 258, '#fffeff', '#000000', 1);
+  napis(j.rower ? '^ v  ŚCIEŻKA    <  >  PEDAŁUJ    SPACJA  SKOK'
+                : '^ v  PAS    >  SZYBCIEJ    SPACJA  SKOK', W/2, 258, '#fffeff', '#000000', 1);
   if(j.radio && j.ups<=0 && j.dymek<=0){
     const tekst = KOCIA_SZAJKA[j.radioI];
     const tw = szerTekstu(tekst, 1);
@@ -8134,116 +8157,6 @@ function rysujZupe(){
   rysujDebug();
 }
 
-/* ==================== MINIGRA: SZUKAMY KURTKI W SZATNI ====================
-   Na wieszakach wiszą kurtki, jedna jest Franka. ◀ ▶ przesuwają rączkę,
-   ▲ zdejmuje. Trzy rundy, za każdym razem inne ułożenie. */
-const SZUK_KURTKI = [
-  {kol:'#00a800', jasny:'#58d854', wzor:'paski'},
-  {kol:'#d82800', jasny:'#f87858', wzor:'kropki'},
-  {kol:'#0058f8', jasny:'#3cbcfc', wzor:'gladka'},
-  {kol:'#f8d878', jasny:'#e4e594', wzor:'kropki'},
-  {kol:'#fe6ecc', jasny:'#fec4ea', wzor:'paski'},
-  {kol:'#7527fe', jasny:'#a45cff', wzor:'gladka'},
-  {kol:'#fc9838', jasny:'#f7d8a5', wzor:'paski'},
-  {kol:'#4f4f4f', jasny:'#bcbcbc', wzor:'kropki'}
-];
-const SZUK_ILE = 6;
-let SZUK_RUND = 3;
-function startSzukania(){
-  G.szukanie = { runda:0, kurtki:[], moja:0, kursor:0, wynik:null, t:0, koniecT:0, pokaz:150 };
-  G.czastki = []; G.ekran = 'szukanie';
-  graj('muz_gra');
-  noweSzukanie(true);
-}
-function noweSzukanie(pierwsza){
-  const s = G.szukanie;
-  const pula = SZUK_KURTKI.map((k,i) => i);
-  for(let i=pula.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const x=pula[i]; pula[i]=pula[j]; pula[j]=x; }
-  s.kurtki = pula.slice(0, SZUK_ILE);
-  s.moja = (Math.random()*SZUK_ILE)|0;
-  s.kursor = 0; s.wynik = null; s.t = 0; s.pokaz = 170;
-  mow(pierwsza ? 'szuk_jak' : 'szuk_patrz');
-}
-function aktualizujSzukanie(){
-  const s = G.szukanie;
-  s.t++;
-  if(s.koniecT > 0){
-    s.koniecT--;
-    if(s.koniecT === 0) dalejPoPoziomie();
-    aktualizujEfekty(); czyscNowe(); return;
-  }
-  if(s.pokaz > 0){                                   // najpierw pokazujemy, która jest nasza
-    s.pokaz--;
-    if(s.pokaz === 0) mow('szuk_szukaj');
-    aktualizujEfekty(); czyscNowe(); return;
-  }
-  if(s.wynik === 'dobrze'){
-    if(s.t > 110){
-      s.runda++;
-      if(s.runda >= SZUK_RUND){ s.koniecT = 215; sfx('sfx_sukces'); cisza(); mow('szuk_koniec'); }
-      else noweSzukanie(false);
-    }
-    aktualizujEfekty(); czyscNowe(); return;
-  }
-  if(nowy('ArrowLeft')  && s.kursor > 0){ s.kursor--; sfx('sfx_zbierz'); }
-  if(nowy('ArrowRight') && s.kursor < SZUK_ILE-1){ s.kursor++; sfx('sfx_zbierz'); }
-  if(nowy('ArrowUp')){
-    if(s.kursor === s.moja){
-      s.wynik = 'dobrze'; s.t = 0;
-      sfx('sfx_sukces'); iskry(46 + s.kursor*76, 130, ['#f8d878','#fffeff','#58d854'], 20);
-      mow('szuk_ok');
-    } else { sfx('sfx_zle'); mow('szuk_zle'); }
-  }
-  aktualizujEfekty(); czyscNowe();
-}
-function rysujKurtke(k, x, y, skala){
-  const w = Math.round(46*skala), h = Math.round(60*skala);
-  pr(x-w/2, y, w, h, k.kol); obrys(x-w/2, y, w, h);
-  pr(x-w/2, y, w, Math.round(6*skala), k.jasny);
-  pr(x-w/2-Math.round(8*skala), y+Math.round(4*skala), Math.round(8*skala), Math.round(34*skala), k.kol);
-  pr(x+w/2, y+Math.round(4*skala), Math.round(8*skala), Math.round(34*skala), k.kol);
-  pr(x-1, y, 2, h, k.jasny);                                   // zamek
-  if(k.wzor === 'paski') for(let i=0;i<3;i++) pr(x-w/2, y+Math.round((16+i*12)*skala), w, Math.round(4*skala), k.jasny);
-  if(k.wzor === 'kropki') for(let i=0;i<6;i++)
-    pr(x-w/2+Math.round((6+(i%3)*14)*skala), y+Math.round((14+Math.floor(i/3)*20)*skala), Math.round(6*skala), Math.round(6*skala), k.jasny);
-}
-function rysujSzukanie(){
-  const s = G.szukanie;
-  pr(0,0,W,H,'#f7d8a5');
-  pr(0,214,W,56,'#ac7c00'); pr(0,214,W,4,'#e4c08a');
-  pr(0,84,W,6,'#883800'); obrys(0,84,W,6);                     // drążek z wieszakami
-
-  for(let i=0;i<SZUK_ILE;i++){
-    const x = 46 + i*76;
-    pr(x-2, 74, 4, 12, '#bcbcbc');
-    rysujKurtke(SZUK_KURTKI[s.kurtki[i]], x, 90, 1);
-    if(s.pokaz > 0 && i === s.moja && Math.floor(G.t/8)%2===0){
-      ctx.strokeStyle = '#58d854'; ctx.lineWidth = 3; ctx.strokeRect(x-32, 84, 64, 68);
-    }
-    if(s.pokaz === 0 && i === s.kursor){
-      if(Math.floor(G.t/8)%2===0){ ctx.strokeStyle = '#f8d878'; ctx.lineWidth = 3; ctx.strokeRect(x-32, 84, 64, 68); }
-      strzalka(x, 166, G.t);
-    }
-  }
-  rysujFranka(20, 164, 1, 0, false, false);
-  rysujEfekty();
-
-  pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
-  napisL('SZUKAMY KURTKI', 4, 10, '#fffeff', null, 1);
-  napisL('RUNDA ' + Math.min(SZUK_RUND, s.runda+1) + '/' + SZUK_RUND, W-92, 10, '#f8d878', null, 1);
-  const t = s.pokaz > 0 ? 'TO TWOJA KURTKA - ZAPAMIĘTAJ!' : (s.wynik === 'dobrze' ? 'TO TA! BRAWO!' : 'KTÓRA JEST TWOJA?');
-  const tw = szerTekstu(t, s.pokaz > 0 ? 1 : 2);
-  pr(W/2-tw/2-6, 24, tw+12, s.pokaz > 0 ? 14 : 22, s.pokaz > 0 ? '#007800' : '#000000');
-  napis(t, W/2, s.pokaz > 0 ? 31 : 35, '#f8d878', null, s.pokaz > 0 ? 1 : 2);
-  napis('<  >  SZUKAJ     ^  ZDEJMIJ', W/2, 244, '#fffeff', '#000000', 2);
-  if(s.koniecT > 0){
-    ctx.globalAlpha = 0.65; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
-    napis('ZNALAZŁEŚ SWOJĄ KURTKĘ!', W/2, 118, '#f8d878', '#000000', 2);
-    napis('IDZIEMY DO DOMU!', W/2, 152, '#fffeff', '#000000', 2);
-  }
-  rysujDebug();
-}
-
 /* ==================== MINIGRA: BAŃKI W KĄPIELI ====================
    Z wanny lecą bańki mydlane. ◀ ▶ przesuwają rączkę, a bańka pęka od
    samego dotknięcia – nie trzeba nic naciskać. */
@@ -8643,14 +8556,28 @@ function rysujAlfabet(){
 /* ==================== MINIGRA: MEMORY ====================
    Karty leżą obrazkiem do dołu, trzeba znaleźć pary. ◀ ▶ przesuwają
    rączkę, ▲ odwraca kartę. Klasyka na pamięć dla przedszkolaka. */
-const MEM_OBRAZKI = ['kot','rybka','mis','marchewka','czapka'];
+/* Każdy obrazek ma swoje nagranie, więc odwrócona karta jest czytana na głos –
+   przy okazji dziecko uczy się słówek (po angielsku cat, fish, hat...). */
+const MEM_OBRAZKI = [
+  {ik:'kot',       glos:'alf_kot'},
+  {ik:'rybka',     glos:'alf_rybka'},
+  {ik:'czapka',    glos:'alf_czapka'},
+  {ik:'mleko',     glos:'alf_mleko'},
+  {ik:'buty',      glos:'alf_buty'},
+  {ik:'marchewka', glos:'alf_marchewka'},
+  {ik:'krolik',    glos:'alf_krolik'},
+  {ik:'lyzka',     glos:'alf_lyzka'}
+];
 function startMemory(){
-  const par = ile(3, 4);
+  const par = ile(6, 8);
+  const obrazki = MEM_OBRAZKI.slice();
+  for(let i=obrazki.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const x=obrazki[i]; obrazki[i]=obrazki[j]; obrazki[j]=x; }
   const karty = [];
-  for(let i=0;i<par;i++){ karty.push({ik:MEM_OBRAZKI[i]}, {ik:MEM_OBRAZKI[i]}); }
+  for(let i=0;i<par;i++) karty.push({...obrazki[i]}, {...obrazki[i]});
   for(let i=karty.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const x=karty[i]; karty[i]=karty[j]; karty[j]=x; }
   karty.forEach(k => { k.odkryta = false; k.zdjeta = false; });
-  G.memory = { karty, par, znalezione:0, kursor:0, pierwsza:null, czekanie:0, koniecT:0, t:0 };
+  G.memory = { karty, par, kolumn:par > 6 ? 4 : 4, znalezione:0, kursor:0, pierwsza:null,
+               czekanie:0, koniecT:0, t:0 };
   G.czastki = []; G.ekran = 'memory';
   graj('muz_gra'); mow('mem_jak');
 }
@@ -8672,7 +8599,7 @@ function aktualizujMemory(){
         sfx('sfx_sukces');
         iskry(240, 130, ['#f8d878','#58d854','#fffeff'], 16);
         if(m.znalezione >= m.par){ m.koniecT = 215; cisza(); mow('mem_koniec'); }
-        else mow('mem_para');
+        else mow('mem_para', m.karty[a].glos);
       } else {
         m.karty[a].odkryta = m.karty[b].odkryta = false;
         sfx('sfx_zle'); mow('mem_nie');
@@ -8681,16 +8608,18 @@ function aktualizujMemory(){
     }
     aktualizujEfekty(); czyscNowe(); return;
   }
-  const ostatnia = m.karty.length - 1;
-  if(nowy('ArrowLeft')  && m.kursor > 0){ m.kursor--; sfx('sfx_zbierz'); }
-  if(nowy('ArrowRight') && m.kursor < ostatnia){ m.kursor++; sfx('sfx_zbierz'); }
+  const ile2 = m.karty.length;
+  if(nowy('ArrowLeft')){ m.kursor = (m.kursor - 1 + ile2) % ile2; sfx('sfx_zbierz'); }
+  if(nowy('ArrowRight')){ m.kursor = (m.kursor + 1) % ile2; sfx('sfx_zbierz'); }
+  if(nowy('ArrowDown')){ m.kursor = (m.kursor + m.kolumn) % ile2; sfx('sfx_zbierz'); }
   if(nowy('ArrowUp')){
     const k = m.karty[m.kursor];
     if(k.zdjeta || k.odkryta){ sfx('sfx_zle'); }
     else {
       k.odkryta = true; sfx('sfx_skok');
+      mow(k.glos);                                   // gra czyta, co jest na karcie
       if(m.pierwsza === null) m.pierwsza = m.kursor;
-      else { m.odkryte = [m.pierwsza, m.kursor]; m.czekanie = 55; }
+      else { m.odkryte = [m.pierwsza, m.kursor]; m.czekanie = 70; }
     }
   }
   aktualizujEfekty(); czyscNowe();
@@ -8704,13 +8633,14 @@ function rysujKarteMemory(x, y, w, h, k, podswietl){
   }
   if(k.odkryta){
     pr(x, y, w, h, '#fffeff'); obrys(x, y, w, h);
-    ctx.save(); ctx.translate(x + w/2, y + h/2); ctx.scale(2.6,2.6);
+    const sk = Math.max(1.6, Math.min(2.6, (h - 10) / 16));
+    ctx.save(); ctx.translate(x + w/2, y + h/2); ctx.scale(sk, sk);
     rysujIkone(k.ik, 0, 0, false);
     ctx.restore();
   } else {
     pr(x, y, w, h, '#0058f8'); obrys(x, y, w, h);
     pr(x+5, y+5, w-10, h-10, '#3cbcfc');
-    for(let i=0;i<3;i++) for(let j=0;j<4;j++) pr(x+11+i*14, y+13+j*16, 7, 7, '#0000bc');
+    for(let i=0;i*14 < w-18;i++) for(let j=0;j*16 < h-14;j++) pr(x+11+i*14, y+11+j*16, 7, 7, '#0000bc');
   }
   if(podswietl && Math.floor(G.t/8)%2===0){
     ctx.strokeStyle = '#f8d878'; ctx.lineWidth = 3;
@@ -8722,18 +8652,20 @@ function rysujMemory(){
   pr(0,0,W,H,'#007800');
   for(let x=0;x<W;x+=32) for(let y=24;y<H;y+=32) pr(x, y, 16, 16, '#00a800');
 
-  const kol = Math.ceil(m.karty.length/2), kw = 86, kh = 92;
-  const startX = W/2 - (kol*kw + (kol-1)*8)/2;
+  const kol = m.kolumn, wierszy = Math.ceil(m.karty.length / kol);
+  const kw = 94, kh = wierszy > 3 ? 46 : 60, odst = 7;
+  const startX = W/2 - (kol*kw + (kol-1)*odst)/2;
+  const startY = 50;
   for(let i=0;i<m.karty.length;i++){
     const c = i % kol, r = Math.floor(i / kol);
-    rysujKarteMemory(startX + c*(kw+8), 52 + r*(kh+10), kw, kh, m.karty[i], i === m.kursor);
+    rysujKarteMemory(startX + c*(kw+odst), startY + r*(kh+odst), kw, kh, m.karty[i], i === m.kursor);
   }
   rysujEfekty();
 
   pr(0,0,W,20,'#000000'); pr(0,20,W,1,'#4f4f4f');
   napisL('PARY OBRAZKÓW', 4, 10, '#fffeff', null, 1);
   napisL('PARY: ' + m.znalezione + '/' + m.par, W-92, 10, '#f8d878', null, 1);
-  napis('<  >  KARTA     ^  ODKRYJ', W/2, 258, '#fffeff', '#000000', 2);
+  napis('<  >  v  KARTA     ^  ODKRYJ', W/2, 258, '#fffeff', '#000000', 2);
   if(m.koniecT > 0){
     ctx.globalAlpha = 0.65; pr(0,0,W,H,'#000000'); ctx.globalAlpha = 1;
     napis('WSZYSTKIE PARY!', W/2, 118, '#f8d878', '#000000', 3);
@@ -8946,11 +8878,19 @@ function startKart(){
   graj('muz_gra');
   noweKarty(true);
 }
+/* As to 11 – rysuje się jako A i bije każdą liczbę. Jedynki w talii nie ma. */
+const AS = 11;
+function napisKarty(n){ return n === AS ? 'A' : String(n); }
+function glosKarty(n){ return n === AS ? 'karty_as' : 'licz_' + n; }
 function noweKarty(pierwsze){
   const k = G.karty;
   const max = k.runda < 2 ? 6 : 10;                 // na początek małe liczby
-  let a = 1 + ((Math.random()*max)|0), b = 1 + ((Math.random()*max)|0);
-  while(b === a) b = 1 + ((Math.random()*max)|0);
+  const losuj = () => {
+    if(k.runda >= 1 && Math.random() < 0.25) return AS;   // czasem trafia się as
+    return 2 + ((Math.random()*(max-1))|0);
+  };
+  let a = losuj(), b = losuj();
+  while(b === a) b = losuj();
   k.a = a; k.b = b; k.kursor = 0; k.wynik = null; k.t = 0;
   mow(...(pierwsze ? ['karty_jak'] : []), 'karty_ktora');
 }
@@ -8970,15 +8910,15 @@ function aktualizujKarty(){
     }
     aktualizujEfekty(); czyscNowe(); return;
   }
-  if(nowy('ArrowLeft')  && k.kursor > 0){ k.kursor--; sfx('sfx_zbierz'); mow('licz_' + k.a); }
-  if(nowy('ArrowRight') && k.kursor < 1){ k.kursor++; sfx('sfx_zbierz'); mow('licz_' + k.b); }
+  if(nowy('ArrowLeft')  && k.kursor > 0){ k.kursor--; sfx('sfx_zbierz'); mow(glosKarty(k.a)); }
+  if(nowy('ArrowRight') && k.kursor < 1){ k.kursor++; sfx('sfx_zbierz'); mow(glosKarty(k.b)); }
   if(nowy('ArrowUp')){
     const wieksza = k.a > k.b ? 0 : 1;
     if(k.kursor === wieksza){
       k.wynik = 'dobrze'; k.t = 0; k.punkty++;
       sfx('sfx_sukces');
       iskry(150 + k.kursor*180, 140, ['#f8d878','#fffeff','#58d854'], 20);
-      mow('karty_brawo', 'licz_' + Math.max(k.a, k.b));
+      mow('karty_brawo', glosKarty(Math.max(k.a, k.b)));
     } else { sfx('sfx_zle'); mow('karty_nie'); }
   }
   aktualizujEfekty(); czyscNowe();
@@ -8988,9 +8928,24 @@ function rysujKarteDoGry(x, y, w, h, n, czerwona, podswietl){
   pr(x, y, w, h, '#fffeff'); obrys(x, y, w, h);
   pr(x+4, y+4, w-8, h-8, '#fffeff');
   const kol = czerwona ? '#d82800' : '#2b2b33';
-  napis(String(n), x+16, y+18, kol, null, 2);
-  napis(String(n), x+w-16, y+h-18, kol, null, 2);
-  const kol_ = Math.min(3, n), wier = Math.ceil(n/3);
+  napis(napisKarty(n), x+16, y+18, kol, null, 2);
+  napis(napisKarty(n), x+w-16, y+h-18, kol, null, 2);
+  if(n === AS){                                     // as: jeden wielki znak na środku
+    if(czerwona){
+      ctx.save(); ctx.translate(x+w/2, y+h/2); ctx.scale(5,5);
+      rysujSpr('serduszko', SERDUSZKO, -4, -4, false);
+      ctx.restore();
+    } else {
+      pr(x+w/2-18, y+h/2-22, 36, 34, kol);
+      pr(x+w/2-6, y+h/2+12, 12, 12, kol);
+    }
+    if(podswietl && Math.floor(G.t/8)%2===0){
+      ctx.strokeStyle = '#f8d878'; ctx.lineWidth = 3;
+      ctx.strokeRect(x-3.5, y-3.5, w+7, h+7);
+    }
+    return;
+  }
+  const wier = Math.ceil(n/3);
   for(let i=0;i<n;i++){
     const c = i % 3, r = Math.floor(i/3);
     const cx = x + w/2 + (c - (Math.min(3, n-r*3)-1)/2)*22;
@@ -9363,7 +9318,6 @@ function krok(){
     case 'ksztalty': aktualizujKsztalty(); break;
     case 'rytm': aktualizujRytm(); break;
     case 'zupa': aktualizujZupe(); break;
-    case 'szukanie': aktualizujSzukanie(); break;
     case 'banki': aktualizujBanki(); break;
     case 'owce': aktualizujOwce(); break;
     case 'igloo': aktualizujIgloo(); break;
@@ -9420,7 +9374,6 @@ function rysuj(){
     case 'ksztalty': rysujKsztalty(); break;
     case 'rytm': rysujRytm(); break;
     case 'zupa': rysujZupe(); break;
-    case 'szukanie': rysujSzukanie(); break;
     case 'banki': rysujBanki(); break;
     case 'owce': rysujOwce(); break;
     case 'igloo': rysujIgloo(); break;

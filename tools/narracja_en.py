@@ -406,14 +406,6 @@ NARRACJA_EN.update({
     'zupa_ostygla': 'It is fine now, it will not burn you! Eat it spoon by spoon. Press the '
                     'left and right arrows one after the other.',
     'zupa_koniec':  'An empty plate! All the soup is gone. Well done Franek!',
-    'szuk_poziom': 'There are lots of coats in the cloakroom. Which one is yours?',
-    'szuk_jak':    'Take a good look, this is your coat. Remember it! Then the left and right '
-                   'arrows search, and the up arrow takes it down.',
-    'szuk_patrz':  'A new coat to remember. Look carefully!',
-    'szuk_szukaj': 'And now find it on the rail!',
-    'szuk_ok':     'That is the one! Well done, what a good memory!',
-    'szuk_zle':    'That is not your coat. Keep looking!',
-    'szuk_koniec': 'You found your coat every single time! Well done Franek!',
     'banki_poziom': 'There are soap bubbles in the bath.',
     'banki_jak':    'Catch the bubbles with your hand! The left and right arrows move your hand, '
                     'and a bubble pops the moment you touch it.',
@@ -481,6 +473,7 @@ NARRACJA_EN.update({
     'karty_brawo':  'Yes! The bigger number is',
     'karty_nie':    'No, the other one is bigger. Count the hearts.',
     'karty_koniec': 'You know your numbers! You always know which one is bigger!',
+    'karty_as':     'The ace! The ace beats every number.',
     # --- minigra: zgadywanie literek ze słuchu ---
     'zgad_poziom':  'Guess the letters! Listen and find the one I say.',
     'zgad_jak':     'I will say a letter and you find it. The left and right arrows choose, '
